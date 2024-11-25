@@ -70,7 +70,7 @@ class SpeechHandler:
     def __init__(self):
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.PUB)
-        self.socket.bind("tcp://*:5556")
+        self.socket.bind("tcp://*:6325")
         
     def cleanup(self):
         print("Cleaning up speech handler...")

@@ -1256,9 +1256,9 @@ class SpeechEnabledDemo(Demo):
                 self.context = zmq.Context()
                 self.socket = self.context.socket(zmq.PUB)
                 self.socket.setsockopt(zmq.LINGER, 0)
-                self.socket.bind("tcp://*:5556")
+                self.socket.bind("tcp://*:6325")
                 self.cmd_socket = self.context.socket(zmq.SUB)
-                self.cmd_socket.connect("tcp://localhost:5556")
+                self.cmd_socket.connect("tcp://localhost:6325")
                 self.cmd_socket.setsockopt_string(zmq.SUBSCRIBE, "")
                 break
             except zmq.error.ZMQError as e:
@@ -1276,14 +1276,14 @@ class SpeechEnabledDemo(Demo):
         
     def cleanup_zmq_port(self):
         """
-        Thoroughly clean up any existing ZMQ connections on port 5556
+        Thoroughly clean up any existing ZMQ connections on port 6325
         """
         import psutil
         # First try to kill any existing processes
         for proc in psutil.process_iter(['pid', 'name', 'connections']):
             try:
                 for conn in proc.connections():
-                    if hasattr(conn.laddr, 'port') and conn.laddr.port == 5556:
+                    if hasattr(conn.laddr, 'port') and conn.laddr.port == 6325:
                         try:
                             psutil.Process(proc.pid).terminate()
                             psutil.Process(proc.pid).wait(timeout=1)  # Wait for termination
@@ -1297,7 +1297,7 @@ class SpeechEnabledDemo(Demo):
         try:
             temp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             temp_socket.settimeout(1)
-            temp_socket.connect(('localhost', 5556))
+            temp_socket.connect(('localhost', 6325))
             temp_socket.close()
         except (ConnectionRefusedError, socket.timeout):
             pass  # Port is already free
