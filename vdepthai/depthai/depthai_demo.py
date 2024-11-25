@@ -1247,44 +1247,35 @@ def runQt():
 class SpeechEnabledDemo(Demo):
     def __init__(self):
         super().__init__()
-        # Check if port 5556 is in use and clean it up if necessary
-        try:
-            context = zmq.Context()
-            socket = context.socket(zmq.PUB)
-            socket.bind("tcp://*:5556")
-            socket.close()
-            context.term()
-        except zmq.error.ZMQError:
-            print("Port 5556 is in use. Attempting to clean up...")
-            import psutil
-            for proc in psutil.process_iter(['pid', 'name', 'connections']):
-                try:
-                    connections = proc.connections()
-                    for conn in connections:
-                        if conn.laddr.port == 5556:
-                            psutil.Process(proc.pid).terminate()
-                            print(f"Terminated process {proc.pid} using port 5556")
-                except (psutil.NoSuchProcess, psutil.AccessDenied):
-                    pass
-        
-        self.context = zmq.Context()
-        self.socket = self.context.socket(zmq.PUB)
-        self.socket.bind("tcp://*:5556")
+        self.cleanup_zmq_port()
+        self.setup_zmq()
         self.speech_process = None
         self.current_target = None
         
-    def setup(self, conf):
-        super().setup(conf)
-        # Start speech recognition in a separate process
-        self.speech_process = multiprocessing.Process(
-            target=run_speech_detection
-        )
-        self.speech_process.start()
-        
-        # Setup ZMQ subscriber for voice commands
-        self.cmd_socket = self.context.socket(zmq.SUB)
-        self.cmd_socket.connect("tcp://localhost:5556")
-        self.cmd_socket.setsockopt_string(zmq.SUBSCRIBE, "")
+    def cleanup_zmq_port(self):
+        import psutil
+        for proc in psutil.process_iter(['pid', 'name', 'connections']):
+            try:
+                for conn in proc.connections():
+                    if hasattr(conn.laddr, 'port') and conn.laddr.port == 5556:
+                        psutil.Process(proc.pid).terminate()
+                        time.sleep(0.1)  
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                continue
+                
+    def setup_zmq(self):
+        try:
+            self.context = zmq.Context()
+            self.socket = self.context.socket(zmq.PUB)
+            self.socket.setsockopt(zmq.LINGER, 0)  
+            self.socket.bind("tcp://*:5556")
+        except zmq.error.ZMQError as e:
+            print(f"Failed to setup ZMQ: {e}")
+            self.cleanup_zmq_port()
+            self.context = zmq.Context()
+            self.socket = self.context.socket(zmq.PUB)
+            self.socket.setsockopt(zmq.LINGER, 0)
+            self.socket.bind("tcp://*:5556")
         
     def process_frame(self, frame, detections):
         if self.current_target is None:
