@@ -1,15 +1,30 @@
 import multiprocessing
-from pickAndPlaceVoiceDetection import listen_and_process
+import signal
+import sys
+from pickAndPlaceVoiceDetection import run_speech_detection
 from depthai_handler import DepthAIHandler
 
+def signal_handler(sig, frame):
+    print("\nReceived signal to terminate...")
+    sys.exit(0)
+
 if __name__ == "__main__":
-    # Start speech detection process
-    speech_process = multiprocessing.Process(target=listen_and_process)
-    speech_process.start()
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
     
-    # Start DepthAI handler
-    depthai_handler = DepthAIHandler()
-    depthai_handler.create_pipeline()
-    depthai_handler.run()
-    
-    speech_process.join()
+    try:
+        # Start speech detection process
+        speech_process = multiprocessing.Process(target=run_speech_detection)
+        speech_process.start()
+        
+        # Start DepthAI handler
+        depthai_handler = DepthAIHandler()
+        depthai_handler.create_pipeline()
+        depthai_handler.run()
+        
+    except KeyboardInterrupt:
+        print("\nExiting program...")
+    finally:
+        if speech_process.is_alive():
+            speech_process.terminate()
+            speech_process.join()

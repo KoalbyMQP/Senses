@@ -85,19 +85,19 @@ class SpeechHandler:
             
             if "apple" in spoken_text.lower():
                 current_state = State.APPLE
-                handle_apple()
+                self.handle_apple()
             elif "orange" in spoken_text.lower():
                 current_state = State.ORANGE
-                handle_orange()
+                self.handle_orange()
             elif "bottle" in spoken_text.lower():
                 current_state = State.BOTTLE
-                handle_bottle()
+                self.handle_bottle()
             elif "cup" in spoken_text.lower():
                 current_state = State.CUP
-                handle_cup()
+                self.handle_cup()
             elif "remote" in spoken_text.lower():
                 current_state = State.REMOTE
-                handle_remote()
+                self.handle_remote()
         else:
             current_state = State.COMMAND_PARSING
             play_tts("Command not recognized. Please try again.")
