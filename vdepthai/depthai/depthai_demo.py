@@ -1267,16 +1267,19 @@ class SpeechEnabledDemo(Demo):
             else:
                 activate_cmd = ""
             
-            cmd = f"lxterminal -e '{activate_cmd}python3 {speech_script_path}'"
+            # Add pause command at the end
+            cmd = f"""lxterminal -e 'bash -c "{activate_cmd}; 
+            python3 {speech_script_path}; 
+            echo \\"Press Enter to close...\\"; 
+            read"'"""
             
-            # Start the process in new terminal
             self.speech_process = subprocess.Popen(
                 cmd,
                 shell=True,
                 preexec_fn=os.setsid
             )
             
-            time.sleep(1)  # Give process time to start
+            time.sleep(1)
             if self.speech_process.poll() is None:
                 print("Speech detection process started successfully in new terminal")
             else:
