@@ -1247,6 +1247,26 @@ def runQt():
 class SpeechEnabledDemo(Demo):
     def __init__(self):
         super().__init__()
+        # Check if port 5556 is in use and clean it up if necessary
+        try:
+            context = zmq.Context()
+            socket = context.socket(zmq.PUB)
+            socket.bind("tcp://*:5556")
+            socket.close()
+            context.term()
+        except zmq.error.ZMQError:
+            print("Port 5556 is in use. Attempting to clean up...")
+            import psutil
+            for proc in psutil.process_iter(['pid', 'name', 'connections']):
+                try:
+                    connections = proc.connections()
+                    for conn in connections:
+                        if conn.laddr.port == 5556:
+                            psutil.Process(proc.pid).terminate()
+                            print(f"Terminated process {proc.pid} using port 5556")
+                except (psutil.NoSuchProcess, psutil.AccessDenied):
+                    pass
+        
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.PUB)
         self.socket.bind("tcp://*:5556")
