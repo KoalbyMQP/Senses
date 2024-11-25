@@ -1255,23 +1255,17 @@ class SpeechEnabledDemo(Demo):
         super().setup(conf)
         print("Starting speech detection process...")
         try:
-            # Get the absolute path to the speech detection script
             current_dir = os.path.dirname(os.path.abspath(__file__))
             project_root = os.path.dirname(os.path.dirname(current_dir))
             speech_script_path = os.path.join(project_root, "Speech", "pickAndPlaceVoiceDetection.py")
             
-            # Create command to run in new terminal
             venv_path = os.environ.get('VIRTUAL_ENV', '')
             if venv_path:
                 activate_cmd = f"source {venv_path}/bin/activate && "
             else:
                 activate_cmd = ""
             
-            # Add pause command at the end
-            cmd = f"""lxterminal -e 'bash -c "{activate_cmd}; 
-            python3 {speech_script_path}; 
-            echo \\"Press Enter to close...\\"; 
-            read"'"""
+            cmd = f"lxterminal -e 'bash -c \"{activate_cmd}python3 {speech_script_path}; echo Press Enter to close...; read\"'"
             
             self.speech_process = subprocess.Popen(
                 cmd,
