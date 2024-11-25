@@ -15,7 +15,7 @@ class DepthAIHandler:
     def create_pipeline(self):
         # Create neural network node
         detection_nn = self.pipeline.createYoloDetectionNetwork()
-        detection_nn.setBlobPath("models/yolo-v3tiny-tf.blob")
+        detection_nn.setBlobPath("models/yolo-v3-tiny-tf.blob")
         detection_nn.setConfidenceThreshold(0.5)
         
         # Create color camera
