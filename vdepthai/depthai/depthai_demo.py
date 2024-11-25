@@ -1252,22 +1252,24 @@ class SpeechEnabledDemo(Demo):
         max_retries = 3
         retry_delay = 1
         
+        print("Initializing Speech-Enabled Demo...")
+        
         for attempt in range(max_retries):
             try:
                 self.cleanup_zmq_port()
                 self.context = zmq.Context()
                 self.socket = self.context.socket(zmq.PUB)
                 self.socket.setsockopt(zmq.LINGER, 0)
-                self.socket.bind("tcp://*:5556")
+                self.socket.bind("tcp://*:6325")
                 self.cmd_socket = self.context.socket(zmq.SUB)
-                self.cmd_socket.connect("tcp://localhost:5556")
+                self.cmd_socket.connect("tcp://localhost:6325")
                 self.cmd_socket.setsockopt_string(zmq.SUBSCRIBE, "")
+                print("ZMQ initialization successful")
                 break
             except zmq.error.ZMQError as e:
+                print(f"ZMQ initialization attempt {attempt + 1} failed: {e}")
                 if attempt == max_retries - 1:
-                    print(f"Failed to initialize ZMQ after {max_retries} attempts")
                     raise
-                print(f"ZMQ initialization attempt {attempt + 1} failed, retrying...")
                 time.sleep(retry_delay)
                 if hasattr(self, 'context'):
                     self.context.term()
@@ -1304,11 +1306,21 @@ class SpeechEnabledDemo(Demo):
         
     def setup(self, conf):
         super().setup(conf)
-        self.speech_process = multiprocessing.Process(
-            target=run_speech_detection
-        )
-        self.speech_process.start()
-        
+        print("Starting speech detection process...")
+        try:
+            self.speech_process = multiprocessing.Process(
+                target=run_speech_detection,
+                name="SpeechDetection"
+            )
+            self.speech_process.start()
+            time.sleep(1)  # Give process time to start
+            if self.speech_process.is_alive():
+                print("Speech detection process started successfully")
+            else:
+                print("Warning: Speech detection process failed to start")
+        except Exception as e:
+            print(f"Error starting speech detection: {e}")
+
     def stop(self, *args, **kwargs):
         try:
             if self.speech_process and self.speech_process.is_alive():
