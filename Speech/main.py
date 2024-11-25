@@ -1,10 +1,10 @@
 import multiprocessing
-from pickAndPlaceVoiceDetection import run_speech_detection
+from pickAndPlaceVoiceDetection import listen_and_process
 from depthai_handler import DepthAIHandler
 
 if __name__ == "__main__":
     # Start speech detection process
-    speech_process = multiprocessing.Process(target=run_speech_detection)
+    speech_process = multiprocessing.Process(target=listen_and_process)
     speech_process.start()
     
     # Start DepthAI handler
