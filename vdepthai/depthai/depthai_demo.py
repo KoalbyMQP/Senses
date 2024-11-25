@@ -1254,16 +1254,30 @@ class SpeechEnabledDemo(Demo):
         super().setup(conf)
         print("Starting speech detection process...")
         try:
-            # Pass the configuration through environment variable
-            os.environ['DEPTHAI_SPEECH_MODE'] = 'enabled'
-            self.speech_process = multiprocessing.Process(
-                target=run_speech_detection,
-                name="SpeechDetection"
+            # Get the absolute path to the speech detection script
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            project_root = os.path.dirname(os.path.dirname(current_dir))
+            speech_script_path = os.path.join(project_root, "Speech", "pickAndPlaceVoiceDetection.py")
+            
+            # Create command to run in new terminal
+            venv_path = os.environ.get('VIRTUAL_ENV', '')
+            if venv_path:
+                activate_cmd = f"source {venv_path}/bin/activate && "
+            else:
+                activate_cmd = ""
+            
+            cmd = f"lxterminal -e '{activate_cmd}python3 {speech_script_path}'"
+            
+            # Start the process in new terminal
+            self.speech_process = subprocess.Popen(
+                cmd,
+                shell=True,
+                preexec_fn=os.setsid
             )
-            self.speech_process.start()
+            
             time.sleep(1)  # Give process time to start
-            if self.speech_process.is_alive():
-                print("Speech detection process started successfully")
+            if self.speech_process.poll() is None:
+                print("Speech detection process started successfully in new terminal")
             else:
                 print("Warning: Speech detection process failed to start")
         except Exception as e:
@@ -1271,12 +1285,10 @@ class SpeechEnabledDemo(Demo):
             
     def stop(self, *args, **kwargs):
         try:
-            if self.speech_process and self.speech_process.is_alive():
-                self.speech_process.terminate()
-                self.speech_process.join(timeout=3)
-                if self.speech_process.is_alive():
-                    self.speech_process.kill()
-        except AttributeError:
+            if self.speech_process:
+                os.killpg(os.getpgid(self.speech_process.pid), signal.SIGTERM)
+                time.sleep(0.5)
+        except (AttributeError, ProcessLookupError):
             pass
         super().stop(*args, **kwargs)
 
