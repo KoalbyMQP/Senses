@@ -24,9 +24,9 @@ class State:
     COMMAND_PARSING = "Command Parsing"
     APPLE = "Apple"
     ORANGE = "Orange"
-    TABASCO = "Tabasco"
-    MAC_AND_CHEESE = "Mac & Cheese"
-    CHIPS_BAG = "Chips Bag"
+    BOTTLE = "Bottle"
+    CUP = "Cup"
+    REMOTE = "Remote"
 
 current_state = State.IDLE
 
@@ -69,21 +69,22 @@ def process_command(spoken_text):
     global current_state
 
     # Check for keywords and transition to specific object states
+    # apple orange bottle cup and remote
     if "pick up apple" in spoken_text.lower():
         current_state = State.APPLE
         handle_apple()
     elif "pick up orange" in spoken_text.lower():
         current_state = State.ORANGE
         handle_orange()
-    elif "pick up tabasco bottle" in spoken_text.lower():
-        current_state = State.TABASCO
-        handle_tabasco()
-    elif "pick up mac and cheese" in spoken_text.lower():
-        current_state = State.MAC_AND_CHEESE
-        handle_mac_and_cheese()
-    elif "pick up chips bag" in spoken_text.lower():
-        current_state = State.CHIPS_BAG
-        handle_chips_bag()
+    elif "pick up bottle" in spoken_text.lower():
+        current_state = State.BOTTLE
+        handle_bottle()
+    elif "pick up cup" in spoken_text.lower():
+        current_state = State.CUP
+        handle_cup()
+    elif "pick up remote" in spoken_text.lower():
+        current_state = State.REMOTE
+        handle_remote()
     else:
         current_state = State.COMMAND_PARSING
         play_tts("Command not recognized. Please try again.")
@@ -96,17 +97,17 @@ def handle_orange():
     print("Entering Orange state...")
     play_tts("Picking up the orange now.")
 
-def handle_tabasco():
-    print("Entering Tabasco state...")
-    play_tts("Picking up the Tabasco bottle now.")
+def handle_bottle():
+    print("Entering bottle state...")
+    play_tts("Picking up the bottle now.")
 
-def handle_mac_and_cheese():
-    print("Entering Mac & Cheese state...")
-    play_tts("Picking up the mac and cheese now.")
+def handle_cup():
+    print("Entering cup state...")
+    play_tts("Picking up the cup now.")
 
-def handle_chips_bag():
-    print("Entering Chips Bag state...")
-    play_tts("Picking up the chips bag now.")
+def handle_remote():
+    print("Entering remote state...")
+    play_tts("Picking up the remote now.")
 
 if __name__ == "__main__":
     play_tts("Hi! I'm Finley, your personal assistant.")
