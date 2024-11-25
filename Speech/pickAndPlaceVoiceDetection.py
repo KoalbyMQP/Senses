@@ -46,7 +46,7 @@ def play_tts(text):
     os.remove(output_file)
 
 # Listen for speech and process it
-def listen_and_process():
+def listen_and_process(speech_handler):
     global current_state
     with sr.Microphone() as src:
         print("Adjusting for ambient noise...")
@@ -60,40 +60,47 @@ def listen_and_process():
             print(f"You said: {spoken_text}")
             
             current_state = State.KEYWORD_SPOTTING
-            process_command(spoken_text)
+            speech_handler.process_command(spoken_text)
         except sr.UnknownValueError:
             print("Sorry, could not understand the audio.")
         except sr.RequestError:
             print("Could not request results; check your internet connection.")
 
-def process_command(spoken_text):
-    global current_state
-    
-    context = zmq.Context()
-    socket = context.socket(zmq.PUB)
-    socket.bind("tcp://*:5556")
-
-    if "pick up" in spoken_text.lower():
-        socket.send_string(spoken_text.lower())
+class SpeechHandler:
+    def __init__(self):
+        self.context = zmq.Context()
+        self.socket = self.context.socket(zmq.PUB)
+        self.socket.bind("tcp://*:5556")
         
-        if "apple" in spoken_text.lower():
-            current_state = State.APPLE
-            handle_apple()
-        elif "orange" in spoken_text.lower():
-            current_state = State.ORANGE
-            handle_orange()
-        elif "bottle" in spoken_text.lower():
-            current_state = State.BOTTLE
-            handle_bottle()
-        elif "cup" in spoken_text.lower():
-            current_state = State.CUP
-            handle_cup()
-        elif "remote" in spoken_text.lower():
-            current_state = State.REMOTE
-            handle_remote()
-    else:
-        current_state = State.COMMAND_PARSING
-        play_tts("Command not recognized. Please try again.")
+    def cleanup(self):
+        print("Cleaning up speech handler...")
+        if self.socket:
+            self.socket.close()
+        if self.context:
+            self.context.term()
+
+    def process_command(self, spoken_text):
+        if "pick up" in spoken_text.lower():
+            self.socket.send_string(spoken_text.lower())
+            
+            if "apple" in spoken_text.lower():
+                current_state = State.APPLE
+                handle_apple()
+            elif "orange" in spoken_text.lower():
+                current_state = State.ORANGE
+                handle_orange()
+            elif "bottle" in spoken_text.lower():
+                current_state = State.BOTTLE
+                handle_bottle()
+            elif "cup" in spoken_text.lower():
+                current_state = State.CUP
+                handle_cup()
+            elif "remote" in spoken_text.lower():
+                current_state = State.REMOTE
+                handle_remote()
+        else:
+            current_state = State.COMMAND_PARSING
+            play_tts("Command not recognized. Please try again.")
 
 def handle_apple():
     print("Entering Apple state...")
@@ -115,13 +122,22 @@ def handle_remote():
     print("Entering Remote state...")
     play_tts("Picking up the remote now.")
 
-if __name__ == "__main__":
-    play_tts("Hi! I'm Finley, your personal assistant.")
+def run_speech_detection():
+    speech_handler = SpeechHandler()
+    try:
+        play_tts("Hi! I'm Finley, your personal assistant.")
+        
+        while True:
+            if current_state == State.IDLE:
+                print("System is idle. Listening for a keyword...")
+                listen_and_process(speech_handler)
+            elif current_state == State.COMMAND_PARSING:
+                print("Returning to idle state...")
+                current_state = State.IDLE
+    except KeyboardInterrupt:
+        print("\nExiting speech detection...")
+    finally:
+        speech_handler.cleanup()
 
-    while True:
-        if current_state == State.IDLE:
-            print("System is idle. Listening for a keyword...")
-            listen_and_process()
-        elif current_state == State.COMMAND_PARSING:
-            print("Returning to idle state...")
-            current_state = State.IDLE
+if __name__ == "__main__":
+    run_speech_detection()

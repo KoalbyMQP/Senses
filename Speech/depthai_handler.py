@@ -12,6 +12,13 @@ class DepthAIHandler:
         self.socket.connect("tcp://localhost:5556")
         self.socket.setsockopt_string(zmq.SUBSCRIBE, "")
 
+    def cleanup(self):
+        print("Cleaning up DepthAI handler...")
+        if self.socket:
+            self.socket.close()
+        if self.context:
+            self.context.term()
+
     def create_pipeline(self):
         # Create neural network node
         detection_nn = self.pipeline.createYoloDetectionNetwork()
@@ -59,29 +66,31 @@ class DepthAIHandler:
         return frame
 
     def run(self):
-        with dai.Device(self.pipeline) as device:
-            q_rgb = device.getOutputQueue("rgb")
-            q_nn = device.getOutputQueue("nn")
-            
-            while True:
-                # Check for new commands from ZMQ
-                try:
-                    command = self.socket.recv_string(flags=zmq.NOBLOCK)
-                    if command.startswith("pick up"):
-                        self.current_target = command.split("pick up ")[1]
-                except zmq.Again:
-                    pass
+        try:
+            with dai.Device(self.pipeline) as device:
+                q_rgb = device.getOutputQueue("rgb")
+                q_nn = device.getOutputQueue("nn")
                 
-                if in_rgb := q_rgb.tryGet():
-                    frame = in_rgb.getCvFrame()
+                while True:
+                    try:
+                        command = self.socket.recv_string(flags=zmq.NOBLOCK)
+                        if command.startswith("pick up"):
+                            self.current_target = command.split("pick up ")[1]
+                    except zmq.Again:
+                        pass
                     
-                    if in_nn := q_nn.tryGet():
-                        detections = in_nn.detections
+                    if in_rgb := q_rgb.tryGet():
+                        frame = in_rgb.getCvFrame()
                         
-                        if self.current_target:
-                            frame = self.process_frame(frame, detections, self.current_target)
-                    
-                    cv2.imshow("Frame", frame)
-                    
-                if cv2.waitKey(1) == ord('q'):
-                    break
+                        if in_nn := q_nn.tryGet():
+                            detections = in_nn.detections
+                            
+                            if self.current_target:
+                                frame = self.process_frame(frame, detections, self.current_target)
+                        
+                        cv2.imshow("Frame", frame)
+                        
+                    if cv2.waitKey(1) == ord('q'):
+                        break
+        finally:
+            self.cleanup()
