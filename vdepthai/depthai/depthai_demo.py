@@ -82,6 +82,7 @@ from functools import cmp_to_key
 from itertools import cycle
 import platform
 from pathlib import Path
+import subprocess
 
 if platform.machine() == 'aarch64':  # Jetson
     os.environ['OPENBLAS_CORETYPE'] = "ARMV8"
