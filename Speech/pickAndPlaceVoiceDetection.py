@@ -8,6 +8,7 @@ import os
 import zmq
 import time
 import psutil
+import multiprocessing
 
 load_dotenv("Documents/GitHub/Vision-Backup/Speech/tts.env")
 
@@ -31,49 +32,35 @@ class State:
     CUP = "Cup"
     REMOTE = "Remote"
 
-# Initialize the state
-current_state = State.IDLE
+class SpeechDetector:
+    def __init__(self):
+        self.current_state = State.IDLE
+        self.speech_handler = None
+        
+    def listen_and_process(self):
+        try:
+            with sr.Microphone() as src:
+                print("Adjusting for ambient noise...")
+                r.adjust_for_ambient_noise(src, duration=0.2)
+                print("Listening for speech")
+                audio = r.listen(src)
 
-def play_tts(text):
-    tts = gTTS(text=text, lang='en')
-    output_file = "output.mp3"
-    tts.save(output_file)
-    pygame.mixer.music.load(output_file)
-    pygame.mixer.music.play()
-    
-    # Wait for playback to finish
-    while pygame.mixer.music.get_busy():
-        pygame.time.Clock().tick(10)
-
-    pygame.mixer.music.unload()
-    os.remove(output_file)
-
-# Listen for speech and process it
-def listen_and_process(speech_handler):
-    global current_state
-    try:
-        with sr.Microphone() as src:
-            print("Adjusting for ambient noise...")
-            r.adjust_for_ambient_noise(src, duration=0.2)
-            print("Listening for speech")
-            audio = r.listen(src)
-
-            try:
-                print("Converting to text...")
-                spoken_text = r.recognize_google(audio)
-                print(f"You said: {spoken_text}")
-                
-                current_state = State.KEYWORD_SPOTTING
-                speech_handler.process_command(spoken_text)
-            except sr.UnknownValueError:
-                print("Sorry, could not understand the audio.")
-                current_state = State.IDLE
-            except sr.RequestError:
-                print("Could not request results; check your internet connection.")
-                current_state = State.IDLE
-    except Exception as e:
-        print(f"Error in listen_and_process: {e}")
-        current_state = State.IDLE
+                try:
+                    print("Converting to text...")
+                    spoken_text = r.recognize_google(audio)
+                    print(f"You said: {spoken_text}")
+                    
+                    self.current_state = State.KEYWORD_SPOTTING
+                    self.speech_handler.process_command(spoken_text)
+                except sr.UnknownValueError:
+                    print("Sorry, could not understand the audio.")
+                    self.current_state = State.IDLE
+                except sr.RequestError:
+                    print("Could not request results; check your internet connection.")
+                    self.current_state = State.IDLE
+        except Exception as e:
+            print(f"Error in listen_and_process: {e}")
+            self.current_state = State.IDLE
 
 class SpeechHandler:
     def __init__(self):
@@ -163,26 +150,28 @@ def handle_remote():
     play_tts("Picking up the remote now.")
 
 def run_speech_detection():
+    detector = SpeechDetector()
     try:
-        speech_handler = SpeechHandler()
+        detector.speech_handler = SpeechHandler()
         pygame.init()
         pygame.mixer.init()
         play_tts("Hi! I'm Finley, your personal assistant.")
         
         while True:
-            if current_state == State.IDLE:
+            if detector.current_state == State.IDLE:
                 print("System is idle. Listening for a keyword...")
-                listen_and_process(speech_handler)
-            elif current_state == State.COMMAND_PARSING:
+                detector.listen_and_process()
+            elif detector.current_state == State.COMMAND_PARSING:
                 print("Returning to idle state...")
-                current_state = State.IDLE
+                detector.current_state = State.IDLE
     except KeyboardInterrupt:
         print("\nExiting speech detection...")
     except Exception as e:
         print(f"Error in speech detection: {e}")
     finally:
         pygame.quit()
-        speech_handler.cleanup()
+        if detector.speech_handler:
+            detector.speech_handler.cleanup()
 
 if __name__ == "__main__":
     run_speech_detection()
