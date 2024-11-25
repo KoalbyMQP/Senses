@@ -124,6 +124,16 @@ class SpeechHandler:
             current_state = State.COMMAND_PARSING
             play_tts("Command not recognized. Please try again.")
 
+    def cleanup(self):
+        """Clean up ZMQ resources"""
+        try:
+            if hasattr(self, 'socket'):
+                self.socket.close()
+            if hasattr(self, 'context'):
+                self.context.term()
+        except Exception as e:
+            print(f"Error during cleanup: {e}")
+
 def handle_apple():
     print("Entering Apple state...")
     play_tts("Picking up the apple now.")
