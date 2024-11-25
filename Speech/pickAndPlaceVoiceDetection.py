@@ -102,24 +102,25 @@ class SpeechHandler:
                 continue
 
     def process_command(self, spoken_text):
+        global current_state
         if "pick up" in spoken_text.lower():
             self.socket.send_string(spoken_text.lower())
             
             if "apple" in spoken_text.lower():
                 current_state = State.APPLE
-                self.handle_apple()
+                handle_apple()
             elif "orange" in spoken_text.lower():
                 current_state = State.ORANGE
-                self.handle_orange()
+                handle_orange()
             elif "bottle" in spoken_text.lower():
                 current_state = State.BOTTLE
-                self.handle_bottle()
+                handle_bottle()
             elif "cup" in spoken_text.lower():
                 current_state = State.CUP
-                self.handle_cup()
+                handle_cup()
             elif "remote" in spoken_text.lower():
                 current_state = State.REMOTE
-                self.handle_remote()
+                handle_remote()
         else:
             current_state = State.COMMAND_PARSING
             play_tts("Command not recognized. Please try again.")
