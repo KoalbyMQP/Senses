@@ -123,6 +123,10 @@ from depthai_helpers.version_check import checkRequirementsVersion
 from depthai_sdk import loadModule, getDeviceInfo, downloadYTVideo, createBlankFrame
 from depthai_sdk.managers import NNetManager, SyncedPreviewManager, PreviewManager, PipelineManager, EncodingManager, BlobManager
 
+import multiprocessing
+import zmq
+from pickAndPlaceVoiceDetection import run_speech_detection
+
 
 class OverheatError(RuntimeError):
     pass
@@ -1239,11 +1243,81 @@ def runQt():
     signal.signal(signal.SIGTERM, app.stopGui)
     atexit.register(app.stopGui)
     app.start()
+    
+class SpeechEnabledDemo(Demo):
+    def __init__(self):
+        super().__init__()
+        self.context = zmq.Context()
+        self.socket = self.context.socket(zmq.PUB)
+        self.socket.bind("tcp://*:5556")
+        self.speech_process = None
+        self.current_target = None
+        
+    def setup(self, conf):
+        super().setup(conf)
+        # Start speech recognition in a separate process
+        self.speech_process = multiprocessing.Process(
+            target=run_speech_detection
+        )
+        self.speech_process.start()
+        
+        # Setup ZMQ subscriber for voice commands
+        self.cmd_socket = self.context.socket(zmq.SUB)
+        self.cmd_socket.connect("tcp://localhost:5556")
+        self.cmd_socket.setsockopt_string(zmq.SUBSCRIBE, "")
+        
+    def process_frame(self, frame, detections):
+        if self.current_target is None:
+            return frame
+            
+        highest_conf = 0
+        target_detection = None
+        
+        for detection in detections:
+            label = detection.label
+            confidence = detection.confidence
+            
+            if label == self.current_target and confidence > highest_conf:
+                highest_conf = confidence
+                target_detection = detection
+                
+        if target_detection:
+            bbox = frameNorm(frame, (target_detection.xmin, target_detection.ymin,
+                                   target_detection.xmax, target_detection.ymax))
+            cv2.rectangle(frame, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (0, 255, 0), 2)
+            cv2.putText(frame, f"{self.current_target}: {confidence:.2f}",
+                       (bbox[0], bbox[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0))
+        
+        return frame
+        
+    def run(self):
+        while True:
+            try:
+                command = self.cmd_socket.recv_string(flags=zmq.NOBLOCK)
+                if command.startswith("pick up"):
+                    self.current_target = command.split("pick up ")[1]
+            except zmq.Again:
+                pass
+                
+            # Continue with normal demo processing
+            super().run()
+            
+    def stop(self, *args, **kwargs):
+        if self.speech_process and self.speech_process.is_alive():
+            self.speech_process.terminate()
+            self.speech_process.join()
+        if self.socket:
+            self.socket.close()
+        if self.cmd_socket:
+            self.cmd_socket.close()
+        if self.context:
+            self.context.term()
+        super().stop(*args, **kwargs)
 
 
 def runOpenCv():
     confManager = prepareConfManager(args)
-    demo = Demo()
+    demo = SpeechEnabledDemo()
     signal.signal(signal.SIGINT, demo.stop)
     signal.signal(signal.SIGTERM, demo.stop)
     atexit.register(demo.stop)
