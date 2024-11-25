@@ -5,8 +5,9 @@ import speech_recognition as sr
 import pygame
 from gtts import gTTS
 import os
+import zmq
 
-load_dotenv("Documents/GitHub/RaspberryPi-Code_24-25/test/Speech/tts.env")
+load_dotenv("Documents/GitHub/Vision-Backup/Speech/tts.env")
 
 api_key = "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"
 if not api_key:
@@ -67,24 +68,29 @@ def listen_and_process():
 
 def process_command(spoken_text):
     global current_state
+    
+    context = zmq.Context()
+    socket = context.socket(zmq.PUB)
+    socket.bind("tcp://*:5556")
 
-    # Check for keywords and transition to specific object states
-    # apple orange bottle cup and remote
-    if "pick up apple" in spoken_text.lower():
-        current_state = State.APPLE
-        handle_apple()
-    elif "pick up orange" in spoken_text.lower():
-        current_state = State.ORANGE
-        handle_orange()
-    elif "pick up bottle" in spoken_text.lower():
-        current_state = State.BOTTLE
-        handle_bottle()
-    elif "pick up cup" in spoken_text.lower():
-        current_state = State.CUP
-        handle_cup()
-    elif "pick up remote" in spoken_text.lower():
-        current_state = State.REMOTE
-        handle_remote()
+    if "pick up" in spoken_text.lower():
+        socket.send_string(spoken_text.lower())
+        
+        if "apple" in spoken_text.lower():
+            current_state = State.APPLE
+            handle_apple()
+        elif "orange" in spoken_text.lower():
+            current_state = State.ORANGE
+            handle_orange()
+        elif "bottle" in spoken_text.lower():
+            current_state = State.BOTTLE
+            handle_bottle()
+        elif "cup" in spoken_text.lower():
+            current_state = State.CUP
+            handle_cup()
+        elif "remote" in spoken_text.lower():
+            current_state = State.REMOTE
+            handle_remote()
     else:
         current_state = State.COMMAND_PARSING
         play_tts("Command not recognized. Please try again.")
