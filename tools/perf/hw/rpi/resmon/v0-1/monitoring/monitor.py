@@ -187,8 +187,10 @@ class Monitor:
             self._in_post_run = True
             self.should_stop = False  
             postrun_csv = CSVHandler(log_dir / 'postrun' / 'metrics.csv')
+            Logger.logger.debug(f"Starting post-run at {time.time()}")
             self.monitor_phase('postrun', post_duration, postrun_csv)
-
+            Logger.logger.debug(f"Finished post-run at {time.time()}")
+    
             Logger.logger.info("Generating reports")
             
             Plotter.create_summary_plots(
