@@ -81,23 +81,34 @@ class Monitor:
     
     def monitor_phase(self, phase: str, duration: Optional[int], csv_handler: CSVHandler):
         start_time = time.time()
+        last_metric_time = start_time
+        
         while True:
             try:
-                if phase == "runtime" and self.depthai_process:
-                    if self.depthai_process.poll() is not None:
-                        Logger.logger.info("DepthAI process ended")
-                        self.should_stop = True
-                        break
-
-                metrics = self.collect_metrics()
-                csv_handler.write_row(metrics)
+                current_time = time.time()
                 
-                if duration and (time.time() - start_time) >= duration:
+                # Check DepthAI process status for runtime phase
+                if phase == "runtime":
+                    if self.depthai_process and self.depthai_process.poll() is not None:
+                        Logger.logger.info("DepthAI process ended")
+                        break
+                
+                    if self.should_stop:
+                        break
+                
+                # Collect metrics at regular intervals
+                if current_time - last_metric_time >= self.settings.get('sampling_interval'):
+                    metrics = self.collect_metrics()
+                    csv_handler.write_row(metrics)
+                    last_metric_time = current_time
+                
+                # Check duration for timed phases
+                if duration and (current_time - start_time) >= duration:
                     break
-                if self.should_stop and phase != "postrun":
-                    break
-                    
-                time.sleep(self.settings.get('sampling_interval'))
+                
+                # Small sleep to prevent CPU hogging
+                time.sleep(0.001)
+                
             except KeyboardInterrupt:
                 if phase != "postrun":
                     self.should_stop = True
@@ -107,8 +118,6 @@ class Monitor:
                 if phase == "runtime":
                     self.should_stop = True
                     break
-                else:
-                    continue
     
     def _start_depthai(self):
         try:
@@ -157,33 +166,28 @@ class Monitor:
         Logger.logger.info("Starting DepthAI monitoring session")
         
         try:
+            # Pre-run phase
             Logger.logger.info(f"Starting pre-run monitoring ({pre_duration}s)")
             prerun_csv = CSVHandler(log_dir / 'prerun' / 'metrics.csv')
             self.monitor_phase('prerun', pre_duration, prerun_csv)
 
+            # Runtime phase
             Logger.logger.info("Starting DepthAI")
             self._start_depthai()
-            
-            Logger.logger.info("Starting runtime monitoring")
             runtime_csv = CSVHandler(log_dir / 'runtime' / 'metrics.csv')
             self.monitor_phase('runtime', None, runtime_csv)
 
-            
-            if self.depthai_process:
-                if self.depthai_process.poll() is None:
-                    self.depthai_process.terminate()
-                    try:
-                        self.depthai_process.wait(timeout=5)
-                    except subprocess.TimeoutExpired:
-                        os.killpg(os.getpgid(self.depthai_process.pid), signal.SIGKILL)
+            # Ensure clean process termination
+            if self.depthai_process and self.depthai_process.poll() is None:
+                os.killpg(os.getpgid(self.depthai_process.pid), signal.SIGKILL)
                 self.depthai_process = None
 
+            # Post-run phase - start immediately after runtime
             Logger.logger.info(f"Starting post-run monitoring ({post_duration}s)")
             self._in_post_run = True
             self.should_stop = False  
             postrun_csv = CSVHandler(log_dir / 'postrun' / 'metrics.csv')
             self.monitor_phase('postrun', post_duration, postrun_csv)
-            self._in_post_run = False
 
             Logger.logger.info("Generating reports")
             

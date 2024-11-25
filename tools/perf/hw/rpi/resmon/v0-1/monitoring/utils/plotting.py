@@ -47,29 +47,39 @@ class Plotter:
             }
         }
         
-        for phase_df in ['prerun_df', 'runtime_df', 'postrun_df']:
-            if len(phase_df) == 0:
-                Logger.logger.warning(f"No data found for {phase_df} phase")
+        for name, df in {'prerun_df': prerun_df, 'runtime_df': runtime_df, 'postrun_df': postrun_df}.items():
+            if df.empty:
+                Logger.logger.warning(f"No data found for {name} phase")
                 continue
         
         for metric_name, config in metrics.items():
             try:
                 fig, ax = plt.subplots()
                 
-                phase_lengths = [len(prerun_df), len(runtime_df), len(postrun_df)]
-                total_points = sum(phase_lengths)
-                phase_markers = np.cumsum(phase_lengths)
+                phase_lengths = [len(df) for df in [prerun_df, runtime_df, postrun_df] if not df.empty]
+                phase_markers = np.cumsum(phase_lengths)[:-1]  # Exclude the last marker
                 
+                # Ensure timestamps are continuous
+                runtime_start = prerun_df.index[-1] if not prerun_df.empty else 0
+                postrun_start = runtime_df.index[-1] + 1 if not runtime_df.empty else runtime_start
+
+                runtime_df.index = range(runtime_start, runtime_start + len(runtime_df))
+                postrun_df.index = range(postrun_start, postrun_start + len(postrun_df))
+
+                # Add phase columns
                 prerun_df['phase'] = 'Pre-run'
                 runtime_df['phase'] = 'Runtime'
                 postrun_df['phase'] = 'Post-run'
-                combined_df = pd.concat([prerun_df, runtime_df, postrun_df])
+
+                # Concatenate with proper handling of empty dataframes
+                dfs_to_concat = [df for df in [prerun_df, runtime_df, postrun_df] if not df.empty]
+                combined_df = pd.concat(dfs_to_concat)
                 
                 for col in config['columns']:
                     if col in combined_df.columns:
                         sns.lineplot(data=combined_df, x=combined_df.index, y=col, label=col)
                 
-                for i, marker in enumerate(phase_markers[:-1]):
+                for marker in phase_markers:
                     plt.axvline(x=marker, color='red', linestyle='--', alpha=0.5)
                 
                 plt.title(config['title'], pad=20)
@@ -77,12 +87,17 @@ class Plotter:
                 plt.ylabel(config['ylabel'])
                 
                 phases = ['Pre-run', 'Runtime', 'Post-run']
-                for i in range(len(phases)):
+                active_phases = [phase for i, phase in enumerate(phases) 
+                                if not [prerun_df, runtime_df, postrun_df][i].empty]
+
+                for i, phase in enumerate(active_phases):
                     start = 0 if i == 0 else phase_markers[i-1]
-                    end = phase_markers[i] if i < len(phase_markers) else total_points
+                    end = phase_markers[i] if i < len(phase_markers) else len(combined_df)
                     mid = (start + end) / 2
-                    plt.text(mid, plt.ylim()[1], phases[i], 
-                            horizontalalignment='center', verticalalignment='bottom')
+                    plt.text(mid, plt.ylim()[1], phase,
+                            horizontalalignment='center', 
+                            verticalalignment='bottom',
+                            bbox=dict(facecolor='white', alpha=0.7, edgecolor='none'))
                 
                 plt.tight_layout()
                 plt.savefig(output_dir / f'{metric_name.lower().replace(" ", "_")}.png', dpi=300, bbox_inches='tight')
