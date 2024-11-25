@@ -104,15 +104,15 @@ def handle_orange():
     play_tts("Picking up the orange now.")
 
 def handle_bottle():
-    print("Entering bottle state...")
+    print("Entering Bottle state...")
     play_tts("Picking up the bottle now.")
 
 def handle_cup():
-    print("Entering cup state...")
+    print("Entering Cup state...")
     play_tts("Picking up the cup now.")
 
 def handle_remote():
-    print("Entering remote state...")
+    print("Entering Remote state...")
     play_tts("Picking up the remote now.")
 
 if __name__ == "__main__":
