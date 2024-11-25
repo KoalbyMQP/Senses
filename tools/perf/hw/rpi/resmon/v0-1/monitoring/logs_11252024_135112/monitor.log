@@ -1,0 +1,9 @@
+2024-11-25 13:51:12,064 - INFO - Starting DepthAI monitoring session
+2024-11-25 13:51:12,064 - INFO - Starting pre-run monitoring (30s)
+2024-11-25 13:51:42,065 - INFO - Starting DepthAI
+2024-11-25 13:51:42,065 - INFO - Starting DepthAI from: /home/finley/Documents/GitHub/Vision-Backup/vdepthai/depthai
+2024-11-25 13:51:42,065 - INFO - Using virtual environment: /home/finley/Documents/GitHub/Vision-Backup/vdepthai
+2024-11-25 13:52:04,933 - INFO - DepthAI process ended
+2024-11-25 13:52:04,933 - INFO - Starting post-run monitoring (30s)
+2024-11-25 13:52:34,933 - INFO - Generating reports
+2024-11-25 13:52:55,009 - INFO - Monitoring session completed. Reports available in: /home/finley/Documents/GitHub/Vision-Backup/tools/perf/hw/rpi/resmon/v0-1/monitoring/logs_11252024_135112
