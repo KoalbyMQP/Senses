@@ -22,6 +22,20 @@ r = sr.Recognizer()
 pygame.init()
 pygame.mixer.init()
 
+def play_tts(text):
+    tts = gTTS(text=text, lang='en')
+    output_file = "output.mp3"
+    tts.save(output_file)
+    pygame.mixer.music.load(output_file)
+    pygame.mixer.music.play()
+    
+    # Wait for playback to finish
+    while pygame.mixer.music.get_busy():
+        pygame.time.Clock().tick(10)
+
+    pygame.mixer.music.unload()
+    os.remove(output_file)
+    
 class State:
     IDLE = "Idle"
     KEYWORD_SPOTTING = "Keyword Spotting"
