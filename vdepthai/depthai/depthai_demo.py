@@ -1247,28 +1247,63 @@ def runQt():
 class SpeechEnabledDemo(Demo):
     def __init__(self):
         super().__init__()
-        self.cleanup_zmq_port()
-        self.context = zmq.Context()
-        self.socket = self.context.socket(zmq.PUB)
-        self.socket.setsockopt(zmq.LINGER, 0)
-        self.socket.bind("tcp://*:5556")
-        self.cmd_socket = self.context.socket(zmq.SUB)
-        self.cmd_socket.connect("tcp://localhost:5556")
-        self.cmd_socket.setsockopt_string(zmq.SUBSCRIBE, "")
+        max_retries = 3
+        retry_delay = 1
+        
+        for attempt in range(max_retries):
+            try:
+                self.cleanup_zmq_port()
+                self.context = zmq.Context()
+                self.socket = self.context.socket(zmq.PUB)
+                self.socket.setsockopt(zmq.LINGER, 0)
+                self.socket.bind("tcp://*:5556")
+                self.cmd_socket = self.context.socket(zmq.SUB)
+                self.cmd_socket.connect("tcp://localhost:5556")
+                self.cmd_socket.setsockopt_string(zmq.SUBSCRIBE, "")
+                break
+            except zmq.error.ZMQError as e:
+                if attempt == max_retries - 1:  # Last attempt
+                    print(f"Failed to initialize ZMQ after {max_retries} attempts")
+                    raise
+                print(f"ZMQ initialization attempt {attempt + 1} failed, retrying...")
+                time.sleep(retry_delay)
+                self.cleanup_zmq_port()
+                if hasattr(self, 'context'):
+                    self.context.term()
+        
         self.speech_process = None
         self.current_target = None
         
     def cleanup_zmq_port(self):
+        """
+        Thoroughly clean up any existing ZMQ connections on port 5556
+        """
         import psutil
+        # First try to kill any existing processes
         for proc in psutil.process_iter(['pid', 'name', 'connections']):
             try:
                 for conn in proc.connections():
                     if hasattr(conn.laddr, 'port') and conn.laddr.port == 5556:
-                        psutil.Process(proc.pid).terminate()
-                        time.sleep(0.1)  
+                        try:
+                            psutil.Process(proc.pid).terminate()
+                            psutil.Process(proc.pid).wait(timeout=1)  # Wait for termination
+                        except psutil.TimeoutExpired:
+                            psutil.Process(proc.pid).kill()  # Force kill if terminate doesn't work
             except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
                 continue
-                
+        
+        # Additional cleanup using socket operations
+        import socket
+        try:
+            temp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            temp_socket.settimeout(1)
+            temp_socket.connect(('localhost', 5556))
+            temp_socket.close()
+        except (ConnectionRefusedError, socket.timeout):
+            pass  # Port is already free
+        
+        time.sleep(0.5)  # Give OS time to fully release the port
+        
     def setup(self, conf):
         super().setup(conf)
         self.speech_process = multiprocessing.Process(
