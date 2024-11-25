@@ -31,6 +31,7 @@ class State:
     CUP = "Cup"
     REMOTE = "Remote"
 
+# Initialize the state
 current_state = State.IDLE
 
 def play_tts(text):
@@ -50,23 +51,29 @@ def play_tts(text):
 # Listen for speech and process it
 def listen_and_process(speech_handler):
     global current_state
-    with sr.Microphone() as src:
-        print("Adjusting for ambient noise...")
-        r.adjust_for_ambient_noise(src, duration=0.2)
-        print("Listening for speech")
-        audio = r.listen(src)
+    try:
+        with sr.Microphone() as src:
+            print("Adjusting for ambient noise...")
+            r.adjust_for_ambient_noise(src, duration=0.2)
+            print("Listening for speech")
+            audio = r.listen(src)
 
-        try:
-            print("Converting to text...")
-            spoken_text = r.recognize_google(audio)
-            print(f"You said: {spoken_text}")
-            
-            current_state = State.KEYWORD_SPOTTING
-            speech_handler.process_command(spoken_text)
-        except sr.UnknownValueError:
-            print("Sorry, could not understand the audio.")
-        except sr.RequestError:
-            print("Could not request results; check your internet connection.")
+            try:
+                print("Converting to text...")
+                spoken_text = r.recognize_google(audio)
+                print(f"You said: {spoken_text}")
+                
+                current_state = State.KEYWORD_SPOTTING
+                speech_handler.process_command(spoken_text)
+            except sr.UnknownValueError:
+                print("Sorry, could not understand the audio.")
+                current_state = State.IDLE
+            except sr.RequestError:
+                print("Could not request results; check your internet connection.")
+                current_state = State.IDLE
+    except Exception as e:
+        print(f"Error in listen_and_process: {e}")
+        current_state = State.IDLE
 
 class SpeechHandler:
     def __init__(self):
