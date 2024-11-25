@@ -1249,65 +1249,13 @@ class SpeechEnabledDemo(Demo):
         super().__init__()
         self.speech_process = None
         self.current_target = None
-        max_retries = 3
-        retry_delay = 1
-        
-        print("Initializing Speech-Enabled Demo...")
-        
-        for attempt in range(max_retries):
-            try:
-                self.cleanup_zmq_port()
-                self.context = zmq.Context()
-                self.socket = self.context.socket(zmq.PUB)
-                self.socket.setsockopt(zmq.LINGER, 0)
-                self.socket.bind("tcp://*:6325")
-                self.cmd_socket = self.context.socket(zmq.SUB)
-                self.cmd_socket.connect("tcp://localhost:6325")
-                self.cmd_socket.setsockopt_string(zmq.SUBSCRIBE, "")
-                print("ZMQ initialization successful")
-                break
-            except zmq.error.ZMQError as e:
-                print(f"ZMQ initialization attempt {attempt + 1} failed: {e}")
-                if attempt == max_retries - 1:
-                    raise
-                time.sleep(retry_delay)
-                if hasattr(self, 'context'):
-                    self.context.term()
-
-    def cleanup_zmq_port(self):
-        """
-        Thoroughly clean up any existing ZMQ connections on port 6325
-        """
-        import psutil
-        # First try to kill any existing processes
-        for proc in psutil.process_iter(['pid', 'name', 'connections']):
-            try:
-                for conn in proc.connections():
-                    if hasattr(conn.laddr, 'port') and conn.laddr.port == 6325:
-                        try:
-                            psutil.Process(proc.pid).terminate()
-                            psutil.Process(proc.pid).wait(timeout=1)  # Wait for termination
-                        except psutil.TimeoutExpired:
-                            psutil.Process(proc.pid).kill()  # Force kill if terminate doesn't work
-            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-                continue
-        
-        # Additional cleanup using socket operations
-        import socket
-        try:
-            temp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            temp_socket.settimeout(1)
-            temp_socket.connect(('localhost', 6325))
-            temp_socket.close()
-        except (ConnectionRefusedError, socket.timeout):
-            pass  # Port is already free
-        
-        time.sleep(0.5)  # Give OS time to fully release the port
         
     def setup(self, conf):
         super().setup(conf)
         print("Starting speech detection process...")
         try:
+            # Pass the configuration through environment variable
+            os.environ['DEPTHAI_SPEECH_MODE'] = 'enabled'
             self.speech_process = multiprocessing.Process(
                 target=run_speech_detection,
                 name="SpeechDetection"
@@ -1320,7 +1268,7 @@ class SpeechEnabledDemo(Demo):
                 print("Warning: Speech detection process failed to start")
         except Exception as e:
             print(f"Error starting speech detection: {e}")
-
+            
     def stop(self, *args, **kwargs):
         try:
             if self.speech_process and self.speech_process.is_alive():
@@ -1330,14 +1278,7 @@ class SpeechEnabledDemo(Demo):
                     self.speech_process.kill()
         except AttributeError:
             pass
-        finally:
-            if hasattr(self, 'socket'):
-                self.socket.close()
-            if hasattr(self, 'cmd_socket'):
-                self.cmd_socket.close()
-            if hasattr(self, 'context'):
-                self.context.term()
-            super().stop(*args, **kwargs)
+        super().stop(*args, **kwargs)
 
 
 def runOpenCv():

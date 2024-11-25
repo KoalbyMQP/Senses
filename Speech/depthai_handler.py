@@ -2,16 +2,34 @@ import depthai as dai
 import cv2
 import numpy as np
 import zmq
+import time
 
 class DepthAIHandler:
     def __init__(self):
         self.pipeline = dai.Pipeline()
         self.current_target = None
-        self.context = zmq.Context()
-        self.socket = self.context.socket(zmq.SUB)
-        self.socket.connect("tcp://localhost:6325")
-        self.socket.setsockopt_string(zmq.SUBSCRIBE, "")
-        print("DepthAI handler initialized with ZMQ subscriber")
+        
+        # Initialize ZMQ subscriber with retry mechanism
+        max_retries = 3
+        retry_delay = 1
+        
+        for attempt in range(max_retries):
+            try:
+                self.context = zmq.Context()
+                self.socket = self.context.socket(zmq.SUB)
+                self.socket.connect("tcp://localhost:6325")
+                self.socket.setsockopt_string(zmq.SUBSCRIBE, "")
+                print("DepthAI handler ZMQ subscriber initialized")
+                break
+            except zmq.error.ZMQError as e:
+                print(f"ZMQ connection attempt {attempt + 1} failed: {e}")
+                if attempt == max_retries - 1:
+                    raise
+                time.sleep(retry_delay)
+                if hasattr(self, 'socket'):
+                    self.socket.close()
+                if hasattr(self, 'context'):
+                    self.context.term()
 
     def cleanup(self):
         print("Cleaning up DepthAI handler...")

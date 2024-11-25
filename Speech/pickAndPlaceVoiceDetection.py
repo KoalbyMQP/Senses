@@ -7,6 +7,7 @@ from gtts import gTTS
 import os
 import zmq
 import time
+import psutil
 
 load_dotenv("Documents/GitHub/Vision-Backup/Speech/tts.env")
 
@@ -72,27 +73,33 @@ class SpeechHandler:
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.PUB)
         max_retries = 3
+        retry_delay = 1
+        
+        # Clean up any existing connections
+        self._cleanup_port()
+        
         for attempt in range(max_retries):
             try:
                 self.socket.bind("tcp://*:6325")
+                print("Speech ZMQ initialized successfully")
                 break
-            except zmq.error.ZMQError:
+            except zmq.error.ZMQError as e:
+                print(f"ZMQ initialization attempt {attempt + 1} failed: {e}")
                 if attempt == max_retries - 1:
                     raise
-                time.sleep(1)
-                self.cleanup()
-                self.context = zmq.Context()
-                self.socket = self.context.socket(zmq.PUB)
-
-    def cleanup(self):
-        print("Cleaning up speech handler...")
-        try:
-            if hasattr(self, 'socket') and self.socket:
-                self.socket.close()
-            if hasattr(self, 'context') and self.context:
-                self.context.term()
-        except Exception as e:
-            print(f"Error during cleanup: {e}")
+                time.sleep(retry_delay)
+                self._cleanup_port()
+                
+    def _cleanup_port(self):
+        """Clean up the ZMQ port"""
+        for proc in psutil.process_iter(['pid', 'name', 'connections']):
+            try:
+                for conn in proc.connections():
+                    if hasattr(conn.laddr, 'port') and conn.laddr.port == 6325:
+                        psutil.Process(proc.pid).terminate()
+                        time.sleep(0.1)
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                continue
 
     def process_command(self, spoken_text):
         if "pick up" in spoken_text.lower():
