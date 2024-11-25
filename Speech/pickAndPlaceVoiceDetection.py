@@ -6,6 +6,7 @@ import pygame
 from gtts import gTTS
 import os
 import zmq
+import time
 
 load_dotenv("Documents/GitHub/Vision-Backup/Speech/tts.env")
 
@@ -70,14 +71,28 @@ class SpeechHandler:
     def __init__(self):
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.PUB)
-        self.socket.bind("tcp://*:1234")
-        
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                self.socket.bind("tcp://*:6325")
+                break
+            except zmq.error.ZMQError:
+                if attempt == max_retries - 1:
+                    raise
+                time.sleep(1)
+                self.cleanup()
+                self.context = zmq.Context()
+                self.socket = self.context.socket(zmq.PUB)
+
     def cleanup(self):
         print("Cleaning up speech handler...")
-        if self.socket:
-            self.socket.close()
-        if self.context:
-            self.context.term()
+        try:
+            if hasattr(self, 'socket') and self.socket:
+                self.socket.close()
+            if hasattr(self, 'context') and self.context:
+                self.context.term()
+        except Exception as e:
+            print(f"Error during cleanup: {e}")
 
     def process_command(self, spoken_text):
         if "pick up" in spoken_text.lower():
@@ -123,8 +138,10 @@ def handle_remote():
     play_tts("Picking up the remote now.")
 
 def run_speech_detection():
-    speech_handler = SpeechHandler()
     try:
+        speech_handler = SpeechHandler()
+        pygame.init()
+        pygame.mixer.init()
         play_tts("Hi! I'm Finley, your personal assistant.")
         
         while True:
@@ -136,7 +153,10 @@ def run_speech_detection():
                 current_state = State.IDLE
     except KeyboardInterrupt:
         print("\nExiting speech detection...")
+    except Exception as e:
+        print(f"Error in speech detection: {e}")
     finally:
+        pygame.quit()
         speech_handler.cleanup()
 
 if __name__ == "__main__":

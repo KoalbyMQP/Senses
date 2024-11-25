@@ -1247,6 +1247,8 @@ def runQt():
 class SpeechEnabledDemo(Demo):
     def __init__(self):
         super().__init__()
+        self.speech_process = None
+        self.current_target = None
         max_retries = 3
         retry_delay = 1
         
@@ -1256,24 +1258,20 @@ class SpeechEnabledDemo(Demo):
                 self.context = zmq.Context()
                 self.socket = self.context.socket(zmq.PUB)
                 self.socket.setsockopt(zmq.LINGER, 0)
-                self.socket.bind("tcp://*:6325")
+                self.socket.bind("tcp://*:5556")
                 self.cmd_socket = self.context.socket(zmq.SUB)
-                self.cmd_socket.connect("tcp://localhost:6325")
+                self.cmd_socket.connect("tcp://localhost:5556")
                 self.cmd_socket.setsockopt_string(zmq.SUBSCRIBE, "")
                 break
             except zmq.error.ZMQError as e:
-                if attempt == max_retries - 1:  # Last attempt
+                if attempt == max_retries - 1:
                     print(f"Failed to initialize ZMQ after {max_retries} attempts")
                     raise
                 print(f"ZMQ initialization attempt {attempt + 1} failed, retrying...")
                 time.sleep(retry_delay)
-                self.cleanup_zmq_port()
                 if hasattr(self, 'context'):
                     self.context.term()
-        
-        self.speech_process = None
-        self.current_target = None
-        
+
     def cleanup_zmq_port(self):
         """
         Thoroughly clean up any existing ZMQ connections on port 6325
@@ -1312,16 +1310,22 @@ class SpeechEnabledDemo(Demo):
         self.speech_process.start()
         
     def stop(self, *args, **kwargs):
-        if self.speech_process and self.speech_process.is_alive():
-            self.speech_process.terminate()
-            self.speech_process.join()
-        if hasattr(self, 'socket') and self.socket:
-            self.socket.close()
-        if hasattr(self, 'cmd_socket') and self.cmd_socket:
-            self.cmd_socket.close()
-        if hasattr(self, 'context') and self.context:
-            self.context.term()
-        super().stop(*args, **kwargs)
+        try:
+            if self.speech_process and self.speech_process.is_alive():
+                self.speech_process.terminate()
+                self.speech_process.join(timeout=3)
+                if self.speech_process.is_alive():
+                    self.speech_process.kill()
+        except AttributeError:
+            pass
+        finally:
+            if hasattr(self, 'socket'):
+                self.socket.close()
+            if hasattr(self, 'cmd_socket'):
+                self.cmd_socket.close()
+            if hasattr(self, 'context'):
+                self.context.term()
+            super().stop(*args, **kwargs)
 
 
 def runOpenCv():
