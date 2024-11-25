@@ -74,7 +74,7 @@ fi
 cat > ~/Desktop/depthai-monitor.desktop << EOL
 [Desktop Entry]
 Name=DepthAI Monitor
-Exec=bash -c 'lxterminal --working-directory=/home/finley/Documents/GitHub/Vision-Backup/test/io/inputs/camera/oak-d-lite/vdepthai -e "bash -c \"source bin/activate && cd /home/finley/Documents/GitHub/Vision-Backup/tools/perf/hw/rpi/resmon/v0-1/monitoring/ && chmod +x run_monitor.sh && ./run_monitor.sh; exec bash\""'
+Exec=bash -c 'lxterminal --working-directory=/home/finley/Documents/GitHub/Vision-Backup/vdepthai -e "bash -c \"source bin/activate && cd /home/finley/Documents/GitHub/Vision-Backup/tools/perf/hw/rpi/resmon/v0-1/monitoring/ && chmod +x run_monitor.sh && ./run_monitor.sh; exec bash\""'
 Type=Application
 Terminal=false
 Categories=Development;
