@@ -125,7 +125,7 @@ from depthai_sdk.managers import NNetManager, SyncedPreviewManager, PreviewManag
 
 import multiprocessing
 import zmq
-from pickAndPlaceVoiceDetection import run_speech_detection
+from Speech.pickAndPlaceVoiceDetection import run_speech_detection
 
 
 class OverheatError(RuntimeError):
