@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Run DepthAI
+Comment=Run DepthAI with temperature monitoring 
+Exec=bash -c "cd ~/vdepthai && source bin/activate && cd depthai && ./run_depthai.sh"
+Icon=utilities-terminal
+Terminal=true
+Categories=Application;Development;
