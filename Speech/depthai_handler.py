@@ -9,7 +9,7 @@ class DepthAIHandler:
         self.current_target = None
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.SUB)
-        self.socket.connect("tcp://localhost:6325")
+        self.socket.connect("tcp://localhost:1234")
         self.socket.setsockopt_string(zmq.SUBSCRIBE, "")
 
     def cleanup(self):
