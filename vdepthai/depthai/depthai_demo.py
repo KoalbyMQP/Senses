@@ -1248,7 +1248,13 @@ class SpeechEnabledDemo(Demo):
     def __init__(self):
         super().__init__()
         self.cleanup_zmq_port()
-        self.setup_zmq()
+        self.context = zmq.Context()
+        self.socket = self.context.socket(zmq.PUB)
+        self.socket.setsockopt(zmq.LINGER, 0)
+        self.socket.bind("tcp://*:5556")
+        self.cmd_socket = self.context.socket(zmq.SUB)
+        self.cmd_socket.connect("tcp://localhost:5556")
+        self.cmd_socket.setsockopt_string(zmq.SUBSCRIBE, "")
         self.speech_process = None
         self.current_target = None
         
@@ -1263,65 +1269,22 @@ class SpeechEnabledDemo(Demo):
             except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
                 continue
                 
-    def setup_zmq(self):
-        try:
-            self.context = zmq.Context()
-            self.socket = self.context.socket(zmq.PUB)
-            self.socket.setsockopt(zmq.LINGER, 0)  
-            self.socket.bind("tcp://*:5556")
-        except zmq.error.ZMQError as e:
-            print(f"Failed to setup ZMQ: {e}")
-            self.cleanup_zmq_port()
-            self.context = zmq.Context()
-            self.socket = self.context.socket(zmq.PUB)
-            self.socket.setsockopt(zmq.LINGER, 0)
-            self.socket.bind("tcp://*:5556")
+    def setup(self, conf):
+        super().setup(conf)
+        self.speech_process = multiprocessing.Process(
+            target=run_speech_detection
+        )
+        self.speech_process.start()
         
-    def process_frame(self, frame, detections):
-        if self.current_target is None:
-            return frame
-            
-        highest_conf = 0
-        target_detection = None
-        
-        for detection in detections:
-            label = detection.label
-            confidence = detection.confidence
-            
-            if label == self.current_target and confidence > highest_conf:
-                highest_conf = confidence
-                target_detection = detection
-                
-        if target_detection:
-            bbox = frameNorm(frame, (target_detection.xmin, target_detection.ymin,
-                                   target_detection.xmax, target_detection.ymax))
-            cv2.rectangle(frame, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (0, 255, 0), 2)
-            cv2.putText(frame, f"{self.current_target}: {confidence:.2f}",
-                       (bbox[0], bbox[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0))
-        
-        return frame
-        
-    def run(self):
-        while True:
-            try:
-                command = self.cmd_socket.recv_string(flags=zmq.NOBLOCK)
-                if command.startswith("pick up"):
-                    self.current_target = command.split("pick up ")[1]
-            except zmq.Again:
-                pass
-                
-            # Continue with normal demo processing
-            super().run()
-            
     def stop(self, *args, **kwargs):
         if self.speech_process and self.speech_process.is_alive():
             self.speech_process.terminate()
             self.speech_process.join()
-        if self.socket:
+        if hasattr(self, 'socket') and self.socket:
             self.socket.close()
-        if self.cmd_socket:
+        if hasattr(self, 'cmd_socket') and self.cmd_socket:
             self.cmd_socket.close()
-        if self.context:
+        if hasattr(self, 'context') and self.context:
             self.context.term()
         super().stop(*args, **kwargs)
 
