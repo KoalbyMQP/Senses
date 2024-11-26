@@ -1,5 +1,0 @@
-2024-11-25 13:23:31,767 - INFO - Starting DepthAI monitoring session
-2024-11-25 13:23:31,767 - INFO - Starting pre-run monitoring (30s)
-2024-11-25 13:24:01,847 - INFO - Starting DepthAI
-2024-11-25 13:24:01,847 - ERROR - Failed to start DepthAI: Virtual environment not found at /home/finley/Documents/GitHub/RaspberryPi-Code_24-25/test/io/inputs/camera/oak-d-lite/vdepthai/bin/activate or /home/finley/Documents/GitHub/RaspberryPi-Code_24-25/test/io/inputs/camera/oak-d-lite/vdepthai/vdepthai/bin/activate
-2024-11-25 13:24:01,848 - ERROR - Error during monitoring: Virtual environment not found at /home/finley/Documents/GitHub/RaspberryPi-Code_24-25/test/io/inputs/camera/oak-d-lite/vdepthai/bin/activate or /home/finley/Documents/GitHub/RaspberryPi-Code_24-25/test/io/inputs/camera/oak-d-lite/vdepthai/vdepthai/bin/activate

@@ -35,13 +35,13 @@ class LaTeXHandler:
 \vspace*{2cm}
 {\Huge\bfseries DepthAI Performance Report\par}
 \vspace{2cm}
-{\Large Generated on: \VAR{date}\par}
+{\Large Generated on: {{date}}\par}
 \vspace{3cm}
-{\large\textbf{Monitoring Duration:} \VAR{duration} seconds\par}
+{\large\textbf{Total Duration:} {{duration}} seconds\par}
 \vspace{0.5cm}
-{\large\textbf{Pre-run Duration:} \VAR{pre_duration} seconds\par}
-{\large\textbf{Runtime Duration:} \VAR{runtime_duration} seconds\par}
-{\large\textbf{Post-run Duration:} \VAR{post_duration} seconds\par}
+{\large\textbf{Pre-run Duration:} {{pre_duration}} seconds\par}
+{\large\textbf{Runtime Duration:} {{runtime_duration}} seconds\par}
+{\large\textbf{Post-run Duration:} {{post_duration}} seconds\par}
 \end{titlepage}
 
 \section{System Performance Overview}
@@ -68,17 +68,17 @@ class LaTeXHandler:
 
 \section{Detailed Metrics}
 
-\VAR{detailed_metrics}
+{{detailed_metrics}}
 
 \section{Performance Analysis}
 \subsection{Key Findings}
 \begin{itemize}
-\VAR{analysis_points}
+{{analysis_points}}
 \end{itemize}
 
 \section{Recommendations}
 \begin{itemize}
-\VAR{recommendations}
+{{recommendations}}
 \end{itemize}
 
 \end{document}
@@ -116,13 +116,24 @@ Minimum & {metric['min']} \\\\
         
         recommendations = '\n'.join([f"\\item {rec}" for rec in recommendations])
         
-        tex_content = self.template.replace('\\VAR{date}', data['date'])
-        tex_content = tex_content.replace('\\VAR{duration}', str(int(data['duration'])))
-        tex_content = tex_content.replace('\\VAR{pre_duration}', str(data['pre_duration']))
-        tex_content = tex_content.replace('\\VAR{post_duration}', str(data['post_duration']))
-        tex_content = tex_content.replace('\\VAR{detailed_metrics}', detailed_metrics)
-        tex_content = tex_content.replace('\\VAR{analysis_points}', analysis_points)
-        tex_content = tex_content.replace('\\VAR{recommendations}', recommendations)
+        # Calculate runtime duration
+        runtime_duration = data['duration'] - (data['pre_duration'] + data['post_duration'])
+        
+        # Create context dictionary for template
+        context = {
+            'date': data['date'],
+            'duration': f"{data['duration']:.1f}",
+            'pre_duration': str(data['pre_duration']),
+            'runtime_duration': f"{runtime_duration:.1f}",
+            'post_duration': str(data['post_duration']),
+            'detailed_metrics': detailed_metrics,
+            'analysis_points': analysis_points,
+            'recommendations': recommendations
+        }
+        
+        # Use proper template rendering
+        template = jinja2.Template(self.template)
+        tex_content = template.render(**context)
         
         tex_path = output_path.with_suffix('.tex')
         with open(tex_path, 'w') as f:
@@ -130,6 +141,6 @@ Minimum & {metric['min']} \\\\
         
         for _ in range(2):  
             subprocess.run(['pdflatex', '-interaction=nonstopmode', str(tex_path)], 
-                         cwd=output_path.parent,
-                         stdout=subprocess.DEVNULL,
-                         stderr=subprocess.DEVNULL)
+                          cwd=output_path.parent,
+                          stdout=subprocess.DEVNULL,
+                          stderr=subprocess.DEVNULL)
