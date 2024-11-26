@@ -3,6 +3,12 @@ import cv2
 import numpy as np
 import zmq
 import time
+import numpy as np
+
+def frameNorm(frame, bbox):
+    normVals = np.full(len(bbox), frame.shape[0])
+    normVals[::2] = frame.shape[1]
+    return (np.clip(np.array(bbox), 0, 1) * normVals).astype(int)
 
 class DepthAIHandler:
     def __init__(self):
@@ -63,24 +69,79 @@ class DepthAIHandler:
         detection_nn.out.link(xout_nn.input)
 
     def process_frame(self, frame, detections, target_label):
-        highest_conf = 0
+        # Convert target label to match YOLO class names
+        label_mapping = {
+            "apple": "apple",
+            "orange": "orange",
+            "bottle": "bottle",
+            "cup": "cup",
+            "remote": "remote control"
+        }
+        
+        yolo_label = label_mapping.get(target_label.lower(), target_label)
+        
+        # Find detection with highest confidence for target object
         target_detection = None
+        highest_conf = 0
         
         for detection in detections:
             label = detection.label
             confidence = detection.confidence
             
-            if label == target_label and confidence > highest_conf:
+            if str(label).lower() == yolo_label and confidence > highest_conf:
                 highest_conf = confidence
                 target_detection = detection
         
+        # Only draw the target detection with highest confidence
         if target_detection:
-            # Draw bounding box only for the target object with highest confidence
-            bbox = frameNorm(frame, (target_detection.xmin, target_detection.ymin, 
-                                   target_detection.xmax, target_detection.ymax))
-            cv2.rectangle(frame, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (0, 255, 0), 2)
-            cv2.putText(frame, f"{target_label}: {confidence:.2f}", 
-                       (bbox[0], bbox[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0))
+            bbox = frameNorm(frame, [
+                target_detection.xmin,
+                target_detection.ymin,
+                target_detection.xmax,
+                target_detection.ymax
+            ])
+            
+            # Draw filled background for text
+            cv2.rectangle(frame, 
+                         (bbox[0], (bbox[1] - 28)),
+                         ((bbox[0] + 110), bbox[1]),
+                         (0, 255, 0),
+                         cv2.FILLED)
+            
+            # Draw bounding box
+            cv2.rectangle(frame, 
+                         (bbox[0], bbox[1]),
+                         (bbox[2], bbox[3]),
+                         (0, 255, 0),
+                         2)
+            
+            # Add label and confidence score
+            label_text = f"{yolo_label}: {int(highest_conf * 100)}%"
+            cv2.putText(frame,
+                       label_text,
+                       (bbox[0] + 5, bbox[1] - 10),
+                       cv2.FONT_HERSHEY_SIMPLEX,
+                       0.5,
+                       (0, 0, 0),
+                       1,
+                       cv2.LINE_AA)
+            
+            if hasattr(target_detection, 'spatialCoordinates'):
+                # Add spatial coordinates if available
+                texts = [
+                    f"X: {target_detection.spatialCoordinates.x:.3f}m",
+                    f"Y: {target_detection.spatialCoordinates.y:.3f}m",
+                    f"Z: {target_detection.spatialCoordinates.z:.3f}m"
+                ]
+                
+                for i, text in enumerate(texts):
+                    y_pos = bbox[1] + 20 + (i * 20)
+                    cv2.putText(frame, text,
+                               (bbox[0], y_pos),
+                               cv2.FONT_HERSHEY_SIMPLEX,
+                               0.5,
+                               (0, 255, 0),
+                               2)
         
         return frame
 
@@ -92,9 +153,11 @@ class DepthAIHandler:
                 
                 while True:
                     try:
+                        # Check for new commands from speech recognition
                         command = self.socket.recv_string(flags=zmq.NOBLOCK)
                         if command.startswith("pick up"):
                             self.current_target = command.split("pick up ")[1]
+                            print(f"New target object: {self.current_target}")
                     except zmq.Again:
                         pass
                     
@@ -104,8 +167,17 @@ class DepthAIHandler:
                         if in_nn := q_nn.tryGet():
                             detections = in_nn.detections
                             
+                            # Only process detections if we have a target object
                             if self.current_target:
                                 frame = self.process_frame(frame, detections, self.current_target)
+                            else:
+                                # If no target object, show all detections
+                                for detection in detections:
+                                    x1 = int(detection.xmin * frame.shape[1])
+                                    y1 = int(detection.ymin * frame.shape[0])
+                                    x2 = int(detection.xmax * frame.shape[1])
+                                    y2 = int(detection.ymax * frame.shape[0])
+                                    cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 255, 255), 1)
                         
                         cv2.imshow("Frame", frame)
                         
