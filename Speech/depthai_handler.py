@@ -156,8 +156,10 @@ class DepthAIHandler:
                         # Check for new commands from speech recognition
                         command = self.socket.recv_string(flags=zmq.NOBLOCK)
                         if command.startswith("pick up"):
-                            self.current_target = command.split("pick up ")[1]
-                            print(f"New target object: {self.current_target}")
+                            target_object = command.split("pick up ")[1]
+                            self.current_target = target_object
+                            # Update the neural network manager's target
+                            self._nnManager.set_target_object(target_object)
                     except zmq.Again:
                         pass
                     
