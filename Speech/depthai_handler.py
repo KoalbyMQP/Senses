@@ -80,6 +80,10 @@ class DepthAIHandler:
         
         yolo_label = label_mapping.get(target_label.lower(), target_label)
         
+        # Set the target object in the neural network manager
+        if hasattr(self, '_nnManager'):
+            self._nnManager.set_target_object(yolo_label)
+        
         # Find detection with highest confidence for target object
         target_detection = None
         highest_conf = 0
@@ -91,57 +95,6 @@ class DepthAIHandler:
             if str(label).lower() == yolo_label and confidence > highest_conf:
                 highest_conf = confidence
                 target_detection = detection
-        
-        # Only draw the target detection with highest confidence
-        if target_detection:
-            bbox = frameNorm(frame, [
-                target_detection.xmin,
-                target_detection.ymin,
-                target_detection.xmax,
-                target_detection.ymax
-            ])
-            
-            # Draw filled background for text
-            cv2.rectangle(frame, 
-                         (bbox[0], (bbox[1] - 28)),
-                         ((bbox[0] + 110), bbox[1]),
-                         (0, 255, 0),
-                         cv2.FILLED)
-            
-            # Draw bounding box
-            cv2.rectangle(frame, 
-                         (bbox[0], bbox[1]),
-                         (bbox[2], bbox[3]),
-                         (0, 255, 0),
-                         2)
-            
-            # Add label and confidence score
-            label_text = f"{yolo_label}: {int(highest_conf * 100)}%"
-            cv2.putText(frame,
-                       label_text,
-                       (bbox[0] + 5, bbox[1] - 10),
-                       cv2.FONT_HERSHEY_SIMPLEX,
-                       0.5,
-                       (0, 0, 0),
-                       1,
-                       cv2.LINE_AA)
-            
-            if hasattr(target_detection, 'spatialCoordinates'):
-                # Add spatial coordinates if available
-                texts = [
-                    f"X: {target_detection.spatialCoordinates.x:.3f}m",
-                    f"Y: {target_detection.spatialCoordinates.y:.3f}m",
-                    f"Z: {target_detection.spatialCoordinates.z:.3f}m"
-                ]
-                
-                for i, text in enumerate(texts):
-                    y_pos = bbox[1] + 20 + (i * 20)
-                    cv2.putText(frame, text,
-                               (bbox[0], y_pos),
-                               cv2.FONT_HERSHEY_SIMPLEX,
-                               0.5,
-                               (0, 255, 0),
-                               2)
         
         return frame
 
