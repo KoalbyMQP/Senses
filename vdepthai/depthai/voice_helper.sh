@@ -37,3 +37,4 @@ python3 vdepthai/depthai/depthai_demo.py -cnn yolo-v3-tiny-tf -s color "$@" || {
     echo "Retrying depthai_demo.py..."
 
     python3 vdepthai/depthai/depthai_demo.py -cnn yolo-v3-tiny-tf -s color "$@"
+}
