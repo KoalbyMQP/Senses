@@ -4,6 +4,7 @@ import numpy as np
 import zmq
 import time
 import numpy as np
+from pickAndPlaceVoiceDetection import State
 
 def frameNorm(frame, bbox):
     normVals = np.full(len(bbox), frame.shape[0])
@@ -68,33 +69,41 @@ class DepthAIHandler:
         xout_nn.setStreamName("nn")
         detection_nn.out.link(xout_nn.input)
 
-    def process_frame(self, frame, detections, target_label):
-        # Convert target label to match YOLO class names
-        label_mapping = {
-            "apple": "apple",
-            "orange": "orange",
-            "bottle": "bottle",
-            "cup": "cup",
-            "remote": "remote control"
+    def process_frame(self, frame, detections, current_state):
+        # Map states to YOLO class names
+        state_mapping = {
+            State.APPLE: "apple",
+            State.ORANGE: "orange", 
+            State.BOTTLE: "bottle",
+            State.CUP: "cup",
+            State.REMOTE: "remote"
         }
         
-        yolo_label = label_mapping.get(target_label.lower(), target_label)
+        # Get target label based on current state
+        target_label = state_mapping.get(current_state)
         
-        # Set the target object in the neural network manager
-        if hasattr(self, '_nnManager'):
-            self._nnManager.set_target_object(yolo_label)
+        if not target_label:
+            return frame  # Return unmodified frame if no valid state
         
         # Find detection with highest confidence for target object
         target_detection = None
         highest_conf = 0
         
         for detection in detections:
-            label = detection.label
+            label = self.getLabelText(detection.label).lower()
             confidence = detection.confidence
             
-            if str(label).lower() == yolo_label and confidence > highest_conf:
+            if label == target_label and confidence > highest_conf:
                 highest_conf = confidence
                 target_detection = detection
+        
+        # Set the target object in the neural network manager
+        if hasattr(self, '_nnManager'):
+            self._nnManager.set_target_object(target_label)
+        
+        # Draw bounding box and measurements for highest confidence target
+        if target_detection:
+            self._nnManager.draw(frame, [target_detection])
         
         return frame
 

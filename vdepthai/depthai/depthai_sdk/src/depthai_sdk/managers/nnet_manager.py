@@ -331,12 +331,11 @@ class NNetManager:
                     if hasattr(detection, 'boundingBoxMapping'):
                         physical_width = detection.boundingBoxMapping.width / 1000   # Convert mm to meters
                         physical_height = detection.boundingBoxMapping.height / 1000
-                        physical_area = physical_width * physical_height
 
                         # Debug prints
                         print(f"\nDetection Measurements:")
                         print(f"Position: X: {xMeters:.3f}m, Y: {yMeters:.3f}m, Z: {zMeters:.3f}m")
-                        print(f"Dimensions: W: {physical_width:.3f}m, H: {physical_height:.3f}m, Area: {physical_area:.3f}m²")
+                        print(f"Dimensions: W: {physical_width:.3f}m, H: {physical_height:.3f}m")
 
                         # Draw measurements on frame
                         texts = [
@@ -345,7 +344,6 @@ class NNetManager:
                             f"Z: {zMeters:.3f}m",
                             f"Width: {physical_width:.3f}m",
                             f"Height: {physical_height:.3f}m",
-                            f"Area: {physical_area:.3f}m²"
                         ]
 
                     for i, text in enumerate(texts):
