@@ -1250,9 +1250,18 @@ class SpeechEnabledDemo(Demo):
         super().__init__()
         self.speech_process = None
         self.current_target = None
+        self.context = None
+        self.socket = None
         
     def setup(self, conf):
         super().setup(conf)
+        
+        # Set up ZMQ subscriber 
+        self.context = zmq.Context()
+        self.socket = self.context.socket(zmq.SUB)
+        self.socket.connect("tcp://localhost:6325")
+        self.socket.setsockopt_string(zmq.SUBSCRIBE, "")
+        
         print("Starting speech detection process...")
         try:
             current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -1281,13 +1290,26 @@ class SpeechEnabledDemo(Demo):
         except Exception as e:
             print(f"Error starting speech detection: {e}")
             
+    def run(self):
+        while self.shouldRun():
+            # Check for voice commands
+            try:
+                command = self.socket.recv_string(flags=zmq.NOBLOCK)
+                if command.startswith("pick up"):
+                    target_object = command.split("pick up ")[1]
+                    self.current_target = target_object
+                    print(f"New target received: {target_object}")
+            except zmq.Again:
+                pass
+                
+            # Continue with normal demo processing
+            super().run()
+            
     def stop(self, *args, **kwargs):
-        try:
-            if self.speech_process:
-                os.killpg(os.getpgid(self.speech_process.pid), signal.SIGTERM)
-                time.sleep(0.5)
-        except (AttributeError, ProcessLookupError):
-            pass
+        if self.socket:
+            self.socket.close()
+        if self.context:
+            self.context.term()
         super().stop(*args, **kwargs)
 
 
