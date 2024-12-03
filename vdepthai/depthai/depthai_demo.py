@@ -1256,47 +1256,23 @@ class SpeechEnabledDemo(Demo):
     def setup(self, conf):
         super().setup(conf)
         
-        # Set up ZMQ subscriber with new port
-        self.context = zmq.Context()
-        self.socket = self.context.socket(zmq.SUB)
-        self.socket.connect("tcp://localhost:5558")  # Changed port
-        self.socket.setsockopt_string(zmq.SUBSCRIBE, "")
-        print("ZMQ subscriber connected")
-        
-        print("Starting speech detection process...")
+        print("Setting up ZMQ subscriber...")
         try:
-            current_dir = os.path.dirname(os.path.abspath(__file__))
-            project_root = os.path.dirname(os.path.dirname(current_dir))
-            speech_script_path = os.path.join(project_root, "Speech", "pickAndPlaceVoiceDetection.py")
-            
-            venv_path = os.environ.get('VIRTUAL_ENV', '')
-            if venv_path:
-                activate_cmd = f"source {venv_path}/bin/activate && "
-            else:
-                activate_cmd = ""
-            
-            cmd = f"lxterminal -e 'bash -c \"{activate_cmd}python3 {speech_script_path}; echo Press Enter to close...; read\"'"
-            
-            self.speech_process = subprocess.Popen(
-                cmd,
-                shell=True,
-                preexec_fn=os.setsid
-            )
-            
-            time.sleep(1)
-            if self.speech_process.poll() is None:
-                print("Speech detection process started successfully in new terminal")
-            else:
-                print("Warning: Speech detection process failed to start")
+            self.context = zmq.Context()
+            self.socket = self.context.socket(zmq.SUB)
+            print("Connecting to tcp://localhost:5558")
+            self.socket.connect("tcp://localhost:5558")
+            self.socket.setsockopt_string(zmq.SUBSCRIBE, "")
+            print("ZMQ subscriber connected successfully")
         except Exception as e:
-            print(f"Error starting speech detection: {e}")
-            
+            print(f"Error setting up ZMQ subscriber: {e}")
+
     def run(self):
         while self.shouldRun():
             try:
-                # Add timeout to zmq receive
+                print("Checking for ZMQ messages...")  # Debug print
                 command = self.socket.recv_string(flags=zmq.NOBLOCK)
-                print(f"Received command: {command}")  
+                print(f"Received command: {command}")
                 
                 if command.startswith("pick up"):
                     target_object = command.split("pick up ")[1]
@@ -1307,7 +1283,9 @@ class SpeechEnabledDemo(Demo):
                         self._nnManager.set_target_object(target_object)
                         print(f"Target object set to: {self._nnManager._target_object}")
             except zmq.Again:
-                pass
+                print("No message available")  # Debug print
+            except Exception as e:
+                print(f"Error in ZMQ receive: {e}")
                 
             # Continue with normal demo processing
             super().run()

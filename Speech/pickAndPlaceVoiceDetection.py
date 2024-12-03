@@ -78,6 +78,7 @@ class SpeechDetector:
 
 class SpeechHandler:
     def __init__(self):
+        print("Initializing SpeechHandler...")
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.PUB)
         max_retries = 3
@@ -88,6 +89,7 @@ class SpeechHandler:
         
         for attempt in range(max_retries):
             try:
+                print(f"Attempting to bind to port 5558 (attempt {attempt + 1})")
                 self.socket.bind("tcp://*:5558")
                 print("Speech ZMQ initialized successfully")
                 break
@@ -97,7 +99,7 @@ class SpeechHandler:
                     raise
                 time.sleep(retry_delay)
                 self._cleanup_port()
-                
+
     def _cleanup_port(self):
         """Clean up the ZMQ port"""
         for proc in psutil.process_iter(['pid', 'name']):
@@ -114,17 +116,14 @@ class SpeechHandler:
         if "pick up" in spoken_text.lower():
             target = spoken_text.lower().split("pick up ")[-1].strip()
             message = f"pick up {target}"
-            print(f"Sending command: {message}")
-            self.socket.send_string(message)
-            time.sleep(0.1)
-            print(f"Sent target object: {target}")
-            
-            if target in ["apple", "orange", "bottle", "cup", "remote"]:
-                play_tts(f"Looking for the {target} now.")
-            else:
-                play_tts("I don't recognize that object. Please try again.")
-        else:
-            play_tts("Please use 'pick up' followed by the object name.")
+            print(f"Attempting to send command: {message}")
+            try:
+                self.socket.send_string(message, zmq.NOBLOCK)
+                print(f"Successfully sent command: {message}")
+            except zmq.error.Again:
+                print("Failed to send message (would block)")
+            except Exception as e:
+                print(f"Error sending message: {e}")
 
     def cleanup(self):
         """Clean up ZMQ resources"""
