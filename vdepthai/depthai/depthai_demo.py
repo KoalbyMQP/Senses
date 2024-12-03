@@ -1254,8 +1254,10 @@ class SpeechEnabledDemo(Demo):
         self.socket = None
         
     def setup(self, conf):
+        # First call parent's setup to initialize device and other components
         super().setup(conf)
         
+        # Now that device is initialized, set up ZMQ
         print("Setting up ZMQ subscriber...")
         try:
             self.context = zmq.Context()
@@ -1267,7 +1269,7 @@ class SpeechEnabledDemo(Demo):
         except Exception as e:
             print(f"Error setting up ZMQ subscriber: {e}")
 
-        
+        # Start speech detection process after ZMQ is set up
         print("Starting speech detection process...")
         try:
             current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -1288,7 +1290,7 @@ class SpeechEnabledDemo(Demo):
                 preexec_fn=os.setsid
             )
             
-            time.sleep(1)
+            time.sleep(2)  # Increased sleep time to ensure process starts
             if self.speech_process.poll() is None:
                 print("Speech detection process started successfully in new terminal")
             else:
