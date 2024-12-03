@@ -1299,6 +1299,9 @@ class SpeechEnabledDemo(Demo):
                     target_object = command.split("pick up ")[1]
                     self.current_target = target_object
                     print(f"New target received: {target_object}")
+                    if hasattr(self, '_nnManager'):
+                        print("Available labels:", self._nnManager._labels)
+                        self._nnManager.set_target_object(target_object)
             except zmq.Again:
                 pass
                 
