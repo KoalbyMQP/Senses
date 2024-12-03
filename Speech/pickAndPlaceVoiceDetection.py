@@ -111,28 +111,21 @@ class SpeechHandler:
                 continue
 
     def process_command(self, spoken_text):
-        global current_state
         if "pick up" in spoken_text.lower():
-            self.socket.send_string(spoken_text.lower())
+            # Extract the target object from the command
+            target = spoken_text.lower().split("pick up ")[-1].strip()
             
-            if "apple" in spoken_text.lower():
-                current_state = State.APPLE
-                handle_apple()
-            elif "orange" in spoken_text.lower():
-                current_state = State.ORANGE
-                handle_orange()
-            elif "bottle" in spoken_text.lower():
-                current_state = State.BOTTLE
-                handle_bottle()
-            elif "cup" in spoken_text.lower():
-                current_state = State.CUP
-                handle_cup()
-            elif "remote" in spoken_text.lower():
-                current_state = State.REMOTE
-                handle_remote()
+            # Send the exact command for the vision system
+            self.socket.send_string(f"pick up {target}")
+            print(f"Sent target object: {target}")
+            
+            # Handle state and feedback
+            if target in ["apple", "orange", "bottle", "cup", "remote"]:
+                play_tts(f"Looking for the {target} now.")
+            else:
+                play_tts("I don't recognize that object. Please try again.")
         else:
-            current_state = State.COMMAND_PARSING
-            play_tts("Command not recognized. Please try again.")
+            play_tts("Please use 'pick up' followed by the object name.")
 
     def cleanup(self):
         """Clean up ZMQ resources"""
