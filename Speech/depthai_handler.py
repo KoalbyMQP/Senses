@@ -108,9 +108,12 @@ class DepthAIHandler:
                         command = self.socket.recv_string(flags=zmq.NOBLOCK)
                         if command.startswith("pick up"):
                             target_object = command.split("pick up ")[1]
+                            print(f"Setting target object to: {target_object}")  # Debug print
                             self.current_target = target_object
-                            # Update the neural network manager's target
-                            self._nnManager.set_target_object(target_object)
+                            if hasattr(self, '_nnManager'):
+                                print(f"NNetManager exists, setting target: {target_object}")  # Debug print
+                                self._nnManager.set_target_object(target_object)
+                                print(f"Current NNetManager target: {self._nnManager._target_object}")  # Debug print
                     except zmq.Again:
                         pass
                     
