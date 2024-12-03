@@ -309,6 +309,14 @@ class NNetManager:
         """
         if self._outputFormat == "detection":
             def drawDetection(frame, detection):
+                print(f"drawDetection called with label: {self.getLabelText(detection.label)}")
+                if hasattr(self, '_target_object') and self._target_object:
+                    label_text = self.getLabelText(detection.label).lower()
+                    print(f"Checking against target: {self._target_object}")
+                    if label_text != self._target_object:
+                        print("Not matching target, skipping")
+                        return
+                    print("Match found, drawing detection")
                 bbox = frameNorm(self._normFrame(frame), [detection.xmin, detection.ymin, detection.xmax, detection.ymax])
                 if self.source == Previews.color.name and not self._fullFov:
                     bbox[::2] += self._cropOffsetX(frame)
