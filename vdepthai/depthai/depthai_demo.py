@@ -1269,7 +1269,7 @@ class SpeechEnabledDemo(Demo):
         except Exception as e:
             print(f"Error setting up ZMQ subscriber: {e}")
 
-        # Start speech detection process after ZMQ is set up
+        
         print("Starting speech detection process...")
         try:
             current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -1290,7 +1290,7 @@ class SpeechEnabledDemo(Demo):
                 preexec_fn=os.setsid
             )
             
-            time.sleep(2)  # Increased sleep time to ensure process starts
+            time.sleep(1)
             if self.speech_process.poll() is None:
                 print("Speech detection process started successfully in new terminal")
             else:
@@ -1299,14 +1299,14 @@ class SpeechEnabledDemo(Demo):
             print(f"Error starting speech detection: {e}")
             
     def run(self):
-        # First initialize the pipeline from parent class
+    # First initialize the pipeline from parent class
         self._device.startPipeline(self._pm.pipeline)
         self._pm.createDefaultQueues(self._device)
         if self._conf.useNN:
             self._nnManager.createQueues(self._device)
 
         while self.shouldRun():
-            # Check for ZMQ messages
+            # Only check for ZMQ messages
             try:
                 command = self.socket.recv_string(flags=zmq.NOBLOCK)
                 print(f"Received command: {command}")
@@ -1323,24 +1323,8 @@ class SpeechEnabledDemo(Demo):
                 pass  # No message available, continue with frame processing
             except Exception as e:
                 print(f"Error in ZMQ receive: {e}")
-
-            # Process a single frame
-            try:
-                if self._conf.useNN:
-                    self._nnManager.handleOutput()
-                
-                if self._conf.useCamera:
-                    self._pv.prepareFrames(self._device)
-                    
-                if self._conf.useDepth:
-                    self._pv.updateDepth()
-                    
-                self._pv.showFrames()
-                if self._conf.args.report:
-                    self._reportManager.handleReport()
-            except StopIteration:
-                break
-
+                time.sleep(0.001)  # Small sleep to prevent CPU spinning
+            
     def stop(self, *args, **kwargs):
         if self.socket:
             self.socket.close()
