@@ -1256,11 +1256,12 @@ class SpeechEnabledDemo(Demo):
     def setup(self, conf):
         super().setup(conf)
         
-        # Set up ZMQ subscriber 
+        # Set up ZMQ subscriber with new port
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.SUB)
-        self.socket.connect("tcp://localhost:6325")
+        self.socket.connect("tcp://localhost:5558")  # Changed port
         self.socket.setsockopt_string(zmq.SUBSCRIBE, "")
+        print("ZMQ subscriber connected")
         
         print("Starting speech detection process...")
         try:
@@ -1292,16 +1293,19 @@ class SpeechEnabledDemo(Demo):
             
     def run(self):
         while self.shouldRun():
-            # Check for voice commands
             try:
+                # Add timeout to zmq receive
                 command = self.socket.recv_string(flags=zmq.NOBLOCK)
+                print(f"Received command: {command}")  
+                
                 if command.startswith("pick up"):
                     target_object = command.split("pick up ")[1]
                     self.current_target = target_object
                     print(f"New target received: {target_object}")
                     if hasattr(self, '_nnManager'):
-                        print("Available labels:", self._nnManager._labels)
+                        print("Setting target object in NNetManager")
                         self._nnManager.set_target_object(target_object)
+                        print(f"Target object set to: {self._nnManager._target_object}")
             except zmq.Again:
                 pass
                 

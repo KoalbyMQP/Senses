@@ -88,7 +88,7 @@ class SpeechHandler:
         
         for attempt in range(max_retries):
             try:
-                self.socket.bind("tcp://*:6325")
+                self.socket.bind("tcp://*:5558")
                 print("Speech ZMQ initialized successfully")
                 break
             except zmq.error.ZMQError as e:
@@ -104,7 +104,7 @@ class SpeechHandler:
             try:
                 connections = proc.connections()
                 for conn in connections:
-                    if hasattr(conn, 'laddr') and hasattr(conn.laddr, 'port') and conn.laddr.port == 6325:
+                    if hasattr(conn, 'laddr') and hasattr(conn.laddr, 'port') and conn.laddr.port == 5558:
                         psutil.Process(proc.pid).terminate()
                         time.sleep(0.1)
             except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
@@ -112,14 +112,13 @@ class SpeechHandler:
 
     def process_command(self, spoken_text):
         if "pick up" in spoken_text.lower():
-            # Extract the target object from the command
             target = spoken_text.lower().split("pick up ")[-1].strip()
-            
-            # Send the exact command for the vision system
-            self.socket.send_string(f"pick up {target}")
+            message = f"pick up {target}"
+            print(f"Sending command: {message}")
+            self.socket.send_string(message)
+            time.sleep(0.1)
             print(f"Sent target object: {target}")
             
-            # Handle state and feedback
             if target in ["apple", "orange", "bottle", "cup", "remote"]:
                 play_tts(f"Looking for the {target} now.")
             else:
