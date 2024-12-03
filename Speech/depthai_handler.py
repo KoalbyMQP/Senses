@@ -70,7 +70,7 @@ class DepthAIHandler:
         detection_nn.out.link(xout_nn.input)
 
     def process_frame(self, frame, detections, current_state):
-    # Map states to YOLO class names
+        # Map states to YOLO class names
         state_mapping = {
             State.APPLE: "apple",
             State.ORANGE: "orange", 
@@ -85,16 +85,14 @@ class DepthAIHandler:
         if not target_label:
             return frame  # Return unmodified frame if no valid state
         
-        # Only process detections for the target object
-        target_detections = []
-        for detection in detections:
-            label = self.getLabelText(detection.label).lower()
-            if label == target_label:
-                target_detections.append(detection)
-        
         # Draw bounding boxes only for target object detections
-        if target_detections:
-            self._nnManager.draw(frame, target_detections)
+        for detection in detections:
+            if self.getLabelText(detection.label).lower() == target_label:
+                x1 = int(detection.xmin * frame.shape[1])
+                y1 = int(detection.ymin * frame.shape[0])
+                x2 = int(detection.xmax * frame.shape[1])
+                y2 = int(detection.ymax * frame.shape[0])
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 255, 255), 1)
         
         return frame
 
