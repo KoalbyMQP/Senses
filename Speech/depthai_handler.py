@@ -81,19 +81,25 @@ class DepthAIHandler:
         
         # Get target label based on current state
         target_label = state_mapping.get(current_state)
+        print(f"Current state: {current_state}, Target label: {target_label}")  # Debug print
         
         if not target_label:
             return frame  # Return unmodified frame if no valid state
         
         # Draw bounding boxes only for target object detections
+        detection_count = 0  # Debug counter
         for detection in detections:
-            if self.getLabelText(detection.label).lower() == target_label:
+            label = self.getLabelText(detection.label).lower()
+            print(f"Detected object: {label}")  # Debug print
+            if label == target_label:
+                detection_count += 1
                 x1 = int(detection.xmin * frame.shape[1])
                 y1 = int(detection.ymin * frame.shape[0])
                 x2 = int(detection.xmax * frame.shape[1])
                 y2 = int(detection.ymax * frame.shape[0])
                 cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 255, 255), 1)
         
+        print(f"Found {detection_count} instances of {target_label}")  # Debug print
         return frame
 
     def run(self):
