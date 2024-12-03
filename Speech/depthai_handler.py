@@ -70,7 +70,7 @@ class DepthAIHandler:
         detection_nn.out.link(xout_nn.input)
 
     def process_frame(self, frame, detections, current_state):
-        # Map states to YOLO class names
+    # Map states to YOLO class names
         state_mapping = {
             State.APPLE: "apple",
             State.ORANGE: "orange", 
@@ -85,25 +85,16 @@ class DepthAIHandler:
         if not target_label:
             return frame  # Return unmodified frame if no valid state
         
-        # Find detection with highest confidence for target object
-        target_detection = None
-        highest_conf = 0
-        
+        # Only process detections for the target object
+        target_detections = []
         for detection in detections:
             label = self.getLabelText(detection.label).lower()
-            confidence = detection.confidence
-            
-            if label == target_label and confidence > highest_conf:
-                highest_conf = confidence
-                target_detection = detection
+            if label == target_label:
+                target_detections.append(detection)
         
-        # Set the target object in the neural network manager
-        if hasattr(self, '_nnManager'):
-            self._nnManager.set_target_object(target_label)
-        
-        # Draw bounding box and measurements for highest confidence target
-        if target_detection:
-            self._nnManager.draw(frame, [target_detection])
+        # Draw bounding boxes only for target object detections
+        if target_detections:
+            self._nnManager.draw(frame, target_detections)
         
         return frame
 
