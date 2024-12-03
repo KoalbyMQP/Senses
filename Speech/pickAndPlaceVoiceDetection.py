@@ -100,10 +100,11 @@ class SpeechHandler:
                 
     def _cleanup_port(self):
         """Clean up the ZMQ port"""
-        for proc in psutil.process_iter(['pid', 'name', 'connections']):
+        for proc in psutil.process_iter(['pid', 'name']):
             try:
-                for conn in proc.connections():
-                    if hasattr(conn.laddr, 'port') and conn.laddr.port == 6325:
+                connections = proc.connections()
+                for conn in connections:
+                    if hasattr(conn, 'laddr') and hasattr(conn.laddr, 'port') and conn.laddr.port == 6325:
                         psutil.Process(proc.pid).terminate()
                         time.sleep(0.1)
             except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
