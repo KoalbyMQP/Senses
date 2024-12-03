@@ -1299,9 +1299,15 @@ class SpeechEnabledDemo(Demo):
             print(f"Error starting speech detection: {e}")
             
     def run(self):
+        # First initialize the pipeline from parent class
+        self._device.startPipeline(self._pm.pipeline)
+        self._pm.createDefaultQueues(self._device)
+        if self._conf.useNN:
+            self._nnManager.createQueues(self._device)
+
         while self.shouldRun():
+            # Check for ZMQ messages
             try:
-                print("Checking for ZMQ messages...")  # Debug print
                 command = self.socket.recv_string(flags=zmq.NOBLOCK)
                 print(f"Received command: {command}")
                 
@@ -1314,13 +1320,27 @@ class SpeechEnabledDemo(Demo):
                         self._nnManager.set_target_object(target_object)
                         print(f"Target object set to: {self._nnManager._target_object}")
             except zmq.Again:
-                print("No message available")  # Debug print
+                pass  # No message available, continue with frame processing
             except Exception as e:
                 print(f"Error in ZMQ receive: {e}")
+
+            # Process a single frame
+            try:
+                if self._conf.useNN:
+                    self._nnManager.handleOutput()
                 
-            # Continue with normal demo processing
-            super().run()
-            
+                if self._conf.useCamera:
+                    self._pv.prepareFrames(self._device)
+                    
+                if self._conf.useDepth:
+                    self._pv.updateDepth()
+                    
+                self._pv.showFrames()
+                if self._conf.args.report:
+                    self._reportManager.handleReport()
+            except StopIteration:
+                break
+
     def stop(self, *args, **kwargs):
         if self.socket:
             self.socket.close()
