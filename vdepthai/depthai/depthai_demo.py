@@ -1267,6 +1267,35 @@ class SpeechEnabledDemo(Demo):
         except Exception as e:
             print(f"Error setting up ZMQ subscriber: {e}")
 
+        
+        print("Starting speech detection process...")
+        try:
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            project_root = os.path.dirname(os.path.dirname(current_dir))
+            speech_script_path = os.path.join(project_root, "Speech", "pickAndPlaceVoiceDetection.py")
+            
+            venv_path = os.environ.get('VIRTUAL_ENV', '')
+            if venv_path:
+                activate_cmd = f"source {venv_path}/bin/activate && "
+            else:
+                activate_cmd = ""
+            
+            cmd = f"lxterminal -e 'bash -c \"{activate_cmd}python3 {speech_script_path}; echo Press Enter to close...; read\"'"
+            
+            self.speech_process = subprocess.Popen(
+                cmd,
+                shell=True,
+                preexec_fn=os.setsid
+            )
+            
+            time.sleep(1)
+            if self.speech_process.poll() is None:
+                print("Speech detection process started successfully in new terminal")
+            else:
+                print("Warning: Speech detection process failed to start")
+        except Exception as e:
+            print(f"Error starting speech detection: {e}")
+            
     def run(self):
         while self.shouldRun():
             try:
