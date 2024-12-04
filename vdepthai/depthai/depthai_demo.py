@@ -1302,26 +1302,22 @@ class SpeechEnabledDemo(Demo):
         if self._conf.useNN:
             self._nnManager.createQueues(self._device)
         target_object = None
-        pipeline_running = False
-        
         while True:
             try:
                 command = self.socket.recv_string(flags=zmq.NOBLOCK)
                 print(f"Received command: {command}")
                 
                 if command == "stop":
-                    print("Stop command received. Clearing target and closing camera pipeline.")
+                    print("Stop command received. Clearing target and closing all OpenCV windows.")
                     target_object = None
                     self.current_target = None
-                    pipeline_running = False
                     if hasattr(self, '_nnManager'):
                         self._nnManager.set_target_object(None)
                     # Close all OpenCV windows
                     cv2.destroyAllWindows()
                     cv2.waitKey(1)  # Ensure windows are closed
-                    # Stop the pipeline
+                    # Reset pipeline
                     self._device.close()
-                    # Reinitialize the pipeline
                     self._device.startPipeline(self._pm.pipeline)
                     self._pm.createDefaultQueues(self._device)
                     if self._conf.useNN:
@@ -1331,28 +1327,21 @@ class SpeechEnabledDemo(Demo):
                 elif command.startswith("pick up"):
                     target_object = command.split("pick up ")[1].strip()
                     self.current_target = target_object
-                    pipeline_running = True
                     print(f"New target received: {target_object}")
                     if hasattr(self, '_nnManager'):
                         print("Setting target object in NNetManager")
                         self._nnManager.set_target_object(target_object)
                         print(f"Target object set to: {self._nnManager._target_object}")
             except zmq.Again:
-                pass  # No message available
+                pass  # No message available, continue with frame processing
             except Exception as e:
                 print(f"Error in ZMQ receive: {e}")
                 time.sleep(0.001)  # Small sleep to prevent CPU spinning
             
-            # Only run the pipeline if we have a target and pipeline should be running
-            if target_object and pipeline_running:
-                try:
-                    super().run()
-                except Exception as e:
-                    print(f"Error in pipeline execution: {e}")
-                    pipeline_running = False
-            else:
-                time.sleep(0.001)  # Small sleep when idle to prevent CPU spinning
-
+            # Continue with frame processing if a target is set
+            if target_object:
+                super().run()
+            
     def stop(self, *args, **kwargs):
         if self.socket:
             self.socket.close()
