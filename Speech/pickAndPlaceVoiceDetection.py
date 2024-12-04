@@ -9,6 +9,20 @@ import zmq
 import time
 import psutil
 import multiprocessing
+import sys
+import warnings
+
+# Suppress all warnings and ALSA errors
+warnings.filterwarnings('ignore')
+os.environ['ALSA_ERRORS_TO_STDERR'] = 'no'
+
+# Redirect stderr to devnull
+class DevNull:
+    def write(self, msg):
+        pass
+    def flush(self):
+        pass
+sys.stderr = DevNull()
 
 load_dotenv("Documents/GitHub/Vision-Backup/Speech/tts.env")
 
