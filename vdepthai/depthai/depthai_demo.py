@@ -436,10 +436,7 @@ class Demo:
                            xoutSbb=self._conf.args.spatialBoundingBox and self._conf.useDepth)
 
     def run(self):
-        self._device.startPipeline(self._pm.pipeline)
-        self._pm.createDefaultQueues(self._device)
-        if self._conf.useNN:
-            self._nnManager.createQueues(self._device)
+        
 
         self._sbbOut = self._device.getOutputQueue("sbb", maxSize=1, blocking=False) if self._conf.useNN and self._conf.args.spatialBoundingBox else None
         self._logOut = self._device.getOutputQueue("systemLogger", maxSize=30, blocking=False) if len(self._conf.args.report) > 0 else None
@@ -1304,8 +1301,9 @@ class SpeechEnabledDemo(Demo):
         self._pm.createDefaultQueues(self._device)
         if self._conf.useNN:
             self._nnManager.createQueues(self._device)
-
-        while self.shouldRun():
+        target_object = None
+        while target_object == None:
+            print(target_object)
             # Only check for ZMQ messages
             try:
                 command = self.socket.recv_string(flags=zmq.NOBLOCK)
@@ -1324,6 +1322,7 @@ class SpeechEnabledDemo(Demo):
             except Exception as e:
                 print(f"Error in ZMQ receive: {e}")
                 time.sleep(0.001)  # Small sleep to prevent CPU spinning
+        super().run()
             
     def stop(self, *args, **kwargs):
         if self.socket:
