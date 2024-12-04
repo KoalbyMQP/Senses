@@ -11,18 +11,21 @@ import psutil
 import multiprocessing
 import sys
 import warnings
+import logging
 
-# Suppress all warnings and ALSA errors
-warnings.filterwarnings('ignore')
+# Disable ALSA error output
 os.environ['ALSA_ERRORS_TO_STDERR'] = 'no'
+logging.getLogger('ALSA').setLevel(logging.CRITICAL)
+class NullStream:
+    def write(self, *args):
+        pass
+    def flush(self, *args):
+        pass
 
-# Redirect stderr to devnull
-class DevNull:
-    def write(self, msg):
-        pass
-    def flush(self):
-        pass
-sys.stderr = DevNull()
+# Redirect stderr to null stream
+null_stream = NullStream()
+stderr_backup = sys.stderr
+sys.stderr = null_stream
 
 load_dotenv("Documents/GitHub/Vision-Backup/Speech/tts.env")
 
