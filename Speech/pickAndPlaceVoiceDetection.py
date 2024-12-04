@@ -57,24 +57,37 @@ class SpeechDetector:
                 print("Adjusting for ambient noise...")
                 r.adjust_for_ambient_noise(src, duration=0.2)
                 print("Listening for speech")
-                audio = r.listen(src)
-
+                
+                # Add a timeout to prevent blocking indefinitely
+                try:
+                    audio = r.listen(src, timeout=1.0, phrase_time_limit=3.0)
+                except sr.WaitTimeoutError:
+                    # If no speech detected within timeout, return to idle
+                    return
+                
                 try:
                     print("Converting to text...")
                     spoken_text = r.recognize_google(audio)
                     print(f"You said: {spoken_text}")
                     
-                    self.current_state = State.KEYWORD_SPOTTING
-                    self.speech_handler.process_command(spoken_text)
+                    # Only change state and process if it's a "pick up" command
+                    if "pick up" in spoken_text.lower():
+                        self.current_state = State.KEYWORD_SPOTTING
+                        self.speech_handler.process_command(spoken_text)
+                    else:
+                        print("Command not recognized. Please say 'pick up' followed by an object name.")
+                        play_tts("Please say pick up followed by an object name.")
+                        
                 except sr.UnknownValueError:
                     print("Sorry, could not understand the audio.")
-                    self.current_state = State.IDLE
                 except sr.RequestError:
                     print("Could not request results; check your internet connection.")
-                    self.current_state = State.IDLE
+                    
         except Exception as e:
             print(f"Error in listen_and_process: {e}")
-            self.current_state = State.IDLE
+        
+        # Always return to IDLE state after processing
+        self.current_state = State.IDLE
 
 class SpeechHandler:
     def __init__(self):
@@ -161,15 +174,26 @@ def run_speech_detection():
         detector.speech_handler = SpeechHandler()
         pygame.init()
         pygame.mixer.init()
+        
+        # Initial greeting with preparation time notice
         play_tts("Hi! I'm Finley, your personal assistant.")
+        
+        # Give time for the tester to prepare
+        print("Waiting 5 seconds before starting to listen...")
+        time.sleep(5)
+        
+        # Confirmation that we're ready to listen
+        play_tts("I'm now listening. Please speak clearly.")
         
         while True:
             if detector.current_state == State.IDLE:
-                print("System is idle. Listening for a keyword...")
                 detector.listen_and_process()
-            elif detector.current_state == State.COMMAND_PARSING:
+                # Add a small sleep to prevent CPU spinning
+                time.sleep(0.1)
+            else:
                 print("Returning to idle state...")
                 detector.current_state = State.IDLE
+                
     except KeyboardInterrupt:
         print("\nExiting speech detection...")
     except Exception as e:
