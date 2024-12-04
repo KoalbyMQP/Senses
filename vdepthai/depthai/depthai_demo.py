@@ -1296,20 +1296,28 @@ class SpeechEnabledDemo(Demo):
             print(f"Error starting speech detection: {e}")
             
     def run(self):
-    # First initialize the pipeline from parent class
+        # First initialize the pipeline from parent class
         self._device.startPipeline(self._pm.pipeline)
         self._pm.createDefaultQueues(self._device)
         if self._conf.useNN:
             self._nnManager.createQueues(self._device)
         target_object = None
-        while target_object == None:
-            print(target_object)
+        while True:
             # Only check for ZMQ messages
             try:
                 command = self.socket.recv_string(flags=zmq.NOBLOCK)
                 print(f"Received command: {command}")
                 
-                if command.startswith("pick up"):
+                if command == "stop":
+                    print("Stop command received. Clearing target and closing camera window.")
+                    target_object = None
+                    self.current_target = None
+                    if hasattr(self, '_nnManager'):
+                        self._nnManager.set_target_object(None)
+                    # Close the camera window
+                    cv2.destroyAllWindows()
+                
+                elif command.startswith("pick up"):
                     target_object = command.split("pick up ")[1]
                     self.current_target = target_object
                     print(f"New target received: {target_object}")
@@ -1322,7 +1330,10 @@ class SpeechEnabledDemo(Demo):
             except Exception as e:
                 print(f"Error in ZMQ receive: {e}")
                 time.sleep(0.001)  # Small sleep to prevent CPU spinning
-        super().run()
+            
+            # Continue with frame processing if a target is set
+            if target_object:
+                super().run()
             
     def stop(self, *args, **kwargs):
         if self.socket:
