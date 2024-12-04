@@ -1308,24 +1308,23 @@ class SpeechEnabledDemo(Demo):
                 print(f"Received command: {command}")
                 
                 if command == "stop":
-                    print("Stop command received. Clearing target and closing all OpenCV windows.")
+                    print("Stop command received. Clearing target and closing camera window.")
                     target_object = None
                     self.current_target = None
                     if hasattr(self, '_nnManager'):
                         self._nnManager.set_target_object(None)
-                    # Close all OpenCV windows
-                    cv2.destroyAllWindows()
-                    cv2.waitKey(1)  # Ensure windows are closed
+                    # Force close all OpenCV windows
+                    cv2.destroyWindow("color")
+                    cv2.waitKey(1)  # Give time for window to close
                     # Reset pipeline
                     self._device.close()
                     self._device.startPipeline(self._pm.pipeline)
                     self._pm.createDefaultQueues(self._device)
                     if self._conf.useNN:
                         self._nnManager.createQueues(self._device)
-                    print("Pipeline reset successfully.")
                 
                 elif command.startswith("pick up"):
-                    target_object = command.split("pick up ")[1].strip()
+                    target_object = command.split("pick up ")[1]
                     self.current_target = target_object
                     print(f"New target received: {target_object}")
                     if hasattr(self, '_nnManager'):
