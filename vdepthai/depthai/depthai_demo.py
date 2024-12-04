@@ -1311,21 +1311,17 @@ class SpeechEnabledDemo(Demo):
                 
                 if command == "stop":
                     print("Stop command received. Clearing target and closing camera pipeline.")
-                    # First stop the pipeline
-                    pipeline_running = False
-                    # Clear all targets
                     target_object = None
                     self.current_target = None
+                    pipeline_running = False
                     if hasattr(self, '_nnManager'):
                         self._nnManager.set_target_object(None)
-                        print(f"Target object cleared in NNetManager: {self._nnManager._target_object}")
-                    # Close windows
+                    # Close all OpenCV windows
                     cv2.destroyAllWindows()
                     cv2.waitKey(1)  # Ensure windows are closed
-                    # Reset pipeline
+                    # Stop the pipeline
                     self._device.close()
-                    time.sleep(0.1)  # Give time for cleanup
-                    # Reinitialize
+                    # Reinitialize the pipeline
                     self._device.startPipeline(self._pm.pipeline)
                     self._pm.createDefaultQueues(self._device)
                     if self._conf.useNN:
