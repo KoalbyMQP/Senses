@@ -117,7 +117,7 @@ class SpeechHandler:
         """Clean up the ZMQ port"""
         for proc in psutil.process_iter(['pid', 'name']):
             try:
-                connections = proc.connections()
+                connections = proc.net_connections()
                 for conn in connections:
                     if hasattr(conn, 'laddr') and hasattr(conn.laddr, 'port') and conn.laddr.port == 5558:
                         psutil.Process(proc.pid).terminate()
