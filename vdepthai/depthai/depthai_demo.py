@@ -1299,7 +1299,7 @@ class SpeechEnabledDemo(Demo):
             else:
                 activate_cmd = ""
             
-            cmd = f"lxterminal -e 'bash -c \"{activate_cmd}python3 {speech_script_path}; echo Press Enter to close...; read\"'"
+            cmd = f"lxterminal -e 'bash -c \"{activate_cmd}python3 {speech_script_path} 2>/dev/null; echo Press Enter to close...; read\"'"
             
             self.speech_process = subprocess.Popen(
                 cmd,
