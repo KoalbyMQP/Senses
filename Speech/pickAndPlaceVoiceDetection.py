@@ -40,6 +40,7 @@ class State:
     IDLE = "Idle"
     KEYWORD_SPOTTING = "Keyword Spotting"
     COMMAND_PARSING = "Command Parsing"
+    LISTENING_FURTHER = "Listening Further Commands"
     APPLE = "Apple"
     ORANGE = "Orange"
     BOTTLE = "Bottle"
@@ -56,13 +57,15 @@ class SpeechDetector:
             with sr.Microphone() as src:
                 print("Adjusting for ambient noise...")
                 r.adjust_for_ambient_noise(src, duration=0.2)
-                print("Listening for speech")
                 
-                # Add a timeout to prevent blocking indefinitely
+                if self.current_state == State.LISTENING_FURTHER:
+                    print("Listening for 'stop' command...")
+                else:
+                    print("Listening for 'pick up' command...")
+                
                 try:
                     audio = r.listen(src, timeout=1.0, phrase_time_limit=3.0)
                 except sr.WaitTimeoutError:
-                    # If no speech detected within timeout, return to idle
                     return
                 
                 try:
@@ -70,14 +73,23 @@ class SpeechDetector:
                     spoken_text = r.recognize_google(audio)
                     print(f"You said: {spoken_text}")
                     
-                    # Only change state and process if it's a "pick up" command
-                    if "pick up" in spoken_text.lower():
-                        self.current_state = State.KEYWORD_SPOTTING
-                        self.speech_handler.process_command(spoken_text)
+                    if self.current_state == State.LISTENING_FURTHER:
+                        if "stop" in spoken_text.lower():
+                            print("Stop command received. Resetting to listen for new target.")
+                            play_tts("Stopping current task. Ready for new pick up command.")
+                            self.current_state = State.IDLE
+                            self.speech_handler.process_command("stop")
                     else:
-                        print("Command not recognized. Please say 'pick up' followed by an object name.")
-                        play_tts("Please say pick up followed by an object name.")
-                        
+                        if "pick up" in spoken_text.lower():
+                            self.current_state = State.KEYWORD_SPOTTING
+                            self.speech_handler.process_command(spoken_text)
+                            print("Target set. Listening for stop command...")
+                            play_tts("Target set. Say stop when you want to pick up something else.")
+                            self.current_state = State.LISTENING_FURTHER
+                        else:
+                            print("Command not recognized. Please say 'pick up' followed by an object name.")
+                            play_tts("Please say pick up followed by an object name.")
+                            
                 except sr.UnknownValueError:
                     print("Sorry, could not understand the audio.")
                 except sr.RequestError:
@@ -126,17 +138,23 @@ class SpeechHandler:
                 continue
 
     def process_command(self, spoken_text):
-        if "pick up" in spoken_text.lower():
+        if spoken_text.lower() == "stop":
+            message = "stop"
+            print("Sending stop command")
+        elif "pick up" in spoken_text.lower():
             target = spoken_text.lower().split("pick up ")[-1].strip()
             message = f"pick up {target}"
             print(f"Attempting to send command: {message}")
-            try:
-                self.socket.send_string(message, zmq.NOBLOCK)
-                print(f"Successfully sent command: {message}")
-            except zmq.error.Again:
-                print("Failed to send message (would block)")
-            except Exception as e:
-                print(f"Error sending message: {e}")
+        else:
+            return
+            
+        try:
+            self.socket.send_string(message, zmq.NOBLOCK)
+            print(f"Successfully sent command: {message}")
+        except zmq.error.Again:
+            print("Failed to send message (would block)")
+        except Exception as e:
+            print(f"Error sending message: {e}")
 
     def cleanup(self):
         """Clean up ZMQ resources"""
@@ -176,7 +194,7 @@ def run_speech_detection():
         pygame.mixer.init()
         
         # Initial greeting with preparation time notice
-        play_tts("Hi! I'm Finley, your personal assistant.")
+        play_tts("Hi! I'm Finley, your personal assistant. I'll start listening in 5 seconds. Say pick up followed by an object name to set a target, and say stop when you want to pick up something else.")
         
         # Give time for the tester to prepare
         print("Waiting 5 seconds before starting to listen...")
@@ -188,7 +206,9 @@ def run_speech_detection():
         while True:
             if detector.current_state == State.IDLE:
                 detector.listen_and_process()
-                # Add a small sleep to prevent CPU spinning
+                time.sleep(0.1)
+            elif detector.current_state == State.LISTENING_FURTHER:
+                detector.listen_and_process()
                 time.sleep(0.1)
             else:
                 print("Returning to idle state...")
