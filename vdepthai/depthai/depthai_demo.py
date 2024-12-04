@@ -1303,6 +1303,7 @@ class SpeechEnabledDemo(Demo):
             self._nnManager.createQueues(self._device)
         target_object = None
         while True:
+            # Only check for ZMQ messages
             try:
                 command = self.socket.recv_string(flags=zmq.NOBLOCK)
                 print(f"Received command: {command}")
@@ -1313,15 +1314,8 @@ class SpeechEnabledDemo(Demo):
                     self.current_target = None
                     if hasattr(self, '_nnManager'):
                         self._nnManager.set_target_object(None)
-                    # Force close all OpenCV windows
-                    cv2.destroyWindow("color")
-                    cv2.waitKey(1)  # Give time for window to close
-                    # Reset pipeline
-                    self._device.close()
-                    self._device.startPipeline(self._pm.pipeline)
-                    self._pm.createDefaultQueues(self._device)
-                    if self._conf.useNN:
-                        self._nnManager.createQueues(self._device)
+                    # Close the camera window
+                    cv2.destroyAllWindows()
                 
                 elif command.startswith("pick up"):
                     target_object = command.split("pick up ")[1]

@@ -99,7 +99,7 @@ class SpeechDetector:
             print(f"Error in listen_and_process: {e}")
         
         # Always return to IDLE state after processing
-        # self.current_state = State.IDLE
+        self.current_state = State.IDLE
 
 class SpeechHandler:
     def __init__(self):
