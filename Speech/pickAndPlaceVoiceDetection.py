@@ -68,18 +68,14 @@ class SpeechDetector:
         self.current_state = State.IDLE
         self.speech_handler = None
         self.current_target = None
-        self.last_announcement_time = 0
-        self.announcement_interval = 5  # Announce every 5 seconds
         
     def listen_and_process(self):
         try:
-            # Announce current target if exists
-            current_time = time.time()
-            if self.current_target and (current_time - self.last_announcement_time) >= self.announcement_interval:
-                play_tts(f"Currently targeting {self.current_target}")
-                self.last_announcement_time = current_time
-                
             with sr.Microphone() as src:
+                # Announce the current target
+                if self.current_target:
+                    play_tts(f"Current target is: {self.current_target}")
+                
                 print("Adjusting for ambient noise...")
                 r.adjust_for_ambient_noise(src, duration=0.2)
                 print("Listening for speech")
@@ -99,10 +95,9 @@ class SpeechDetector:
                     # Only change state and process if it's a "pick up" command
                     if "pick up" in spoken_text.lower():
                         self.current_state = State.KEYWORD_SPOTTING
-                        target = spoken_text.lower().split("pick up ")[-1].strip()
-                        self.current_target = target
-                        self.last_announcement_time = time.time()  # Reset announcement timer
                         self.speech_handler.process_command(spoken_text)
+                        # Update the current target
+                        self.current_target = spoken_text.lower().split("pick up ")[-1].strip()
                     else:
                         print("Command not recognized. Please say 'pick up' followed by an object name.")
                         play_tts("Please say pick up followed by an object name.")
