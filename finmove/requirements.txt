@@ -9,3 +9,4 @@ board
 pyzmq
 cbor
 cbor2 
+ikpy
