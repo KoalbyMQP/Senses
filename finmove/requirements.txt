@@ -1,0 +1,11 @@
+numpy
+pyserial
+modern_robotics
+adafruit-circuitpython-bno055
+coppeliasim-zmqremoteapi-client
+matplotlib
+asyncio
+board
+pyzmq
+cbor
+cbor2 

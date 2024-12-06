@@ -1,5 +1,3 @@
-Checking for OAK device...
-[DeviceInfo(name=3.1, mxid=184430100197CA0F00, X_LINK_UNBOOTED, X_LINK_USB_VSC, X_LINK_MYRIAD_X, X_LINK_SUCCESS)]
 pygame 2.6.1 (SDL 2.28.4, Python 3.11.2)
 Hello from the pygame community. https://www.pygame.org/contribute.html
 Logging and crash reporting disabled! No module named 'sentry_sdk'
