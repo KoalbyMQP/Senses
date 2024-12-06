@@ -1271,6 +1271,62 @@ class SpeechEnabledDemo(Demo):
         self.socket = None
         self.measurements_saved = False
         
+        # new ZMQ publisher for coordinates
+        self.coord_context = zmq.Context()
+        self.coord_socket = self.coord_context.socket(zmq.PUB)
+        self.coord_socket.bind("tcp://*:5559")  # different port than speech
+
+    def filter_measurements_iqr(self, measurements):
+
+        import numpy as np
+        
+        x_coords = [m['position']['x'] for m in measurements]
+        y_coords = [m['position']['y'] for m in measurements]
+        z_coords = [m['position']['z'] for m in measurements]
+        widths = [m['dimensions']['width'] for m in measurements]
+        heights = [m['dimensions']['height'] for m in measurements]
+        
+        def apply_iqr_filter(data):
+            Q1 = np.percentile(data, 25)
+            Q3 = np.percentile(data, 75)
+            IQR = Q3 - Q1
+            lower_bound = Q1 - 1.5 * IQR
+            upper_bound = Q3 + 1.5 * IQR
+            return lower_bound, upper_bound
+        
+       
+        x_bounds = apply_iqr_filter(x_coords)
+        y_bounds = apply_iqr_filter(y_coords)
+        z_bounds = apply_iqr_filter(z_coords)
+        width_bounds = apply_iqr_filter(widths)
+        height_bounds = apply_iqr_filter(heights)
+        
+        filtered_measurements = []
+        for m in measurements:
+            x, y, z = m['position']['x'], m['position']['y'], m['position']['z']
+            w, h = m['dimensions']['width'], m['dimensions']['height']
+            
+            if (x_bounds[0] <= x <= x_bounds[1] and
+                y_bounds[0] <= y <= y_bounds[1] and
+                z_bounds[0] <= z <= z_bounds[1] and
+                width_bounds[0] <= w <= width_bounds[1] and
+                height_bounds[0] <= h <= height_bounds[1]):
+                filtered_measurements.append(m)
+        
+        return filtered_measurements
+
+    def calculate_mean_coordinates(self, filtered_measurements):
+        
+        x_coords = [m['position']['x'] for m in filtered_measurements]
+        y_coords = [m['position']['y'] for m in filtered_measurements]
+        z_coords = [m['position']['z'] for m in filtered_measurements]
+        
+        mean_x = sum(x_coords) / len(x_coords)
+        mean_y = sum(y_coords) / len(y_coords)
+        mean_z = sum(z_coords) / len(z_coords)
+        
+        return mean_x, mean_y, mean_z
+
     def setup(self, conf):
         super().setup(conf)
         
@@ -1336,7 +1392,7 @@ class SpeechEnabledDemo(Demo):
                         self._nnManager.set_target_object(target_object)
                         print(f"Target object set to: {self._nnManager._target_object}")
                         
-                        # debug file 
+                        # Create measurements file
                         self.measurements_file = open('test_tuple.txt', 'w')
                         print("Created measurements file: test_tuple.txt")
                         
@@ -1345,19 +1401,33 @@ class SpeechEnabledDemo(Demo):
             except Exception as e:
                 print(f"Error in ZMQ receive: {e}")
                 time.sleep(0.001)
+                
         super().run()
         try:
             while self.shouldRun() and self.canRun():
                 self._fps.nextIter()
                 self.onIter(self)
                 
-                # Get measurements from NNetManager
+                # Get and process measurements from NNetManager
                 if hasattr(self, '_nnManager') and not self.measurements_saved:
                     measurements = self._nnManager.get_measurement_buffer()
-                    if len(measurements) >= 200: 
-                        print("Saving 200 measurements to test_tuple.txt")
-                        for m in measurements[:200]:  
-                            # Format: (x, y, z, width, height) 
+                    if len(measurements) >= 200:
+                        print("Applying IQR filtering to measurements...")
+                        filtered_measurements = self.filter_measurements_iqr(measurements[:200])
+                        print(f"Filtered measurements: {len(filtered_measurements)} out of 200")
+                        
+                        # Calculate mean coordinates
+                        mean_x, mean_y, mean_z = self.calculate_mean_coordinates(filtered_measurements)
+                        print(f"Mean coordinates: X={mean_x:.5f}, Y={mean_y:.5f}, Z={mean_z:.5f}")
+                        
+                        # Send coordinates via ZMQ
+                        coord_message = f"{mean_x},{mean_y},{mean_z}"
+                        self.coord_socket.send_string(coord_message)
+                        print(f"Sent coordinates via ZMQ: {coord_message}")
+                        
+                        print("Saving filtered measurements to test_tuple.txt")
+                        for m in filtered_measurements:
+                            # Format: (x, y, z, width, height)
                             measurement_tuple = (
                                 m['position']['x'],
                                 m['position']['y'],
@@ -1368,7 +1438,7 @@ class SpeechEnabledDemo(Demo):
                             self.measurements_file.write(str(measurement_tuple) + '\n')
                         self.measurements_file.flush()
                         self.measurements_saved = True
-                        print("Measurements saved successfully")
+                        print("Filtered measurements saved successfully")
                 
                 self.loop()
                 
@@ -1379,6 +1449,10 @@ class SpeechEnabledDemo(Demo):
         finally:
             if hasattr(self, 'measurements_file'):
                 self.measurements_file.close()
+            if self.socket:
+                self.socket.close()
+            if self.context:
+                self.context.term()
             self.stop()
 
     def stop(self, *args, **kwargs):
