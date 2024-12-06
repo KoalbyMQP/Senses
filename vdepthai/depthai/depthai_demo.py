@@ -1269,9 +1269,9 @@ class SpeechEnabledDemo(Demo):
         self.current_target = None
         self.context = None
         self.socket = None
+        self.measurements_saved = False
         
     def setup(self, conf):
-        # First call parent's setup to initialize device and other components
         super().setup(conf)
         
         # Now that device is initialized, set up ZMQ
@@ -1316,15 +1316,13 @@ class SpeechEnabledDemo(Demo):
             print(f"Error starting speech detection: {e}")
             
     def run(self):
-    # First initialize the pipeline from parent class
         self._device.startPipeline(self._pm.pipeline)
         self._pm.createDefaultQueues(self._device)
         if self._conf.useNN:
             self._nnManager.createQueues(self._device)
         target_object = None
+        
         while target_object == None:
-            print(target_object)
-            # Only check for ZMQ messages
             try:
                 command = self.socket.recv_string(flags=zmq.NOBLOCK)
                 print(f"Received command: {command}")
@@ -1337,14 +1335,55 @@ class SpeechEnabledDemo(Demo):
                         print("Setting target object in NNetManager")
                         self._nnManager.set_target_object(target_object)
                         print(f"Target object set to: {self._nnManager._target_object}")
+                        
+                        # debug file 
+                        self.measurements_file = open('test_tuple.txt', 'w')
+                        print("Created measurements file: test_tuple.txt")
+                        
             except zmq.Again:
-                pass  # No message available, continue with frame processing
+                pass
             except Exception as e:
                 print(f"Error in ZMQ receive: {e}")
-                time.sleep(0.001)  # Small sleep to prevent CPU spinning
+                time.sleep(0.001)
         super().run()
-            
+        try:
+            while self.shouldRun() and self.canRun():
+                self._fps.nextIter()
+                self.onIter(self)
+                
+                # Get measurements from NNetManager
+                if hasattr(self, '_nnManager') and not self.measurements_saved:
+                    measurements = self._nnManager.get_measurement_buffer()
+                    if len(measurements) >= 200: 
+                        print("Saving 200 measurements to test_tuple.txt")
+                        for m in measurements[:200]:  
+                            # Format: (x, y, z, width, height) 
+                            measurement_tuple = (
+                                m['position']['x'],
+                                m['position']['y'],
+                                m['position']['z'],
+                                m['dimensions']['width'],
+                                m['dimensions']['height']
+                            )
+                            self.measurements_file.write(str(measurement_tuple) + '\n')
+                        self.measurements_file.flush()
+                        self.measurements_saved = True
+                        print("Measurements saved successfully")
+                
+                self.loop()
+                
+        except StopIteration:
+            pass
+        except Exception as ex:
+            raise
+        finally:
+            if hasattr(self, 'measurements_file'):
+                self.measurements_file.close()
+            self.stop()
+
     def stop(self, *args, **kwargs):
+        if hasattr(self, 'measurements_file'):
+            self.measurements_file.close()
         if self.socket:
             self.socket.close()
         if self.context:
