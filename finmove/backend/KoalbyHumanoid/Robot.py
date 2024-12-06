@@ -18,9 +18,12 @@ TIME_BETWEEN_MOTOR_CHECKS = 2
 
 class Robot():
 
+    
     # Initialization methods
 
     def __init__(self, is_real):
+        self.remotehost = '192.168.1.15'
+        self.remoteport = 23000
         self.is_real = is_real
         if self.is_real:
             self.client = None
@@ -36,7 +39,7 @@ class Robot():
         else:
             self.checkCoppeliaSimResponding()
 
-            self.client = RemoteAPIClient(host='130.215.170.142', port=23000)
+            self.client = RemoteAPIClient(host=self.remotehost, port=self.remoteport)
             self.sim = self.client.require('sim')
             self.motorMovePositionScriptHandle = self.sim.getScript(self.sim.scripttype_childscript, self.sim.getObject("./chest_respondable"))
             self.motors = self.sim_motors_init()
@@ -71,7 +74,7 @@ class Robot():
         print("Robot Created and Initialized")
 
     def checkCoppeliaSimResponding(self):
-        client = RemoteAPIClient(host='130.215.170.142', port=23000)
+        client = RemoteAPIClient(host=self.remotehost, port=self.remoteport)
         client._send({'func': '', 'args': ['']})
         if (client.socket.poll(1000) == 0):
             raise Exception("CoppeliaSim is not responding. Restart CoppeliaSim and try again.")
