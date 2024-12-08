@@ -35,7 +35,7 @@ class Robot():
             
             self.electromagnet = Electromagnet()
         else:
-            # self.checkCoppeliaSimResponding()
+            self.checkCoppeliaSimResponding()
 
             self.client = RemoteAPIClient(host='130.215.171.157', port=23000) # remote ip and port 
             self.sim = self.client.require('sim')
