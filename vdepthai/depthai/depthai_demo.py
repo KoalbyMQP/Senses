@@ -1375,6 +1375,8 @@ class SpeechEnabledDemo(Demo):
         # Start robot control process
         print("Starting robot control process...")
         try:
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            project_root = os.path.dirname(os.path.dirname(current_dir))
             robot_script_path = os.path.join(project_root, "backend", "Testing", "finlyPickAndPlace.py")
             
             venv_path = os.environ.get('VIRTUAL_ENV', '')
