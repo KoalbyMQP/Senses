@@ -81,7 +81,7 @@ try:
     print("Waiting for coordinates from vision system...")
     # Wait for coordinates with timeout
     start_time = time.time()
-    timeout = 60  # 60 seconds timeout
+    timeout = 180  # 3 minutes timeout
     
     while time.time() - start_time < timeout:
         try:

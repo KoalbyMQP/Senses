@@ -1266,15 +1266,16 @@ class SpeechEnabledDemo(Demo):
     def __init__(self):
         super().__init__()
         self.speech_process = None
+        self.robot_process = None  
         self.current_target = None
         self.context = None
         self.socket = None
         self.measurements_saved = False
         
-        # new ZMQ publisher for coordinates
+        # ZMQ publisher for coordinates
         self.coord_context = zmq.Context()
         self.coord_socket = self.coord_context.socket(zmq.PUB)
-        self.coord_socket.bind("tcp://*:5559")  # different port than speech
+        self.coord_socket.bind("tcp://*:5559")
 
     def filter_measurements_iqr(self, measurements):
 
@@ -1330,7 +1331,7 @@ class SpeechEnabledDemo(Demo):
     def setup(self, conf):
         super().setup(conf)
         
-        # Now that device is initialized, set up ZMQ
+        # Set up ZMQ subscriber
         print("Setting up ZMQ subscriber...")
         try:
             self.context = zmq.Context()
@@ -1342,7 +1343,7 @@ class SpeechEnabledDemo(Demo):
         except Exception as e:
             print(f"Error setting up ZMQ subscriber: {e}")
 
-        
+        # Start speech detection process
         print("Starting speech detection process...")
         try:
             current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -1355,10 +1356,10 @@ class SpeechEnabledDemo(Demo):
             else:
                 activate_cmd = ""
             
-            cmd = f"lxterminal -e 'bash -c \"{activate_cmd}python3 {speech_script_path} 2>/dev/null; echo Press Enter to close...; read\"'"
+            speech_cmd = f"lxterminal -e 'bash -c \"{activate_cmd}python3 {speech_script_path} 2>/dev/null; echo Press Enter to close...; read\"'"
             
             self.speech_process = subprocess.Popen(
-                cmd,
+                speech_cmd,
                 shell=True,
                 preexec_fn=os.setsid
             )
@@ -1370,7 +1371,28 @@ class SpeechEnabledDemo(Demo):
                 print("Warning: Speech detection process failed to start")
         except Exception as e:
             print(f"Error starting speech detection: {e}")
+
+        # Start robot control process
+        print("Starting robot control process...")
+        try:
+            robot_script_path = os.path.join(project_root, "backend", "Testing", "finlyPickAndPlace.py")
             
+            robot_cmd = f"lxterminal -e 'bash -c \"{activate_cmd}python3 {robot_script_path} 2>/dev/null; echo Press Enter to close...; read\"'"
+            
+            self.robot_process = subprocess.Popen(
+                robot_cmd,
+                shell=True,
+                preexec_fn=os.setsid
+            )
+            
+            time.sleep(1)
+            if self.robot_process.poll() is None:
+                print("Robot control process started successfully in new terminal")
+            else:
+                print("Warning: Robot control process failed to start")
+        except Exception as e:
+            print(f"Error starting robot control: {e}")
+    
     def run(self):
         self._device.startPipeline(self._pm.pipeline)
         self._pm.createDefaultQueues(self._device)
@@ -1456,14 +1478,36 @@ class SpeechEnabledDemo(Demo):
             self.stop()
 
     def stop(self, *args, **kwargs):
+        """Clean up all processes and resources"""
+        # Terminate speech process if running
+        if self.speech_process:
+            try:
+                os.killpg(os.getpgid(self.speech_process.pid), signal.SIGTERM)
+            except Exception as e:
+                print(f"Error terminating speech process: {e}")
+
+        # Terminate robot process if running
+        if self.robot_process:
+            try:
+                os.killpg(os.getpgid(self.robot_process.pid), signal.SIGTERM)
+            except Exception as e:
+                print(f"Error terminating robot process: {e}")
+
+        # Clean up ZMQ resources
+        if hasattr(self, 'socket'):
+            self.socket.close()
+        if hasattr(self, 'context'):
+            self.context.term()
+        if hasattr(self, 'coord_socket'):
+            self.coord_socket.close()
+        if hasattr(self, 'coord_context'):
+            self.coord_context.term()
+
+        # Close measurement file if open
         if hasattr(self, 'measurements_file'):
             self.measurements_file.close()
-        if self.socket:
-            self.socket.close()
-        if self.context:
-            self.context.term()
-        super().stop(*args, **kwargs)
 
+        super().stop(*args, **kwargs)
 
 def runOpenCv():
     confManager = prepareConfManager(args)
