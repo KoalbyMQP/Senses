@@ -1281,7 +1281,8 @@ class SpeechEnabledDemo(Demo):
         self.coord_socket.bind("tcp://*:5559")
 
     def filter_measurements_iqr(self, measurements):
-
+        print(f"Starting IQR filtering with {len(measurements)} measurements")
+        
         import numpy as np
         
         x_coords = [m['position']['x'] for m in measurements]
@@ -1289,6 +1290,11 @@ class SpeechEnabledDemo(Demo):
         z_coords = [m['position']['z'] for m in measurements]
         widths = [m['dimensions']['width'] for m in measurements]
         heights = [m['dimensions']['height'] for m in measurements]
+        
+        print(f"Extracted coordinates ranges:")
+        print(f"X: {min(x_coords):.5f} to {max(x_coords):.5f}")
+        print(f"Y: {min(y_coords):.5f} to {max(y_coords):.5f}")
+        print(f"Z: {min(z_coords):.5f} to {max(z_coords):.5f}")
         
         def apply_iqr_filter(data):
             Q1 = np.percentile(data, 25)
@@ -1298,14 +1304,19 @@ class SpeechEnabledDemo(Demo):
             upper_bound = Q3 + 1.5 * IQR
             return lower_bound, upper_bound
         
-       
         x_bounds = apply_iqr_filter(x_coords)
         y_bounds = apply_iqr_filter(y_coords)
         z_bounds = apply_iqr_filter(z_coords)
         width_bounds = apply_iqr_filter(widths)
         height_bounds = apply_iqr_filter(heights)
         
+        print(f"IQR Bounds:")
+        print(f"X: {x_bounds[0]:.5f} to {x_bounds[1]:.5f}")
+        print(f"Y: {y_bounds[0]:.5f} to {y_bounds[1]:.5f}")
+        print(f"Z: {z_bounds[0]:.5f} to {z_bounds[1]:.5f}")
+        
         filtered_measurements = []
+        print(filtered_measurements)
         for m in measurements:
             x, y, z = m['position']['x'], m['position']['y'], m['position']['z']
             w, h = m['dimensions']['width'], m['dimensions']['height']
@@ -1316,6 +1327,8 @@ class SpeechEnabledDemo(Demo):
                 width_bounds[0] <= w <= width_bounds[1] and
                 height_bounds[0] <= h <= height_bounds[1]):
                 filtered_measurements.append(m)
+        
+        print(f"After IQR filtering: {len(filtered_measurements)} measurements remain")
         
         return filtered_measurements
 
