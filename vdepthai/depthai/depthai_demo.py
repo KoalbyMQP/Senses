@@ -1385,7 +1385,7 @@ class SpeechEnabledDemo(Demo):
             else:
                 activate_cmd = ""
             
-            robot_cmd = f"lxterminal -e 'bash -c \"{activate_cmd}python3 {robot_script_path} 2>/dev/null; echo Press Enter to close...; read\"'"
+            robot_cmd = f"lxterminal -e 'bash -c \"{activate_cmd}python3 {robot_script_path}; echo Press Enter to close...; read\"'"
             
             self.robot_process = subprocess.Popen(
                 robot_cmd,
