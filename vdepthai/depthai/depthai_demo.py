@@ -1268,11 +1268,14 @@ class SpeechEnabledDemo(Demo):
         self.speech_process = None
         self.robot_process = None  
         self.current_target = None
-        self.context = None
-        self.socket = None
-        self.measurements_saved = False
         
-        # ZMQ publisher for coordinates
+        # Speech command subscriber (port 5558)
+        self.context = zmq.Context()
+        self.socket = self.context.socket(zmq.SUB)
+        self.socket.connect("tcp://localhost:5558")
+        self.socket.setsockopt_string(zmq.SUBSCRIBE, "")
+        
+        # Coordinate publisher (port 5559)
         self.coord_context = zmq.Context()
         self.coord_socket = self.coord_context.socket(zmq.PUB)
         self.coord_socket.bind("tcp://*:5559")

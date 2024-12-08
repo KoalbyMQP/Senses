@@ -71,7 +71,7 @@ while time.time() - simStartTime < 2:
 def setup_zmq_subscriber():
     context = zmq.Context()
     socket = context.socket(zmq.SUB)
-    socket.connect("tcp://localhost:5558")
+    socket.connect("tcp://localhost:5559")
     socket.setsockopt_string(zmq.SUBSCRIBE, "")
     return context, socket
 
