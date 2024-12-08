@@ -498,36 +498,17 @@ class Demo:
                 self.onIter(self)
                 
                 # Add coordinate processing here
-                if hasattr(self, '_nnManager') and not self.measurements_saved:
-                    measurements = self._nnManager.get_measurement_buffer()
-                    if len(measurements) >= 200:
-                        print("Applying IQR filtering to measurements...")
-                        filtered_measurements = self.filter_measurements_iqr(measurements[:200])
-                        print(f"Filtered measurements: {len(filtered_measurements)} out of 200")
-                        
-                        # Calculate mean coordinates
-                        mean_x, mean_y, mean_z = self.calculate_mean_coordinates(filtered_measurements)
-                        print(f"Mean coordinates: X={mean_x:.5f}, Y={mean_y:.5f}, Z={mean_z:.5f}")
-                        
-                        # Send coordinates via ZMQ
-                        coord_message = f"{mean_x},{mean_y},{mean_z}"
-                        self.coord_socket.send_string(coord_message)
-                        print(f"Sent coordinates via ZMQ: {coord_message}")
-                        
-                        print("Saving filtered measurements to test_tuple.txt")
-                        for m in filtered_measurements:
-                            # Format: (x, y, z, width, height)
-                            measurement_tuple = (
-                                m['position']['x'],
-                                m['position']['y'],
-                                m['position']['z'],
-                                m['dimensions']['width'],
-                                m['dimensions']['height']
-                            )
-                            self.measurements_file.write(str(measurement_tuple) + '\n')
-                        self.measurements_file.flush()
-                        self.measurements_saved = True
-                        print("Filtered measurements saved successfully")
+                if hasattr(self, '_nnManager') and self._nnManager is not None:
+                    if len(self._nnManager.measurement_buffer) >= self._nnManager.max_buffer_size:
+                        filtered_measurements = self.filter_measurements_iqr(self._nnManager.measurement_buffer)
+                        if filtered_measurements:
+                            mean_x = np.mean([m['position']['x'] for m in filtered_measurements])
+                            mean_y = np.mean([m['position']['y'] for m in filtered_measurements])
+                            mean_z = np.mean([m['position']['z'] for m in filtered_measurements])
+                            print(f"Publishing mean coordinates: {mean_x:.5f}, {mean_y:.5f}, {mean_z:.5f}")
+                            if hasattr(self, 'coord_socket'):
+                                self.coord_socket.send_string(f"{mean_x},{mean_y},{mean_z}")
+                            self._nnManager.measurement_buffer.clear()  
                 
                 self.loop()
                 
