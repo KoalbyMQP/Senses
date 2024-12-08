@@ -1377,6 +1377,12 @@ class SpeechEnabledDemo(Demo):
         try:
             robot_script_path = os.path.join(project_root, "backend", "Testing", "finlyPickAndPlace.py")
             
+            venv_path = os.environ.get('VIRTUAL_ENV', '')
+            if venv_path:
+                activate_cmd = f"source {venv_path}/bin/activate && "
+            else:
+                activate_cmd = ""
+            
             robot_cmd = f"lxterminal -e 'bash -c \"{activate_cmd}python3 {robot_script_path} 2>/dev/null; echo Press Enter to close...; read\"'"
             
             self.robot_process = subprocess.Popen(
