@@ -3,22 +3,22 @@
      Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
      For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
 <robot
-  name="FullAssemFIN">
+  name="FullAssemFIN15">
   <link
     name="chest">
     <inertial>
       <origin
-        xyz="-0.0162678187906284 0.268972566698864 0.0139057688972647"
+        xyz="0.00333118253031414 -0.0155618567951945 0.271801575316681"
         rpy="0 0 0" />
       <mass
-        value="0.295734188674782" />
+        value="0.419117350386115" />
       <inertia
-        ixx="0.000431853693447807"
-        ixy="-4.16200352677648E-06"
-        ixz="2.04910370926592E-06"
-        iyy="0.000843495318814118"
-        iyz="-2.19340660629062E-05"
-        izz="0.000736255547547308" />
+        ixx="0.000473786698061691"
+        ixy="-8.97069623346506E-07"
+        ixz="-4.21628791061141E-06"
+        iyy="0.00076785486137848"
+        iyz="2.12572621696726E-05"
+        izz="0.000895196972888639" />
     </inertial>
     <visual>
       <origin
@@ -26,7 +26,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/chest.STL" />
+          filename="package://FullAssemFIN15/meshes/chest.STL" />
       </geometry>
       <material
         name="">
@@ -40,7 +40,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/chest.STL" />
+          filename="package://FullAssemFIN15/meshes/chest.STL" />
       </geometry>
     </collision>
   </link>
@@ -48,17 +48,17 @@
     name="neck">
     <inertial>
       <origin
-        xyz="0.000128813733326034 0.0183292466007133 -0.00120990572941316"
+        xyz="0.020931511541962 -0.0348550317521821 0.012786023220724"
         rpy="0 0 0" />
       <mass
         value="0.0666067428276519" />
       <inertia
-        ixx="1.5037082249185E-05"
-        ixy="-8.66947405674995E-08"
-        ixz="-5.2222158436597E-10"
-        iyy="1.42580661479088E-05"
-        iyz="2.16316134405527E-07"
-        izz="9.61510809787097E-06" />
+        ixx="1.50370817123016E-05"
+        ixy="-8.66548417653992E-08"
+        ixz="1.1712415089891E-09"
+        iyy="1.42674127171428E-05"
+        iyz="5.76048272071785E-08"
+        izz="9.60576206552038E-06" />
     </inertial>
     <visual>
       <origin
@@ -66,7 +66,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/neck.STL" />
+          filename="package://FullAssemFIN15/meshes/neck.STL" />
       </geometry>
       <material
         name="">
@@ -80,7 +80,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/neck.STL" />
+          filename="package://FullAssemFIN15/meshes/neck.STL" />
       </geometry>
     </collision>
   </link>
@@ -88,35 +88,35 @@
     name="neck_turn"
     type="revolute">
     <origin
-      xyz="-0.017795 -0.013377 0.29536"
-      rpy="1.5367 0.009759 -3.1357" />
+      xyz="0.0037758 -0.018817 0.34931"
+      rpy="1.5708 0.0097511 -3.1359" />
     <parent
       link="chest" />
     <child
       link="neck" />
     <axis
-      xyz="0 1 0" />
-    <limit
+      xyz="-0.0015815 0.99926 -0.038308" />
+    <!-- <limit
       lower="0"
       upper="0"
       effort="0"
-      velocity="0" />
+      velocity="0" /> -->
   </joint>
   <link
     name="head">
     <inertial>
       <origin
-        xyz="-7.03598383462577E-05 0.0454627000701855 0.0518627759444771"
+        xyz="0.00122666072118455 0.0425138263667263 -0.0424115694567081"
         rpy="0 0 0" />
       <mass
         value="0.285399764673854" />
       <inertia
-        ixx="0.000749236659807357"
-        ixy="-9.97315952122196E-07"
-        ixz="8.57992275045456E-07"
-        iyy="0.00111702935240592"
-        iyz="-1.17369571465226E-05"
-        izz="0.000639688583178409" />
+        ixx="0.000749236659829662"
+        ixy="-9.67479244625837E-07"
+        ixz="8.9150084811615E-07"
+        iyy="0.00111567435375088"
+        iyz="-2.79770663570002E-05"
+        izz="0.000641043581855502" />
     </inertial>
     <visual>
       <origin
@@ -124,7 +124,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/head.STL" />
+          filename="package://FullAssemFIN15/meshes/head.STL" />
       </geometry>
       <material
         name="">
@@ -138,7 +138,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/head.STL" />
+          filename="package://FullAssemFIN15/meshes/head.STL" />
       </geometry>
     </collision>
   </link>
@@ -146,34 +146,34 @@
     name="head"
     type="revolute">
     <origin
-      xyz="0.0013216 0.052073 -0.1056"
-      rpy="0 -0.00023277 0" />
+      xyz="0.020803 0 0"
+      rpy="0 0 0" />
     <parent
       link="neck" />
     <child
       link="head" />
     <axis
-      xyz="-0.020202 0.99922 0.034033" />
-    <limit
+      xyz="-1 0 0" />
+    <!-- <limit
       lower="0"
       upper="0"
       effort="0"
-      velocity="0" />
+      velocity="0" /> -->
   </joint>
   <link
     name="Camera">
     <inertial>
       <origin
-        xyz="-0.00197599803544017 0.00796277438553358 -0.0049631615393359"
+        xyz="-0.000289527550498533 -0.00819917788247479 -0.0049631615393359"
         rpy="0 0 0" />
       <mass
         value="0.0191124678007456" />
       <inertia
-        ixx="2.55314343679322E-06"
-        ixy="-3.55237691706654E-06"
-        ixz="1.25824057640536E-08"
-        iyy="1.39519100606895E-05"
-        iyz="8.46540275580061E-09"
+        ixx="1.53669857880473E-06"
+        ixy="-1.97213230160209E-09"
+        ixz="-1.44250254395816E-08"
+        iyy="1.4968354918678E-05"
+        iyz="-4.67959610400432E-09"
         izz="1.37717646469347E-05" />
     </inertial>
     <visual>
@@ -182,7 +182,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/Camera.STL" />
+          filename="package://FullAssemFIN15/meshes/Camera.STL" />
       </geometry>
       <material
         name="">
@@ -196,7 +196,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/Camera.STL" />
+          filename="package://FullAssemFIN15/meshes/Camera.STL" />
       </geometry>
     </collision>
   </link>
@@ -204,8 +204,8 @@
     name="Camera"
     type="fixed">
     <origin
-      xyz="0 0.10563 0.019299"
-      rpy="1.5708 0.27854 3.1416" />
+      xyz="0.00129702055956225 0.101533990866758 -0.0770080285181508"
+      rpy="-1.60490199320971 0 0" />
     <parent
       link="head" />
     <child
@@ -217,16 +217,16 @@
     name="right_shoulder1">
     <inertial>
       <origin
-        xyz="0.0158592794529133 -0.0108921829104856 -9.24216531084099E-09"
+        xyz="0.0158592794529138 -0.0108921829104992 -9.24216525532984E-09"
         rpy="0 0 0" />
       <mass
         value="0.133882144635927" />
       <inertia
         ixx="3.36663118708798E-05"
-        ixy="-9.78893359843575E-07"
-        ixz="3.11617665589513E-12"
+        ixy="-9.78893359843573E-07"
+        ixz="3.1161766555775E-12"
         iyy="4.8139449805534E-05"
-        iyz="-6.36580383369378E-11"
+        iyz="-6.36580383367442E-11"
         izz="5.86071368245764E-05" />
     </inertial>
     <visual>
@@ -235,7 +235,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/right_shoulder1.STL" />
+          filename="package://FullAssemFIN15/meshes/right_shoulder1.STL" />
       </geometry>
       <material
         name="">
@@ -249,7 +249,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/right_shoulder1.STL" />
+          filename="package://FullAssemFIN15/meshes/right_shoulder1.STL" />
       </geometry>
     </collision>
   </link>
@@ -257,32 +257,32 @@
     name="right_shoulder_twist"
     type="revolute">
     <origin
-      xyz="-0.098019 -0.013875 0.27707"
+      xyz="-0.096814 -0.0048096 0.27768"
       rpy="-3.1318 0.034102 -1.5646" />
     <parent
       link="chest" />
     <child
       link="right_shoulder1" />
     <axis
-      xyz="0 1 0" />
-    <limit
+      xyz="0 0 0" />
+    <!-- <limit
       lower="0"
       upper="0"
       effort="0"
-      velocity="0" />
+      velocity="0" /> -->
   </joint>
   <link
     name="right_shoulder2">
     <inertial>
       <origin
-        xyz="-0.0182525257516686 0.0204128765319717 -8.59425164367877E-09"
+        xyz="-0.0182525257516556 0.0204128765319722 -8.59425158816762E-09"
         rpy="0 0 0" />
       <mass
         value="0.140671761320956" />
       <inertia
         ixx="4.07168146145147E-05"
         ixy="-1.12442978550689E-06"
-        ixz="3.07762788814125E-12"
+        ixz="3.07762788788979E-12"
         iyy="4.61370432072614E-05"
         iyz="-6.36996092664974E-11"
         izz="5.71678892887876E-05" />
@@ -293,7 +293,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/right_shoulder2.STL" />
+          filename="package://FullAssemFIN15/meshes/right_shoulder2.STL" />
       </geometry>
       <material
         name="">
@@ -307,7 +307,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/right_shoulder2.STL" />
+          filename="package://FullAssemFIN15/meshes/right_shoulder2.STL" />
       </geometry>
     </collision>
   </link>
@@ -322,27 +322,27 @@
     <child
       link="right_shoulder2" />
     <axis
-      xyz="0 -1 0" />
-    <limit
+      xyz="0 1 0" />
+    <!-- <limit
       lower="0"
       upper="0"
       effort="0"
-      velocity="0" />
+      velocity="0" /> -->
   </joint>
   <link
     name="right_arm">
     <inertial>
       <origin
-        xyz="-1.30398572876361E-06 0.00938173449908986 0.00118061912891315"
+        xyz="-1.30398572895617E-06 -0.0251862416177237 0.0139806191289127"
         rpy="0 0 0" />
       <mass
-        value="0.0821137195067692" />
+        value="0.0821137195067691" />
       <inertia
         ixx="4.24988469778399E-05"
-        ixy="1.28594594988415E-09"
-        ixz="1.42764661884801E-10"
+        ixy="1.28594594988095E-09"
+        ixz="1.42764661881412E-10"
         iyy="2.66700233849999E-05"
-        iyz="1.73025413027655E-06"
+        iyz="1.73025413027656E-06"
         izz="3.61228420432194E-05" />
     </inertial>
     <visual>
@@ -351,7 +351,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/right_arm.STL" />
+          filename="package://FullAssemFIN15/meshes/right_arm.STL" />
       </geometry>
       <material
         name="">
@@ -365,7 +365,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/right_arm.STL" />
+          filename="package://FullAssemFIN15/meshes/right_arm.STL" />
       </geometry>
     </collision>
   </link>
@@ -373,7 +373,7 @@
     name="right_arm_twist"
     type="revolute">
     <origin
-      xyz="-0.0815 0.019779 -0.0128"
+      xyz="-0.046932 0.019779 0"
       rpy="-3.1416 0 1.5708" />
     <parent
       link="right_shoulder2" />
@@ -381,26 +381,26 @@
       link="right_arm" />
     <axis
       xyz="0 1 0" />
-    <limit
+    <!-- <limit
       lower="0"
       upper="0"
       effort="0"
-      velocity="0" />
+      velocity="0" /> -->
   </joint>
   <link
     name="right_elbow">
     <inertial>
       <origin
-        xyz="0.0261442736065357 -0.0138386404390345 7.45798594541935E-05"
+        xyz="0.026144273606504 -0.0138386404390344 7.4579859453805E-05"
         rpy="0 0 0" />
       <mass
         value="0.145005613316011" />
       <inertia
         ixx="4.17435139165805E-05"
         ixy="-1.10461810235699E-06"
-        ixz="2.46975970724409E-08"
+        ixz="2.4697597072441E-08"
         iyy="6.52871821751329E-05"
-        iyz="-3.67693924342684E-08"
+        iyz="-3.6769392434268E-08"
         izz="7.69713019032534E-05" />
     </inertial>
     <visual>
@@ -409,7 +409,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/right_elbow.STL" />
+          filename="package://FullAssemFIN15/meshes/right_elbow.STL" />
       </geometry>
       <material
         name="">
@@ -423,7 +423,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/right_elbow.STL" />
+          filename="package://FullAssemFIN15/meshes/right_elbow.STL" />
       </geometry>
     </collision>
   </link>
@@ -431,7 +431,7 @@
     name="right_elbow"
     type="revolute">
     <origin
-      xyz="0.0142 -0.044896 0.00012922"
+      xyz="0.0142 -0.079464 0.012929"
       rpy="0 0 -1.5708" />
     <parent
       link="right_arm" />
@@ -439,26 +439,26 @@
       link="right_elbow" />
     <axis
       xyz="0 -1 0" />
-    <limit
+    <!-- <limit
       lower="0"
       upper="0"
       effort="0"
-      velocity="0" />
+      velocity="0" /> -->
   </joint>
   <link
     name="right_wrist">
     <inertial>
       <origin
-        xyz="6.53806939694343E-06 0.0283926492423567 -0.003610973021063"
+        xyz="6.53806939694343E-06 0.0283926492423341 -0.00361097302106334"
         rpy="0 0 0" />
       <mass
         value="0.085391866590059" />
       <inertia
         ixx="2.19149928316944E-05"
         ixy="-2.84159821929934E-08"
-        ixz="-3.8468670994344E-09"
+        ixz="-3.84686709943462E-09"
         iyy="1.77285998475411E-05"
-        iyz="1.71775892566204E-07"
+        iyz="1.71775892566205E-07"
         izz="1.43507074650994E-05" />
     </inertial>
     <visual>
@@ -467,7 +467,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/right_wrist.STL" />
+          filename="package://FullAssemFIN15/meshes/right_wrist.STL" />
       </geometry>
       <material
         name="">
@@ -481,7 +481,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/right_wrist.STL" />
+          filename="package://FullAssemFIN15/meshes/right_wrist.STL" />
       </geometry>
     </collision>
   </link>
@@ -497,23 +497,23 @@
       link="right_wrist" />
     <axis
       xyz="0 1 0" />
-    <limit
+    <!-- <limit
       lower="0"
       upper="0"
       effort="0"
-      velocity="0" />
+      velocity="0" /> -->
   </joint>
   <link
     name="right_hand">
     <inertial>
       <origin
-        xyz="-0.0357874965772597 0.00954999553927421 0.0160801916295389"
+        xyz="-0.0357874965772623 0.00954999553927405 0.0160801916295549"
         rpy="0 0 0" />
       <mass
         value="0.101380755551369" />
       <inertia
         ixx="7.74756018612888E-05"
-        ixy="3.33639078442291E-08"
+        ixy="3.33639078442282E-08"
         ixz="9.18217371445797E-06"
         iyy="7.36579925343485E-05"
         iyz="-1.98235761204158E-07"
@@ -525,7 +525,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/right_hand.STL" />
+          filename="package://FullAssemFIN15/meshes/right_hand.STL" />
       </geometry>
       <material
         name="">
@@ -539,7 +539,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/right_hand.STL" />
+          filename="package://FullAssemFIN15/meshes/right_hand.STL" />
       </geometry>
     </collision>
   </link>
@@ -555,27 +555,27 @@
       link="right_hand" />
     <axis
       xyz="0 -1 0" />
-    <limit
+    <!-- <limit
       lower="0"
       upper="0"
       effort="0"
-      velocity="0" />
+      velocity="0" /> -->
   </joint>
   <link
     name="left_shoulder1">
     <inertial>
       <origin
-        xyz="0.0158592794127964 -0.0108921826250359 -9.80667802519264E-09"
+        xyz="0.0096764166341974 0.000826788278429191 -0.0114333137832289"
         rpy="0 0 0" />
       <mass
-        value="0.133882143828078" />
+        value="0.0104989821167456" />
       <inertia
-        ixx="3.3666311921325E-05"
-        ixy="-9.78893090470037E-07"
-        ixz="2.98732109169711E-12"
-        iyy="4.81394491228928E-05"
-        iyz="-6.36636447772487E-11"
-        izz="5.86071361996697E-05" />
+        ixx="6.19340879843903E-06"
+        ixy="-7.64679989034402E-09"
+        ixz="1.05744438890409E-07"
+        iyy="6.85697616496023E-06"
+        iyz="3.43729463116357E-07"
+        izz="2.12853976091103E-06" />
     </inertial>
     <visual>
       <origin
@@ -583,12 +583,12 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/left_shoulder1.STL" />
+          filename="package://FullAssemFIN15/meshes/left_shoulder1.STL" />
       </geometry>
       <material
         name="">
         <color
-          rgba="0.149019607843137 0.149019607843137 0.149019607843137 1" />
+          rgba="1 0.501960784313725 0.501960784313725 1" />
       </material>
     </visual>
     <collision>
@@ -597,7 +597,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/left_shoulder1.STL" />
+          filename="package://FullAssemFIN15/meshes/left_shoulder1.STL" />
       </geometry>
     </collision>
   </link>
@@ -605,14 +605,14 @@
     name="left_shoulder_twist"
     type="revolute">
     <origin
-      xyz="0.062771 -0.012926 0.27864"
-      rpy="0.0097647 0.034102 -1.5646" />
+      xyz="0.077364 -0.034143 0.27834"
+      rpy="1.5707 -0.009759 0.0059046" />
     <parent
       link="chest" />
     <child
       link="left_shoulder1" />
     <axis
-      xyz="0 -1 0" />
+      xyz="-1 0 0" />
     <!-- <limit
       lower="0"
       upper="0"
@@ -623,17 +623,17 @@
     name="left_shoulder2">
     <inertial>
       <origin
-        xyz="-0.0270474190903025 -0.0182525258525149 -9.20554665828632E-09"
+        xyz="0.000862733887448633 -0.000294491085272519 -0.0182210991720152"
         rpy="0 0 0" />
       <mass
-        value="0.140671760279634" />
+        value="0.140671761076457" />
       <inertia
-        ixx="4.61370425159694E-05"
-        ixy="1.12442959345431E-06"
-        ixz="6.37498895381284E-11"
-        iyy="4.07168144997293E-05"
-        iyz="2.41357790465764E-12"
-        izz="5.71678887580435E-05" />
+        ixx="4.61398860482142E-05"
+        ixy="-9.03765924200024E-09"
+        ixz="-1.11755886503867E-06"
+        iyy="5.71640874001582E-05"
+        iyz="-2.49888292271969E-07"
+        izz="4.07177732766669E-05" />
     </inertial>
     <visual>
       <origin
@@ -641,7 +641,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/left_shoulder2.STL" />
+          filename="package://FullAssemFIN15/meshes/left_shoulder2.STL" />
       </geometry>
       <material
         name="">
@@ -655,7 +655,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/left_shoulder2.STL" />
+          filename="package://FullAssemFIN15/meshes/left_shoulder2.STL" />
       </geometry>
     </collision>
   </link>
@@ -663,14 +663,14 @@
     name="left_shoulder_raise"
     type="revolute">
     <origin
-      xyz="-0.0066345 0.0367 0"
-      rpy="0.025116 0 -3.1416" />
+      xyz="0.023528 0.00079477 -0.010776"
+      rpy="1.543 -1.4993 -1.5528" />
     <parent
       link="left_shoulder1" />
     <child
       link="left_shoulder2" />
     <axis
-      xyz="1 0 0" />
+      xyz="-1 0.00071125 -0.0012765" />
     <!-- <limit
       lower="0"
       upper="0"
@@ -681,17 +681,17 @@
     name="left_arm">
     <inertial>
       <origin
-        xyz="-1.27107806162721E-06 0.00938167611154797 0.00118063994898648"
+        xyz="0.0656734571120541 0.0133327627524941 0.000714976783302314"
         rpy="0 0 0" />
       <mass
-        value="0.082113849315734" />
+        value="0.205497013543678" />
       <inertia
-        ixx="4.24989353627454E-05"
-        ixy="1.34044114945093E-09"
-        ixz="1.17550356710916E-10"
-        iyy="2.66700639686007E-05"
-        iyz="1.73027894953425E-06"
-        izz="3.61229472077786E-05" />
+        ixx="5.8232693431784E-05"
+        ixy="-1.69244569751663E-06"
+        ixz="-1.14176865431451E-06"
+        iyy="8.78443221523151E-05"
+        iyz="1.15577131125357E-07"
+        izz="8.44489072241219E-05" />
     </inertial>
     <visual>
       <origin
@@ -699,7 +699,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/left_arm.STL" />
+          filename="package://FullAssemFIN15/meshes/left_arm.STL" />
       </geometry>
       <material
         name="">
@@ -713,7 +713,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/left_arm.STL" />
+          filename="package://FullAssemFIN15/meshes/left_arm.STL" />
       </geometry>
     </collision>
   </link>
@@ -721,14 +721,14 @@
     name="left_arm_twist"
     type="revolute">
     <origin
-      xyz="-0.026413 -0.0815 0.0128"
-      rpy="0 0 0" />
+      xyz="0.00026682 -0.00075346 -0.048366"
+      rpy="-1.5592 1.5555 -1.4879" />
     <parent
       link="left_shoulder2" />
     <child
       link="left_arm" />
     <axis
-      xyz="0 1 0" />
+      xyz="-1 0 0" />
     <!-- <limit
       lower="0"
       upper="0"
@@ -739,17 +739,17 @@
     name="left_elbow">
     <inertial>
       <origin
-        xyz="0.0261442447644444 -0.0138386407269854 -7.45988720045609E-05"
+        xyz="0.000138697981380153 -0.00286469412665818 0.0975897355571071"
         rpy="0 0 0" />
       <mass
-        value="0.145005574369976" />
+        value="0.0817358599952458" />
       <inertia
-        ixx="4.17434785114979E-05"
-        ixy="-1.1046303258095E-06"
-        ixz="-2.47252332041979E-08"
-        iyy="6.52870819213723E-05"
-        iyz="3.66516710743815E-08"
-        izz="7.69711666422121E-05" />
+        ixx="3.75670777765407E-05"
+        ixy="3.65651971726971E-08"
+        ixz="2.16028288348673E-08"
+        iyy="3.25681302335996E-05"
+        iyz="-3.6026404672472E-08"
+        izz="2.24090764366932E-05" />
     </inertial>
     <visual>
       <origin
@@ -757,12 +757,12 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/left_elbow.STL" />
+          filename="package://FullAssemFIN15/meshes/left_elbow.STL" />
       </geometry>
       <material
         name="">
         <color
-          rgba="0.149019607843137 0.149019607843137 0.149019607843137 1" />
+          rgba="1 0.501960784313725 0.501960784313725 1" />
       </material>
     </visual>
     <collision>
@@ -771,7 +771,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/left_elbow.STL" />
+          filename="package://FullAssemFIN15/meshes/left_elbow.STL" />
       </geometry>
     </collision>
   </link>
@@ -779,14 +779,14 @@
     name="left_elbow"
     type="revolute">
     <origin
-      xyz="-0.0142 -0.044896 0.00012922"
-      rpy="3.1416 0 -1.5708" />
+      xyz="0.10838 0.012907 0.00085871"
+      rpy="1.5555 1.5368 1.5708" />
     <parent
       link="left_arm" />
     <child
       link="left_elbow" />
     <axis
-      xyz="0 1 0" />
+      xyz="-1 0 0" />
     <!-- <limit
       lower="0"
       upper="0"
@@ -797,17 +797,17 @@
     name="left_wrist">
     <inertial>
       <origin
-        xyz="6.53809158954362E-06 0.0283926492581444 -0.00361097323850118"
+        xyz="-0.0256771319669898 -0.00050090691179927 4.28835934021439E-05"
         rpy="0 0 0" />
       <mass
-        value="0.0853918664394992" />
+        value="0.0252784174888945" />
       <inertia
-        ixx="2.19149928657216E-05"
-        ixy="-2.84159734523213E-08"
-        ixz="-3.84685528607786E-09"
-        iyy="1.77285998726424E-05"
-        iyz="1.71775812963497E-07"
-        izz="1.43507075297235E-05" />
+        ixx="5.49688579726409E-06"
+        ixy="-4.35202840406216E-08"
+        ixz="3.12427003508958E-08"
+        iyy="7.03294191630459E-06"
+        iyz="2.60624657608613E-08"
+        izz="7.68794085320864E-06" />
     </inertial>
     <visual>
       <origin
@@ -815,12 +815,12 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/left_wrist.STL" />
+          filename="package://FullAssemFIN15/meshes/left_wrist.STL" />
       </geometry>
       <material
         name="">
         <color
-          rgba="0.309803921568627 0.309803921568627 0.309803921568627 1" />
+          rgba="1 0.501960784313725 0.501960784313725 1" />
       </material>
     </visual>
     <collision>
@@ -829,7 +829,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/left_wrist.STL" />
+          filename="package://FullAssemFIN15/meshes/left_wrist.STL" />
       </geometry>
     </collision>
   </link>
@@ -837,14 +837,14 @@
     name="left_wrist"
     type="revolute">
     <origin
-      xyz="0.12738 -0.0138 0.002"
-      rpy="0 0 -1.5708" />
+      xyz="1.9415E-05 0.0088059 0.13025"
+      rpy="1.6049 1.5555 1.5708" />
     <parent
       link="left_elbow" />
     <child
       link="left_wrist" />
     <axis
-      xyz="0 1 0" />
+      xyz="-1 0 0" />
     <!-- <limit
       lower="0"
       upper="0"
@@ -855,17 +855,17 @@
     name="left_hand">
     <inertial>
       <origin
-        xyz="-0.0357929005346752 0.0140499960742114 0.0163349062602282"
+        xyz="-0.000888501700770705 -0.0179728616933882 0.0353233635256233"
         rpy="0 0 0" />
       <mass
-        value="0.101380759300584" />
+        value="0.041267310421405" />
       <inertia
-        ixx="7.74756025328925E-05"
-        ixy="3.33638177849843E-08"
-        ixz="9.18217436474582E-06"
-        iyy="7.36579928254429E-05"
-        iyz="-1.9823606939504E-07"
-        izz="1.70516483166391E-05" />
+        ixx="6.14262787974239E-05"
+        ixy="-4.9478223060206E-09"
+        ixz="1.47062086189532E-08"
+        iyy="5.29930630553403E-05"
+        iyz="2.27724857094238E-05"
+        izz="1.99893702802284E-05" />
     </inertial>
     <visual>
       <origin
@@ -873,7 +873,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/left_hand.STL" />
+          filename="package://FullAssemFIN15/meshes/left_hand.STL" />
       </geometry>
       <material
         name="">
@@ -887,7 +887,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/left_hand.STL" />
+          filename="package://FullAssemFIN15/meshes/left_hand.STL" />
       </geometry>
     </collision>
   </link>
@@ -895,14 +895,14 @@
     name="left_hand"
     type="revolute">
     <origin
-      xyz="-0.018501 0.14157 0.0021722"
-      rpy="-1.5714 0.0041657 2.9929" />
+      xyz="-0.078489 -0.0002665 0.014514"
+      rpy="1.0976 -0.029908 -1.5708" />
     <parent
       link="left_wrist" />
     <child
       link="left_hand" />
     <axis
-      xyz="0 1 0" />
+      xyz="-1 0 0" />
     <!-- <limit
       lower="0"
       upper="0"
@@ -913,16 +913,16 @@
     name="chest_back">
     <inertial>
       <origin
-        xyz="-1.44142671909889E-06 0.0143265161934238 0.000165392663092095"
+        xyz="-1.44142668094191E-06 0.0143265161934237 0.000165392663093428"
         rpy="0 0 0" />
       <mass
         value="0.0646141411167268" />
       <inertia
         ixx="1.5261533210725E-05"
-        ixy="1.32397163957282E-09"
-        ixz="-1.76173736859058E-10"
+        ixy="1.32397163957281E-09"
+        ixz="-1.76173736858142E-10"
         iyy="1.39416032339947E-05"
-        iyz="1.78050056213834E-07"
+        iyz="1.78050056213837E-07"
         izz="8.14826009299004E-06" />
     </inertial>
     <visual>
@@ -931,7 +931,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/chest_back.STL" />
+          filename="package://FullAssemFIN15/meshes/chest_back.STL" />
       </geometry>
       <material
         name="">
@@ -945,7 +945,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/chest_back.STL" />
+          filename="package://FullAssemFIN15/meshes/chest_back.STL" />
       </geometry>
     </collision>
   </link>
@@ -953,14 +953,14 @@
     name="chest_back"
     type="revolute">
     <origin
-      xyz="-0.01683 -0.0049556 0.21791"
+      xyz="-0.015626 0.0041101 0.21852"
       rpy="0.034104 0.010452 0.0065942" />
     <parent
       link="chest" />
     <child
       link="chest_back" />
     <axis
-      xyz="0 1 0" />
+      xyz="0 0 0" />
     <!-- <limit
       lower="0"
       upper="0"
@@ -971,17 +971,17 @@
     name="chest_front">
     <inertial>
       <origin
-        xyz="0.00123966479781689 0.014909592347578 -0.0119247919668367"
+        xyz="0.00123966479781725 0.0149095923475907 -0.0119247919668308"
         rpy="0 0 0" />
       <mass
-        value="0.0836698829483839" />
+        value="0.0836698829483879" />
       <inertia
-        ixx="3.23260066841813E-05"
-        ixy="1.21635779858507E-09"
-        ixz="9.99888070869757E-07"
-        iyy="2.64401721006564E-05"
-        iyz="2.16729924141935E-07"
-        izz="1.87426976216853E-05" />
+        ixx="3.23260066842026E-05"
+        ixy="1.21635779780879E-09"
+        ixz="9.99888070866596E-07"
+        iyy="2.64401721006749E-05"
+        iyz="2.16729924128021E-07"
+        izz="1.87426976216884E-05" />
     </inertial>
     <visual>
       <origin
@@ -989,7 +989,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/chest_front.STL" />
+          filename="package://FullAssemFIN15/meshes/chest_front.STL" />
       </geometry>
       <material
         name="">
@@ -1003,7 +1003,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/chest_front.STL" />
+          filename="package://FullAssemFIN15/meshes/chest_front.STL" />
       </geometry>
     </collision>
   </link>
@@ -1018,7 +1018,7 @@
     <child
       link="chest_front" />
     <axis
-      xyz="0 1 0" />
+      xyz="0 0 0" />
     <!-- <limit
       lower="0"
       upper="0"
@@ -1029,17 +1029,17 @@
     name="stomach">
     <inertial>
       <origin
-        xyz="7.02990707932699E-05 0.0285352137389054 0.00558126575027369"
+        xyz="7.0299070782532E-05 0.0285352137389059 0.00558126575027355"
         rpy="0 0 0" />
       <mass
-        value="0.112924078010695" />
+        value="0.112924078010694" />
       <inertia
-        ixx="9.75007282323626E-05"
-        ixy="-3.65605978032045E-09"
-        ixz="-3.44670067368572E-07"
-        iyy="9.65112534041196E-05"
-        iyz="-5.46411789173618E-07"
-        izz="3.79829527057459E-05" />
+        ixx="9.75007282323628E-05"
+        ixy="-3.65605977985113E-09"
+        ixz="-3.44670067368896E-07"
+        iyy="9.65112534040988E-05"
+        iyz="-5.46411789173411E-07"
+        izz="3.79829527057241E-05" />
     </inertial>
     <visual>
       <origin
@@ -1047,7 +1047,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/stomach.STL" />
+          filename="package://FullAssemFIN15/meshes/stomach.STL" />
       </geometry>
       <material
         name="">
@@ -1061,7 +1061,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/stomach.STL" />
+          filename="package://FullAssemFIN15/meshes/stomach.STL" />
       </geometry>
     </collision>
   </link>
@@ -1076,28 +1076,28 @@
     <child
       link="stomach" />
     <axis
-      xyz="0 1 0" />
-    <limit
+      xyz="0 0 0" />
+    <!-- <limit
       lower="0"
       upper="0"
       effort="0"
-      velocity="0" />
+      velocity="0" /> -->
   </joint>
   <link
     name="stomach_low">
     <inertial>
       <origin
-        xyz="0.025456956366343 -0.000510857876622181 -0.0198000125888335"
+        xyz="0.0254569563660852 -0.000510857877455889 -0.0198000125882758"
         rpy="0 0 0" />
       <mass
-        value="0.127534330377033" />
+        value="0.127534330375141" />
       <inertia
-        ixx="4.49529966107553E-05"
-        ixy="1.08642354964874E-06"
-        ixz="-6.33201909067666E-11"
-        iyy="3.31939186103188E-05"
-        iyz="-1.13470093685069E-11"
-        izz="5.31790636336366E-05" />
+        ixx="4.49529966092502E-05"
+        ixy="1.08642355161998E-06"
+        ixz="-6.33215035239014E-11"
+        iyy="3.31939186097434E-05"
+        iyz="-1.13476214270004E-11"
+        izz="5.31790636315446E-05" />
     </inertial>
     <visual>
       <origin
@@ -1105,7 +1105,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/stomach_low.STL" />
+          filename="package://FullAssemFIN15/meshes/stomach_low.STL" />
       </geometry>
       <material
         name="">
@@ -1119,7 +1119,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/stomach_low.STL" />
+          filename="package://FullAssemFIN15/meshes/stomach_low.STL" />
       </geometry>
     </collision>
   </link>
@@ -1134,28 +1134,28 @@
     <child
       link="stomach_low" />
     <axis
-      xyz="1 0 0" />
-    <limit
+      xyz="0 0 0" />
+    <!-- <limit
       lower="0"
       upper="0"
       effort="0"
-      velocity="0" />
+      velocity="0" /> -->
   </joint>
   <link
     name="stomack_low_back">
     <inertial>
       <origin
-        xyz="0.0222119432350776 -0.013986947909832 -0.00266969548737152"
+        xyz="0.0222119432345553 -0.0139869479098079 -0.00266969548742707"
         rpy="0 0 0" />
       <mass
-        value="0.147883656235969" />
+        value="0.147883656236176" />
       <inertia
-        ixx="4.62024278770836E-05"
-        ixy="-1.0845309491947E-06"
-        ixz="1.41120569253073E-06"
-        iyy="5.05330800213636E-05"
-        iyz="-6.28394559404926E-10"
-        izz="6.8423129560303E-05" />
+        ixx="4.62024278770549E-05"
+        ixy="-1.08453094779462E-06"
+        ixz="1.4112056920651E-06"
+        iyy="5.05330800223277E-05"
+        iyz="-6.28394418462524E-10"
+        izz="6.84231295614205E-05" />
     </inertial>
     <visual>
       <origin
@@ -1163,7 +1163,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/stomack_low_back.STL" />
+          filename="package://FullAssemFIN15/meshes/stomack_low_back.STL" />
       </geometry>
       <material
         name="">
@@ -1177,7 +1177,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/stomack_low_back.STL" />
+          filename="package://FullAssemFIN15/meshes/stomack_low_back.STL" />
       </geometry>
     </collision>
   </link>
@@ -1192,28 +1192,28 @@
     <child
       link="stomack_low_back" />
     <axis
-      xyz="0 -1 0" />
-    <limit
+      xyz="0 0 0" />
+    <!-- <limit
       lower="0"
       upper="0"
       effort="0"
-      velocity="0" />
+      velocity="0" /> -->
   </joint>
   <link
     name="hip_left_in">
     <inertial>
       <origin
-        xyz="0.00340997910856214 0.0151122704028699 -0.00430658584801897"
+        xyz="0.00340997910854743 0.0151122704028699 -0.00430658584804021"
         rpy="0 0 0" />
       <mass
-        value="0.0712276180867603" />
+        value="0.0712276180867601" />
       <inertia
-        ixx="2.06636288238488E-05"
-        ixy="2.4534009752284E-08"
-        ixz="1.07239188645341E-06"
-        iyy="1.62453360146478E-05"
-        iyz="2.45843437312195E-07"
-        izz="1.37936795476526E-05" />
+        ixx="2.06636288238622E-05"
+        ixy="2.45340097524647E-08"
+        ixz="1.07239188645364E-06"
+        iyy="1.62453360146477E-05"
+        iyz="2.45843437312046E-07"
+        izz="1.37936795476392E-05" />
     </inertial>
     <visual>
       <origin
@@ -1221,7 +1221,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/hip_left_in.STL" />
+          filename="package://FullAssemFIN15/meshes/hip_left_in.STL" />
       </geometry>
       <material
         name="">
@@ -1235,7 +1235,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/hip_left_in.STL" />
+          filename="package://FullAssemFIN15/meshes/hip_left_in.STL" />
       </geometry>
     </collision>
   </link>
@@ -1250,28 +1250,28 @@
     <child
       link="hip_left_in" />
     <axis
-      xyz="0 1 0" />
-    <limit
+      xyz="0 0 0" />
+    <!-- <limit
       lower="0"
       upper="0"
       effort="0"
-      velocity="0" />
+      velocity="0" /> -->
   </joint>
   <link
     name="hip_left_high">
     <inertial>
       <origin
-        xyz="-3.15252040392275E-05 0.0175683940900213 -0.00041733924227867"
+        xyz="-3.15252265739377E-05 0.0175683941120762 -0.000417339220702986"
         rpy="0 0 0" />
       <mass
-        value="0.0665008727926668" />
+        value="0.066500872640875" />
       <inertia
-        ixx="1.50020793727663E-05"
-        ixy="1.68666399201187E-09"
-        ixz="-1.82515798369196E-08"
-        iyy="1.4199429715793E-05"
-        iyz="2.06003620626724E-07"
-        izz="8.55304514646541E-06" />
+        ixx="1.50020793459267E-05"
+        ixy="1.68665098788903E-09"
+        ixz="-1.8251595271123E-08"
+        iyy="1.41994296850549E-05"
+        iyz="2.06003634027105E-07"
+        izz="8.55304512033935E-06" />
     </inertial>
     <visual>
       <origin
@@ -1279,7 +1279,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/hip_left_high.STL" />
+          filename="package://FullAssemFIN15/meshes/hip_left_high.STL" />
       </geometry>
       <material
         name="">
@@ -1293,7 +1293,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/hip_left_high.STL" />
+          filename="package://FullAssemFIN15/meshes/hip_left_high.STL" />
       </geometry>
     </collision>
   </link>
@@ -1308,28 +1308,28 @@
     <child
       link="hip_left_high" />
     <axis
-      xyz="0 1 0" />
-    <limit
+      xyz="0 0 0" />
+    <!-- <limit
       lower="0"
       upper="0"
       effort="0"
-      velocity="0" />
+      velocity="0" /> -->
   </joint>
   <link
     name="hip_left_low">
     <inertial>
       <origin
-        xyz="0.0198377282738512 -0.0173281996497429 -0.0233399934895701"
+        xyz="0.019837727529848 -0.017328198423598 -0.0233399921102867"
         rpy="0 0 0" />
       <mass
-        value="0.167133352428784" />
+        value="0.16713334826647" />
       <inertia
-        ixx="0.000174073103218888"
-        ixy="-1.99748594434855E-06"
-        ixz="2.87961954808398E-06"
-        iyy="0.000177515957722203"
-        iyz="-1.70898821353321E-05"
-        izz="8.9212778058006E-05" />
+        ixx="0.000174073116393626"
+        ixy="-1.99748839374358E-06"
+        ixz="2.87962059004653E-06"
+        iyy="0.000177515959872016"
+        iyz="-1.70898916952748E-05"
+        izz="8.92127856661843E-05" />
     </inertial>
     <visual>
       <origin
@@ -1337,7 +1337,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/hip_left_low.STL" />
+          filename="package://FullAssemFIN15/meshes/hip_left_low.STL" />
       </geometry>
       <material
         name="">
@@ -1351,7 +1351,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/hip_left_low.STL" />
+          filename="package://FullAssemFIN15/meshes/hip_left_low.STL" />
       </geometry>
     </collision>
   </link>
@@ -1366,28 +1366,28 @@
     <child
       link="hip_left_low" />
     <axis
-      xyz="0 -1 0" />
-    <limit
+      xyz="0 0 0" />
+    <!-- <limit
       lower="0"
       upper="0"
       effort="0"
-      velocity="0" />
+      velocity="0" /> -->
   </joint>
   <link
     name="knee_left">
     <inertial>
       <origin
-        xyz="0.00199769816991006 0.0138765241473959 -0.0736955856775916"
+        xyz="0.0019976981643998 0.0138765241497135 -0.0736955858310385"
         rpy="0 0 0" />
       <mass
-        value="0.15114673120389" />
+        value="0.151146730843275" />
       <inertia
-        ixx="0.000453908793059471"
-        ixy="5.99548622193013E-08"
-        ixz="-3.21473896353848E-05"
-        iyy="0.000468769077106377"
-        iyz="3.90193335669601E-07"
-        izz="6.6605166803383E-05" />
+        ixx="0.000453908792987779"
+        ixy="5.99548866840082E-08"
+        ixz="-3.2147389649881E-05"
+        iyy="0.000468769077050307"
+        iyz="3.90193347656908E-07"
+        izz="6.66051667385303E-05" />
     </inertial>
     <visual>
       <origin
@@ -1395,7 +1395,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/knee_left.STL" />
+          filename="package://FullAssemFIN15/meshes/knee_left.STL" />
       </geometry>
       <material
         name="">
@@ -1409,7 +1409,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/knee_left.STL" />
+          filename="package://FullAssemFIN15/meshes/knee_left.STL" />
       </geometry>
     </collision>
   </link>
@@ -1424,28 +1424,28 @@
     <child
       link="knee_left" />
     <axis
-      xyz="0 1 0" />
-    <limit
+      xyz="0 0 0" />
+    <!-- <limit
       lower="0"
       upper="0"
       effort="0"
-      velocity="0" />
+      velocity="0" /> -->
   </joint>
   <link
     name="foot_left">
     <inertial>
       <origin
-        xyz="0.0134410051360612 -0.00400814398074034 0.00900841327262507"
+        xyz="0.0134410062701474 -0.00400814333351157 0.009008414205786"
         rpy="0 0 0" />
       <mass
-        value="0.109810659435826" />
+        value="0.109810659186526" />
       <inertia
-        ixx="9.45021270509352E-05"
-        ixy="-5.54698726127363E-08"
-        ixz="-2.42206998880967E-06"
-        iyy="9.87853234056488E-05"
-        iyz="6.505755604254E-06"
-        izz="3.61448372996629E-05" />
+        ixx="9.4502119655576E-05"
+        ixy="-5.54719359754024E-08"
+        ixz="-2.4220689524648E-06"
+        iyy="9.87853140042818E-05"
+        iyz="6.50575340167965E-06"
+        izz="3.61448369195877E-05" />
     </inertial>
     <visual>
       <origin
@@ -1453,7 +1453,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/foot_left.STL" />
+          filename="package://FullAssemFIN15/meshes/foot_left.STL" />
       </geometry>
       <material
         name="">
@@ -1467,7 +1467,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/foot_left.STL" />
+          filename="package://FullAssemFIN15/meshes/foot_left.STL" />
       </geometry>
     </collision>
   </link>
@@ -1482,28 +1482,28 @@
     <child
       link="foot_left" />
     <axis
-      xyz="-1 0 0" />
-    <limit
+      xyz="1 0 0" />
+    <!-- <limit
       lower="0"
       upper="0"
       effort="0"
-      velocity="0" />
+      velocity="0" /> -->
   </joint>
   <link
     name="hip_right_in">
     <inertial>
       <origin
-        xyz="-0.00336283498072323 0.0151122810309984 -0.00437737997895387"
+        xyz="-0.00336283498073833 0.0151122810309984 -0.00437737997893279"
         rpy="0 0 0" />
       <mass
         value="0.0712276194076986" />
       <inertia
-        ixx="2.07084741987229E-05"
-        ixy="-2.24939775151398E-08"
-        ixz="-1.0725881136225E-06"
+        ixx="2.07084741987094E-05"
+        ixy="-2.24939775149632E-08"
+        ixz="-1.07258811362283E-06"
         iyy="1.62453330338933E-05"
-        iyz="2.45360119088952E-07"
-        izz="1.37488312138156E-05" />
+        iyz="2.45360119089108E-07"
+        izz="1.3748831213829E-05" />
     </inertial>
     <visual>
       <origin
@@ -1511,7 +1511,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/hip_right_in.STL" />
+          filename="package://FullAssemFIN15/meshes/hip_right_in.STL" />
       </geometry>
       <material
         name="">
@@ -1525,7 +1525,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/hip_right_in.STL" />
+          filename="package://FullAssemFIN15/meshes/hip_right_in.STL" />
       </geometry>
     </collision>
   </link>
@@ -1540,28 +1540,28 @@
     <child
       link="hip_right_in" />
     <axis
-      xyz="0 1 0" />
-    <limit
+      xyz="0 0 0" />
+    <!-- <limit
       lower="0"
       upper="0"
       effort="0"
-      velocity="0" />
+      velocity="0" /> -->
   </joint>
   <link
     name="hip_right_high">
     <inertial>
       <origin
-        xyz="-3.15252261373078E-05 0.0175683941132136 -0.000417339220703075"
+        xyz="-3.1525223267409E-05 0.0175683941133128 -0.000417339225804057"
         rpy="0 0 0" />
       <mass
-        value="0.0665008726408751" />
+        value="0.0665008726568549" />
       <inertia
-        ixx="1.50020793459266E-05"
-        ixy="1.68665100653647E-09"
-        ixz="-1.82515952759236E-08"
-        iyy="1.4199429685055E-05"
-        iyz="2.06003634026681E-07"
-        izz="8.55304512033936E-06" />
+        ixx="1.50020793523346E-05"
+        ixy="1.68664872456181E-09"
+        ixz="-1.82515916994853E-08"
+        iyy="1.41994296906323E-05"
+        iyz="2.06003634248032E-07"
+        izz="8.55304511699726E-06" />
     </inertial>
     <visual>
       <origin
@@ -1569,7 +1569,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/hip_right_high.STL" />
+          filename="package://FullAssemFIN15/meshes/hip_right_high.STL" />
       </geometry>
       <material
         name="">
@@ -1583,7 +1583,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/hip_right_high.STL" />
+          filename="package://FullAssemFIN15/meshes/hip_right_high.STL" />
       </geometry>
     </collision>
   </link>
@@ -1598,28 +1598,28 @@
     <child
       link="hip_right_high" />
     <axis
-      xyz="0 1 0" />
-    <limit
+      xyz="0 0 0" />
+    <!-- <limit
       lower="0"
       upper="0"
       effort="0"
-      velocity="0" />
+      velocity="0" /> -->
   </joint>
   <link
     name="hip_right_low">
     <inertial>
       <origin
-        xyz="0.0101620446950609 0.16053106246668 -0.0218626134446972"
+        xyz="0.0101620447073382 -0.0214689378129789 0.00227560266133368"
         rpy="0 0 0" />
       <mass
-        value="0.167468510508758" />
+        value="0.167468511096326" />
       <inertia
-        ixx="0.000186584639927981"
-        ixy="-7.95934731719564E-06"
-        ixz="-1.39941403693188E-08"
-        iyy="9.36139417207983E-05"
-        iyz="2.16134468801724E-05"
-        izz="0.000189725705968383" />
+        ixx="0.00018658464029903"
+        ixy="-7.95934718285308E-06"
+        ixz="-1.39940758861752E-08"
+        iyy="9.36139419963114E-05"
+        iyz="2.16134469544864E-05"
+        izz="0.000189725706425111" />
     </inertial>
     <visual>
       <origin
@@ -1627,7 +1627,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/hip_right_low.STL" />
+          filename="package://FullAssemFIN15/meshes/hip_right_low.STL" />
       </geometry>
       <material
         name="">
@@ -1641,7 +1641,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/hip_right_low.STL" />
+          filename="package://FullAssemFIN15/meshes/hip_right_low.STL" />
       </geometry>
     </collision>
   </link>
@@ -1649,35 +1649,35 @@
     name="hip_right_low"
     type="revolute">
     <origin
-      xyz="0.024482 0.2366 -0.0083418"
+      xyz="0.00036231 0.0546 -0.0092832"
       rpy="0 -1.5318 -3.1416" />
     <parent
       link="hip_right_high" />
     <child
       link="hip_right_low" />
     <axis
-      xyz="0 0 0" />
-    <limit
+      xyz="0 0 1" />
+    <!-- <limit
       lower="0"
       upper="0"
       effort="0"
-      velocity="0" />
+      velocity="0" /> -->
   </joint>
   <link
     name="knee_right">
     <inertial>
       <origin
-        xyz="-0.00293900807184672 -0.0608574590351847 0.00050705551274724"
+        xyz="-0.00293900807816572 -0.0608574591676004 0.0246452716012239"
         rpy="0 0 0" />
       <mass
-        value="0.151146731235653" />
+        value="0.151146730924696" />
       <inertia
-        ixx="0.000454809120354291"
-        ixy="2.61518930241419E-05"
-        ixz="-6.06037471383307E-08"
-        iyy="6.57048400842829E-05"
-        iyz="-4.15489115358897E-08"
-        izz="0.000468769077458179" />
+        ixx="0.000454809120260633"
+        ixy="2.61518930438168E-05"
+        ixz="-6.06037244948496E-08"
+        iyy="6.57048399918325E-05"
+        iyz="-4.15489117653699E-08"
+        izz="0.000468769077394886" />
     </inertial>
     <visual>
       <origin
@@ -1685,7 +1685,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/knee_right.STL" />
+          filename="package://FullAssemFIN15/meshes/knee_right.STL" />
       </geometry>
       <material
         name="">
@@ -1699,7 +1699,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/knee_right.STL" />
+          filename="package://FullAssemFIN15/meshes/knee_right.STL" />
       </geometry>
     </collision>
   </link>
@@ -1707,35 +1707,35 @@
     name="knee_right"
     type="revolute">
     <origin
-      xyz="0 -0.0019 0"
+      xyz="0 -0.1839 0"
       rpy="0 0 0.015442" />
     <parent
       link="hip_right_low" />
     <child
       link="knee_right" />
     <axis
-      xyz="0 0 -1" />
-    <limit
+      xyz="0 0 1" />
+    <!-- <limit
       lower="0"
       upper="0"
       effort="0"
-      velocity="0" />
+      velocity="0" /> -->
   </joint>
   <link
     name="foot_right">
     <inertial>
       <origin
-        xyz="0.00905838422100175 0.0135062338240556 -0.0166639194367252"
+        xyz="0.00905838610117235 0.0135062338630004 -0.0166639175657166"
         rpy="0 0 0" />
       <mass
-        value="0.109792597961213" />
+        value="0.109792588884947" />
       <inertia
-        ixx="3.59601197024991E-05"
-        ixy="2.42209038047063E-06"
-        ixz="5.53278185232801E-06"
-        iyy="9.45217140291103E-05"
-        iyz="9.14595972048345E-08"
-        izz="9.89846663261375E-05" />
+        ixx="3.59600900627302E-05"
+        ixy="2.42209249081913E-06"
+        ixz="5.53277477596119E-06"
+        iyy="9.45216808174187E-05"
+        iyz="9.14514292277231E-08"
+        izz="9.89846701379889E-05" />
     </inertial>
     <visual>
       <origin
@@ -1743,7 +1743,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/foot_right.STL" />
+          filename="package://FullAssemFIN15/meshes/foot_right.STL" />
       </geometry>
       <material
         name="">
@@ -1757,7 +1757,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://FullAssemFIN/meshes/foot_right.STL" />
+          filename="package://FullAssemFIN15/meshes/foot_right.STL" />
       </geometry>
     </collision>
   </link>
@@ -1765,7 +1765,7 @@
     name="foot_right"
     type="revolute">
     <origin
-      xyz="0 -0.21875 -0.01255"
+      xyz="0 -0.21875 0.011588"
       rpy="1.5708 0 3.1416" />
     <parent
       link="knee_right" />
@@ -1773,10 +1773,10 @@
       link="foot_right" />
     <axis
       xyz="0 0 0" />
-    <limit
+    <!-- <limit
       lower="0"
       upper="0"
       effort="0"
-      velocity="0" />
+      velocity="0" /> -->
   </joint>
 </robot>
