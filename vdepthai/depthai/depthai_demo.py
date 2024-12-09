@@ -499,16 +499,18 @@ class Demo:
                 
                 # Add coordinate processing here
                 if hasattr(self, '_nnManager') and self._nnManager is not None:
-                    if len(self._nnManager.measurement_buffer) >= self._nnManager.max_buffer_size:
+                    if len(self._nnManager.measurement_buffer) >= self._nnManager.max_buffer_size and not self._nnManager.coordinates_sent:
                         filtered_measurements = self.filter_measurements_iqr(self._nnManager.measurement_buffer)
                         if filtered_measurements:
                             mean_x = np.mean([m['position']['x'] for m in filtered_measurements])
                             mean_y = np.mean([m['position']['y'] for m in filtered_measurements])
                             mean_z = np.mean([m['position']['z'] for m in filtered_measurements])
-                            print(f"Publishing mean coordinates: {mean_x:.5f}, {mean_y:.5f}, {mean_z:.5f}")
-                            if hasattr(self, 'coord_socket'):
-                                self.coord_socket.send_string(f"{mean_x},{mean_y},{mean_z}")
-                            self._nnManager.measurement_buffer.clear()  
+                            print(f"Publishing final mean coordinates: {mean_x:.5f}, {mean_y:.5f}, {mean_z:.5f}")
+                            coord_str = f"{mean_x:.5f},{mean_y:.5f},{mean_z:.5f}"
+                            self.coord_socket.send_string(coord_str)
+                            print("Coordinates sent to robot")
+                            self._nnManager.coordinates_sent = True
+                            self._nnManager.measurement_buffer = []
                 
                 self.loop()
                 
@@ -1152,6 +1154,7 @@ def runQt():
                 devices = list(map(lambda info: info.getMxId(), dai.XLinkConnection.getAllConnectedDevices()))
             else:
                 devices = list(map(lambda info: info.getMxId(), dai.Device.getAllAvailableDevices()))
+
             if hasattr(self._demoInstance, "_deviceInfo"):
                 devices.insert(0, self._demoInstance._deviceInfo.getMxId())
             self.worker.signals.setDataSignal.emit(["deviceChoices", devices])
@@ -1469,15 +1472,18 @@ class SpeechEnabledDemo(Demo):
                 
                 # Add coordinate processing here
                 if hasattr(self, '_nnManager') and self._nnManager is not None:
-                    if len(self._nnManager.measurement_buffer) >= self._nnManager.max_buffer_size:
+                    if len(self._nnManager.measurement_buffer) >= self._nnManager.max_buffer_size and not self._nnManager.coordinates_sent:
                         filtered_measurements = self.filter_measurements_iqr(self._nnManager.measurement_buffer)
                         if filtered_measurements:
                             mean_x = np.mean([m['position']['x'] for m in filtered_measurements])
                             mean_y = np.mean([m['position']['y'] for m in filtered_measurements])
                             mean_z = np.mean([m['position']['z'] for m in filtered_measurements])
-                            print(f"Publishing mean coordinates: {mean_x:.5f}, {mean_y:.5f}, {mean_z:.5f}")
-                            self.coord_socket.send_string(f"{mean_x},{mean_y},{mean_z}")
-                            self._nnManager.measurement_buffer.clear()  # Clear buffer after processing
+                            print(f"Publishing final mean coordinates: {mean_x:.5f}, {mean_y:.5f}, {mean_z:.5f}")
+                            coord_str = f"{mean_x:.5f},{mean_y:.5f},{mean_z:.5f}"
+                            self.coord_socket.send_string(coord_str)
+                            print("Coordinates sent to robot")
+                            self._nnManager.coordinates_sent = True
+                            self._nnManager.measurement_buffer = []
                 
                 self.loop()
                 
