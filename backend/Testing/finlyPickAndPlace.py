@@ -87,17 +87,50 @@ try:
         try:
             coord_message = socket.recv_string(flags=zmq.NOBLOCK)
             mean_x, mean_y, mean_z = map(float, coord_message.split(','))
-            print(f"Received coordinates: X={mean_x:.5f}, Y={mean_y:.5f}, Z={mean_z:.5f}")
+            print(f"Received camera coordinates: X={mean_x:.5f}, Y={mean_y:.5f}, Z={mean_z:.5f}")
             
-            # Update leftArmTraj with the received coordinates
+            # Transform coordinates from camera frame to base frame
+            xCamera = 0  # camera mounting pos?
+            yCamera = 0
+            zCamera = 0
+            cameraPos = np.array([xCamera,yCamera,zCamera])
+
+            # Camera orientation?
+            alpha = 0  # roll (about x)
+            beta = 0   # pitch (about y)
+            gamma = 0  # yaw (about z)
+            
+            # ZYX rotation matrix
+            rotationM = np.array([
+                [np.cos(beta)*np.cos(gamma), np.cos(beta)*np.sin(gamma), -np.sin(beta)],
+                [
+                    np.cos(alpha)*np.sin(gamma) + np.cos(gamma)*np.sin(alpha)*np.sin(beta), 
+                    np.cos(alpha)*np.cos(gamma) - np.sin(alpha)*np.sin(beta)*np.sin(gamma), 
+                    np.cos(beta)*np.sin(alpha)
+                ],
+                [
+                    np.sin(alpha)*np.sin(gamma) - np.cos(alpha)*np.cos(gamma)*np.sin(beta), 
+                    np.cos(gamma)*np.sin(alpha) + np.cos(alpha)*np.sin(beta)*np.sin(gamma), 
+                    np.cos(alpha)*np.cos(beta)
+                ]
+            ])
+
+            # Position from camera
+            objectPosCamera = np.array([mean_x, mean_y, mean_z])
+            
+            # Transform to base frame
+            objectPoseBase = np.dot(rotationM, objectPosCamera) + cameraPos
+            print(f"Transformed base coordinates: X={objectPoseBase[0]:.5f}, Y={objectPoseBase[1]:.5f}, Z={objectPoseBase[2]:.5f}")
+            
+            # Update leftArmTraj with the transformed coordinates
             leftArmTraj = [
                 # time 
                 [[0,0,0], [20,20,20]],
                 #starting coordinates below (x,y,z)
                 [[.49513,  -.04901, .28036],
-                # ending coordinates (using received mean coordinates)
-                [mean_x, mean_y, mean_z]],
-                # velocity and acceleration (ignore)
+                # ending coordinates (using transformed coordinates)
+                [objectPoseBase[0], objectPoseBase[1], objectPoseBase[2]]],
+                # velocity and acceleration
                 [[0,0,0], [0,0,0]],
                 [[0,0,0], [0,0,0]]
             ]
@@ -161,4 +194,3 @@ while time.time() - startTime < 20:
 
         robot.IMUBalance(0, 0)
         robot.moveAllToTarget()
- 
