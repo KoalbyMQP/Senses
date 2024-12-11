@@ -950,6 +950,9 @@ def runQt():
                 devices = [self.instance._deviceInfo.getMxId()] + list(map(lambda info: info.getMxId(), dai.XLinkConnection.getAllConnectedDevices()))
             else:
                 devices = [self.instance._deviceInfo.getMxId()] + list(map(lambda info: info.getMxId(), dai.Device.getAllAvailableDevices()))
+
+            if hasattr(self.instance, "_deviceInfo"):
+                devices.insert(0, self.instance._deviceInfo.getMxId())
             self.signals.setDataSignal.emit(["deviceChoices", devices])
             if instance._nnManager is not None:
                 self.signals.setDataSignal.emit(["countLabels", instance._nnManager._labels])
@@ -1440,29 +1443,45 @@ class SpeechEnabledDemo(Demo):
             self._nnManager.createQueues(self._device)
         target_object = None
         
+        # Add timeout for ZMQ receive
+        poller = zmq.Poller()
+        poller.register(self.socket, zmq.POLLIN)
+        
         while target_object == None:
             try:
-                command = self.socket.recv_string(flags=zmq.NOBLOCK)
-                print(f"Received command: {command}")
-                
-                if command.startswith("pick up"):
-                    target_object = command.split("pick up ")[1]
-                    self.current_target = target_object
-                    print(f"New target received: {target_object}")
-                    if hasattr(self, '_nnManager'):
-                        print("Setting target object in NNetManager")
-                        self._nnManager.set_target_object(target_object)
-                        print(f"Target object set to: {self._nnManager._target_object}")
-                        
-                        # Create measurements file
-                        self.measurements_file = open('test_tuple.txt', 'w')
-                        print("Created measurements file: test_tuple.txt")
-                        
-            except zmq.Again:
-                pass
+                # Use poller with timeout
+                socks = dict(poller.poll(100))  # 100ms timeout
+                if self.socket in socks and socks[self.socket] == zmq.POLLIN:
+                    command = self.socket.recv_string()
+                    print(f"Received command: {command}")
+                    
+                    if command.startswith("pick up"):
+                        target_object = command.split("pick up ")[1]
+                        self.current_target = target_object
+                        print(f"New target received: {target_object}")
+                        if hasattr(self, '_nnManager'):
+                            print("Setting target object in NNetManager")
+                            self._nnManager.set_target_object(target_object)
+                            print(f"Target object set to: {self._nnManager._target_object}")
+                            
+                            try:
+                                # Create measurements file with proper error handling
+                                self.measurements_file = open('test_tuple.txt', 'w')
+                                print("Created measurements file: test_tuple.txt")
+                            except IOError as e:
+                                print(f"Error creating measurements file: {e}")
+                                # Continue without the file if we can't create it
+                                self.measurements_file = None
+                else:
+                    # No message received, sleep a bit to prevent CPU overload
+                    time.sleep(0.001)
+                    
+            except zmq.ZMQError as e:
+                print(f"ZMQ Error: {e}")
+                time.sleep(0.1)  # Back off on error
             except Exception as e:
                 print(f"Error in ZMQ receive: {e}")
-                time.sleep(0.001)
+                time.sleep(0.1)
                 
         super().run()
         try:
@@ -1470,20 +1489,34 @@ class SpeechEnabledDemo(Demo):
                 self._fps.nextIter()
                 self.onIter(self)
                 
-                # Add coordinate processing here
+                # Add coordinate processing here with better error handling
                 if hasattr(self, '_nnManager') and self._nnManager is not None:
-                    if len(self._nnManager.measurement_buffer) >= self._nnManager.max_buffer_size and not self._nnManager.coordinates_sent:
-                        filtered_measurements = self.filter_measurements_iqr(self._nnManager.measurement_buffer)
-                        if filtered_measurements:
-                            mean_x = np.mean([m['position']['x'] for m in filtered_measurements])
-                            mean_y = np.mean([m['position']['y'] for m in filtered_measurements])
-                            mean_z = np.mean([m['position']['z'] for m in filtered_measurements])
-                            print(f"Publishing final mean coordinates: {mean_x:.5f}, {mean_y:.5f}, {mean_z:.5f}")
-                            coord_str = f"{mean_x:.5f},{mean_y:.5f},{mean_z:.5f}"
-                            self.coord_socket.send_string(coord_str)
-                            print("Coordinates sent to robot")
-                            self._nnManager.coordinates_sent = True
-                            self._nnManager.measurement_buffer = []
+                    buffer_size = len(self._nnManager.measurement_buffer)
+                    if buffer_size >= self._nnManager.max_buffer_size and not self._nnManager.coordinates_sent:
+                        try:
+                            filtered_measurements = self.filter_measurements_iqr(self._nnManager.measurement_buffer)
+                            if filtered_measurements:
+                                mean_x = np.mean([m['position']['x'] for m in filtered_measurements])
+                                mean_y = np.mean([m['position']['y'] for m in filtered_measurements])
+                                mean_z = np.mean([m['position']['z'] for m in filtered_measurements])
+                                
+                                # Prepare message
+                                coord_msg = json.dumps({
+                                    'x': float(mean_x),
+                                    'y': float(mean_y),
+                                    'z': float(mean_z)
+                                })
+                                
+                                try:
+                                    self.coord_socket.send_string(coord_msg)
+                                    print(f"Published coordinates: {coord_msg}")
+                                    self._nnManager.coordinates_sent = True
+                                except zmq.ZMQError as e:
+                                    print(f"Error publishing coordinates: {e}")
+                                    
+                        except Exception as e:
+                            print(f"Error processing measurements: {e}")
+                            traceback.print_exc()
                 
                 self.loop()
                 

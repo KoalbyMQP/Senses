@@ -20,6 +20,37 @@ safe_execute() {
 # Create or clear log file
 echo "" > device_logs.txt
 
+# Try to optimize USB performance
+log_with_timestamp "=== Configuring USB Settings ==="
+
+# Disable USB autosuspend for Luxonis devices
+for usb_dev in $(find /sys/bus/usb/devices/ -name "idVendor" -exec grep -l "03e7" {} \;); do
+    dev_path=$(dirname $usb_dev)
+    if [ -f "$dev_path/power/autosuspend" ]; then
+        log_with_timestamp "Disabling USB autosuspend for device at $dev_path"
+        echo -1 | sudo tee "$dev_path/power/autosuspend" >/dev/null 2>&1
+    fi
+done
+
+# Set USB transfer parameters
+for usb_dev in $(find /sys/bus/usb/devices/ -name "idVendor" -exec grep -l "03e7" {} \;); do
+    dev_path=$(dirname $usb_dev)
+    if [ -f "$dev_path/power/control" ]; then
+        log_with_timestamp "Setting USB power control to on for device at $dev_path"
+        echo "on" | sudo tee "$dev_path/power/control" >/dev/null 2>&1
+    fi
+done
+
+# Reset USB device if it's in a bad state
+reset_usb_device() {
+    local vendor_id="03e7"
+    local devices=$(lsusb | grep -i "ID $vendor_id:" | awk '{print $2 "/" $4}' | sed 's/://')
+    for dev in $devices; do
+        log_with_timestamp "Resetting USB device at bus $dev"
+        sudo usbreset "/dev/bus/usb/$dev" 2>/dev/null || log_with_timestamp "USB reset failed (normal if usbreset not installed)"
+    done
+}
+
 # Log system information before starting
 {
     log_with_timestamp "=== Starting Device Diagnostics ==="
@@ -81,12 +112,31 @@ log_with_timestamp "=== Starting DepthAI Demo ==="
 # Check USB speed before starting
 if lsusb -v 2>/dev/null | grep -q "bcdUSB\s*3\."; then
     log_with_timestamp "USB 3.0 connection detected"
+    # Give the device time to initialize in USB 3.0 mode
+    sleep 2
 else
     log_with_timestamp "WARNING: USB 3.0 not detected. Device may run in low-bandwidth mode"
+    # Try resetting the device to get USB 3.0
+    reset_usb_device
+    sleep 3
+    if lsusb -v 2>/dev/null | grep -q "bcdUSB\s*3\."; then
+        log_with_timestamp "Successfully established USB 3.0 connection after reset"
+    fi
 fi
 
+# Check if device is in bootloader mode
+if lsusb | grep -q "03e7.*bootloader"; then
+    log_with_timestamp "Device is in bootloader mode, attempting recovery..."
+    reset_usb_device
+    sleep 3
+fi
+
+# Enforce USB 3.0 mode if possible
+export DEPTHAI_FORCE_USB3=1
+
 # Start the demo and capture its PID
-python3 depthai_demo.py -cnn yolo-v3-tiny-tf -s color "$@" 2>&1 | tee -a device_logs.txt &
+log_with_timestamp "Starting demo with USB3 enforcement..."
+python3 depthai_demo.py -cnn yolo-v3-tiny-tf -s color --usbSpeed usb3 "$@" 2>&1 | tee -a device_logs.txt &
 DEMO_PID=$!
 
 # Monitor the demo process
@@ -99,6 +149,14 @@ while kill -0 $DEMO_PID 2>/dev/null; do
     # Check for OAK-D device
     if ! lsusb 2>/dev/null | grep -q "Luxonis"; then
         log_with_timestamp "ERROR: OAK-D device disconnected!"
+        # Try to recover
+        reset_usb_device
+        sleep 2
+    fi
+    
+    # Monitor USB speed
+    if ! lsusb -v 2>/dev/null | grep -q "bcdUSB\s*3\."; then
+        log_with_timestamp "WARNING: Device fell back to USB 2.0 mode"
     fi
     
     # Log memory usage
@@ -116,6 +174,8 @@ if [ $EXIT_CODE -ne 0 ]; then
     # Dump last 50 lines of system log
     log_with_timestamp "=== Last System Messages ==="
     dmesg | tail -n 50 >> device_logs.txt 2>&1
+    # Log USB device status
+    log_with_timestamp "=== USB Device Status at Crash ==="
+    lsusb >> device_logs.txt 2>&1
+    lsusb -t >> device_logs.txt 2>&1
 fi
-
-
