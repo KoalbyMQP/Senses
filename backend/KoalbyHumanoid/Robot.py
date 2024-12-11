@@ -30,10 +30,10 @@ class Robot():
             self.arduino_serial_init()
             self.motors = self.real_motors_init()
             
-            # self.imuPIDX = PID(0.2,0,0.1) # 1
-            # self.imuPIDZ = PID(0.25,0.0,0.0075)
+            self.imuPIDX = PID(0.2,0,0.1) # 1
+            self.imuPIDZ = PID(0.25,0.0,0.0075)
             
-           # self.electromagnet = Electromagnet()
+            self.electromagnet = Electromagnet()
         else:
             self.checkCoppeliaSimResponding()
 
@@ -42,8 +42,8 @@ class Robot():
             self.motorMovePositionScriptHandle = self.sim.getScript(self.sim.scripttype_childscript, self.sim.getObject("./chest_respondable"))
             self.motors = self.sim_motors_init()
             
-            # self.imuPIDX = PID(0.3,0.005,0.1)
-            # self.imuPIDZ = PID(0.25,0.0,0.0075)
+            self.imuPIDX = PID(0.3,0.005,0.1)
+            self.imuPIDZ = PID(0.25,0.0,0.0075)
 
         self.lastMotorCheck = time.time()
 
@@ -314,22 +314,22 @@ class Robot():
 
     # methods to balance (unassisted standing)
 
-    # def IMUBalance(self, Xtarget, Ztarget):
-    #     data = self.imu.getData()
+    def IMUBalance(self, Xtarget, Ztarget):
+        data = self.imu.getData()
 
-    #     xRot = data[0]
-    #     zRot = data[2]
-    #     Xerror = Xtarget - xRot
-    #     Zerror = Ztarget - zRot
-    #     self.imuPIDX.setError(Xerror)
-    #     self.imuPIDZ.setError(Zerror)
-    #     newTargetX = self.imuPIDX.calculate()
-    #     newTargetZ = self.imuPIDZ.calculate()
-    #     # print(math.degrees(newTargetX), math.degrees(newTargetZ))
-    #     self.motors[13].target = (newTargetZ, 'P')
-    #     self.motors[10].target = (newTargetX, 'P')
+        xRot = data[0]
+        zRot = data[2]
+        Xerror = Xtarget - xRot
+        Zerror = Ztarget - zRot
+        self.imuPIDX.setError(Xerror)
+        self.imuPIDZ.setError(Zerror)
+        newTargetX = self.imuPIDX.calculate()
+        newTargetZ = self.imuPIDZ.calculate()
+        # print(math.degrees(newTargetX), math.degrees(newTargetZ))
+        self.motors[13].target = (newTargetZ, 'P')
+        self.motors[10].target = (newTargetX, 'P')
 
-    #     self.checkMotorsAtInterval(TIME_BETWEEN_MOTOR_CHECKS)
+        self.checkMotorsAtInterval(TIME_BETWEEN_MOTOR_CHECKS)
 
     def VelBalance(self, balancePoint):
         balanceError = balancePoint - self.CoM
