@@ -1,17 +1,18 @@
 
-[2024-12-11 16:28:00] === Starting Device Diagnostics ===
-[2024-12-11 16:28:00] === USB Configuration ===
+[2024-12-11 17:21:18] === Configuring USB Settings ===
+[2024-12-11 17:21:18] === Starting Device Diagnostics ===
+[2024-12-11 17:21:18] === USB Configuration ===
 /:  Bus 04.Port 1: Dev 1, Class=root_hub, Driver=xhci-hcd/1p, 5000M
 /:  Bus 03.Port 1: Dev 1, Class=root_hub, Driver=xhci-hcd/2p, 480M
-    |__ Port 1: Dev 16, If 0, Class=Vendor Specific Class, Driver=, 480M
+    |__ Port 1: Dev 2, If 0, Class=Vendor Specific Class, Driver=, 480M
     |__ Port 2: Dev 3, If 0, Class=Human Interface Device, Driver=usbhid, 1.5M
 /:  Bus 02.Port 1: Dev 1, Class=root_hub, Driver=xhci-hcd/1p, 5000M
 /:  Bus 01.Port 1: Dev 1, Class=root_hub, Driver=xhci-hcd/2p, 480M
-    |__ Port 1: Dev 18, If 0, Class=Human Interface Device, Driver=usbhid, 1.5M
+    |__ Port 1: Dev 2, If 0, Class=Human Interface Device, Driver=usbhid, 1.5M
     |__ Port 2: Dev 3, If 0, Class=Audio, Driver=snd-usb-audio, 12M
     |__ Port 2: Dev 3, If 3, Class=Human Interface Device, Driver=usbhid, 12M
     |__ Port 2: Dev 3, If 1, Class=Audio, Driver=snd-usb-audio, 12M
-[2024-12-11 16:28:00] USB Device Tree obtained
+[2024-12-11 17:21:18] USB Device Tree obtained
 Couldn't open device, some information will be missing
 Couldn't open device, some information will be missing
 Couldn't open device, some information will be missing
@@ -28,93 +29,49 @@ Couldn't open device, some information will be missing
   bcdUSB               1.10
   bcdUSB               2.00
   bcdUSB               2.00
-[2024-12-11 16:28:00] USB speed information obtained
-[2024-12-11 16:28:00] === System Status ===
-temp=40.0'C
+[2024-12-11 17:21:19] USB speed information obtained
+[2024-12-11 17:21:19] === System Status ===
+temp=37.3'C
 throttled=0x0
                total        used        free      shared  buff/cache   available
-Mem:           7.9Gi       2.6Gi       2.8Gi       361Mi       3.0Gi       5.3Gi
+Mem:           7.9Gi       1.0Gi       4.2Gi       146Mi       2.9Gi       6.9Gi
 Swap:          199Mi          0B       199Mi
-[2024-12-11 16:28:00] === Process Status ===
-finley      1180  0.0  0.4  64272 34816 ?        S    16:05   0:00 /usr/bin/python3 /usr/share/system-config-printer/applet.py
-finley      2362  1.6  2.6 1188720976 218944 ?   Sl   16:06   0:20 /usr/share/code/code /home/finley/.vscode/extensions/ms-python.vscode-pylance-2024.12.1/dist/server.bundle.js --cancellationReceive=file:9a81189b75771e11fe859ac2471adaee34e513dbb5 --node-ipc --clientProcessId=2258
-finley      5805  0.6  0.8 565472 69488 ?        Sl   16:22   0:02 mousepad file:///home/finley/Documents/GitHub/Vision-Backup/vdepthai/depthai/voice_helper.sh
-[2024-12-11 16:28:00] === Memory Status ===
+[2024-12-11 17:21:19] === Process Status ===
+finley      1173  0.0  0.4  64272 35328 ?        S    17:05   0:00 /usr/bin/python3 /usr/share/system-config-printer/applet.py
+[2024-12-11 17:21:19] === Memory Status ===
 MemTotal:        8241488 kB
-MemFree:         2890976 kB
-MemAvailable:    5548448 kB
-[2024-12-11 16:28:00] === Resource Usage ===
-top - 16:28:00 up 22 min,  2 users,  load average: 1.15, 1.08, 0.85
-Tasks: 270 total,   1 running, 269 sleeping,   0 stopped,   0 zombie
-%Cpu(s):  0.0 us,  0.0 sy,  0.0 ni,100.0 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st 
-MiB Mem :   8048.3 total,   2823.2 free,   2629.9 used,   3053.5 buff/cache     
-MiB Swap:    200.0 total,    200.0 free,      0.0 used.   5418.4 avail Mem 
+MemFree:         4360096 kB
+MemAvailable:    7184512 kB
+[2024-12-11 17:21:19] === Resource Usage ===
+top - 17:21:19 up 15 min,  2 users,  load average: 0.33, 0.40, 0.28
+Tasks: 240 total,   2 running, 238 sleeping,   0 stopped,   0 zombie
+%Cpu(s):  0.0 us, 33.3 sy,  0.0 ni, 66.7 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st 
+MiB Mem :   8048.3 total,   4257.2 free,   1032.9 used,   3001.4 buff/cache     
+MiB Swap:    200.0 total,    200.0 free,      0.0 used.   7015.4 avail Mem 
 
     PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
-   5904 finley    20   0  649504  76608  49664 S  18.8   0.9   0:04.57 pcmanfm
-   1042 finley    20   0  929136 142496 108192 S   6.2   1.7   0:20.04 wayfire
-   7162 finley    20   0   11984   4608   2560 R   6.2   0.1   0:00.01 top
-      1 root      20   0  169008  11168   8192 S   0.0   0.1   0:00.68 systemd
+      1 root      20   0  169008  11168   8192 S   0.0   0.1   0:00.60 systemd
       2 root      20   0       0      0      0 S   0.0   0.0   0:00.00 kthreadd
       3 root      20   0       0      0      0 S   0.0   0.0   0:00.00 pool_wo+
       4 root       0 -20       0      0      0 I   0.0   0.0   0:00.00 kworker+
       5 root       0 -20       0      0      0 I   0.0   0.0   0:00.00 kworker+
       6 root       0 -20       0      0      0 I   0.0   0.0   0:00.00 kworker+
       7 root       0 -20       0      0      0 I   0.0   0.0   0:00.00 kworker+
-      8 root      20   0       0      0      0 I   0.0   0.0   0:01.04 kworker+
+     10 root      20   0       0      0      0 I   0.0   0.0   0:00.87 kworker+
      11 root      20   0       0      0      0 I   0.0   0.0   0:00.00 kworker+
      12 root       0 -20       0      0      0 I   0.0   0.0   0:00.00 kworker+
-[2024-12-11 16:28:00] === Diagnostics Complete ===
+     13 root      20   0       0      0      0 I   0.0   0.0   0:00.00 rcu_tas+
+     14 root      20   0       0      0      0 I   0.0   0.0   0:00.00 rcu_tas+
+     15 root      20   0       0      0      0 I   0.0   0.0   0:00.00 rcu_tas+
+[2024-12-11 17:21:19] === Diagnostics Complete ===
 
-[2024-12-11 16:28:00] === Starting DepthAI Demo ===
-[2024-12-11 16:28:00] USB 3.0 connection detected
-[2024-12-11 16:28:05] Process pickAndPlaceVoiceDetection.py is running
-[2024-12-11 16:28:05] Warning: Process finlyPickAndPlace.py is not running
-[2024-12-11 16:28:05] ERROR: OAK-D device disconnected!
-Mem:           7.9Gi       3.0Gi       2.4Gi       365Mi       3.0Gi       4.9Gi
-[2024-12-11 16:28:10] Process pickAndPlaceVoiceDetection.py is running
-[2024-12-11 16:28:11] Process finlyPickAndPlace.py is running
-[2024-12-11 16:28:11] ERROR: OAK-D device disconnected!
-Mem:           7.9Gi       3.1Gi       2.2Gi       375Mi       3.0Gi       4.8Gi
-[2024-12-11 16:28:16] Process pickAndPlaceVoiceDetection.py is running
-[2024-12-11 16:28:16] Process finlyPickAndPlace.py is running
-[2024-12-11 16:28:16] ERROR: OAK-D device disconnected!
-Mem:           7.9Gi       3.1Gi       2.2Gi       368Mi       3.0Gi       4.8Gi
-[2024-12-11 16:28:21] Process pickAndPlaceVoiceDetection.py is running
-[2024-12-11 16:28:21] Process finlyPickAndPlace.py is running
-[2024-12-11 16:28:21] ERROR: OAK-D device disconnected!
-Mem:           7.9Gi       3.1Gi       2.3Gi       338Mi       3.0Gi       4.8Gi
-pygame 2.6.1 (SDL 2.28.4, Python 3.11.2)
-Hello from the pygame community. https://www.pygame.org/contribute.html
-Logging and crash reporting disabled! No module named 'sentry_sdk'
-Setting up demo...
-Available devices:
-[0] 184430100197CA0F00 [X_LINK_UNBOOTED]
-/home/finley/Documents/GitHub/Vision-Backup/vdepthai/depthai/resources/nn/yolo-v3-tiny-tf/yolo-v3-tiny-tf.json
-USB Connection speed: UsbSpeed.HIGH
-Enabling low-bandwidth mode due to low USB speed... (speed: UsbSpeed.HIGH)
-Setting up ZMQ subscriber...
-Connecting to tcp://localhost:5558
-ZMQ subscriber connected successfully
-Starting speech detection process...
-Warning: Speech detection process failed to start
-Starting robot control process...
-Warning: Robot control process failed to start
-Received command: pick up remote
-New target received: remote
-Setting target object in NNetManager
-Target object set to: remote
-Created measurements file: test_tuple.txt
-[184430100197CA0F00] [3.1] [1733952504.272] [host] [warning] Device crashed, but no crash dump could be extracted.
-terminate called without an active exception
-Aborted
-pygame 2.6.1 (SDL 2.28.4, Python 3.11.2)
-Hello from the pygame community. https://www.pygame.org/contribute.html
-Using depthai module from:  /home/finley/Documents/GitHub/Vision-Backup/vdepthai/depthai/venv/lib/python3.11/site-packages/depthai.cpython-311-aarch64-linux-gnu.so
-Depthai version installed:  2.24.0.0
-Logging and crash reporting disabled! No module named 'sentry_sdk'
-[2024-12-11 16:28:26] Process pickAndPlaceVoiceDetection.py is running
-[2024-12-11 16:28:26] Process finlyPickAndPlace.py is running
-[2024-12-11 16:28:26] ERROR: OAK-D device disconnected!
-Mem:           7.9Gi       2.7Gi       2.6Gi       338Mi       3.0Gi       5.1Gi
-[2024-12-11 16:28:26] === DepthAI Demo Exited with Status: 0 ===
+[2024-12-11 17:21:19] === Starting DepthAI Demo ===
+[2024-12-11 17:21:19] USB 3.0 connection detected
+[2024-12-11 17:21:21] Starting demo with USB3 enforcement...
+[2024-12-11 17:21:26] Warning: Process pickAndPlaceVoiceDetection.py is not running
+[2024-12-11 17:21:26] Warning: Process finlyPickAndPlace.py is not running
+[2024-12-11 17:21:26] ERROR: OAK-D device disconnected!
+[2024-12-11 17:21:26] Resetting USB device at bus 003/002
+[2024-12-11 17:21:26] USB reset failed (normal if usbreset not installed)
+Mem:           7.9Gi       1.0Gi       4.1Gi       153Mi       2.9Gi       6.8Gi
+[2024-12-11 17:21:28] === DepthAI Demo Exited with Status: 0 ===
