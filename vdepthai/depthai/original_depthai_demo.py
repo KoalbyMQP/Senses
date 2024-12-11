@@ -1,78 +1,7 @@
 #!/usr/bin/env python3
-"""
-DepthAI Demo Application
-=======================
-
-1. Pipeline Management
-   - Camera configuration
-   - Neural network setup
-   - Depth configuration
-   - Stream synchronization
-
-2. Visualization
-   - OpenCV-based preview
-   - Qt-based GUI interface
-   - Neural network results
-   - Depth visualization
-
-3. Neural Networks
-   - Multiple model support
-   - Real-time inference
-   - Result visualization
-   - Model management
-
-Usage Examples:
---------------
-1. Basic RGB preview with neural network:
-   python3 depthai_demo.py -gt cv
-
-2. Neural network on video:
-   python3 depthai_demo.py -gt cv -vid path/to/video
-
-3. Specific model inference:
-   python3 depthai_demo.py -gt cv -cnn person-detection-retail-0013
-
-Command Line Arguments:
----------------------
--gt, --guiType        GUI type (cv, qt, none)
--vid, --video         Path to video file
--cnn                  Neural network model to use
--dd, --disableDepth   Disable depth perception
--dnn                  Disable neural network
--sync                 Enable frame synchronization
-...
-
-Architecture Overview:
---------------------
-1. Device Initialization
-   └─ Pipeline Creation
-      ├─ Camera Setup (RGB/Mono)
-      ├─ Neural Network Setup
-      └─ Depth Setup
-
-2. Data Flow
-   RGB/Mono Cameras -> Pre-processing -> Neural Network -> Post-processing -> Visualization
-                   \-> Depth Calculation -> Visualization
-
-3. Components Interaction
-   Demo Class -> Pipeline Manager -> Neural Network Manager
-              -> Preview Manager  -> Encoding Manager
-
-Requirements:
-------------
-- Python 3.6+
-- OpenCV 4.5+
-- DepthAI SDK
-- Qt5 (for GUI interface)
-"""
-
-# Import system packages
 import atexit
 import signal
 import sys
-import os
-import warnings
-import logging
 
 if sys.version_info[0] < 3:
     raise Exception("Must be using Python 3")
@@ -85,7 +14,6 @@ from functools import cmp_to_key
 from itertools import cycle
 import platform
 from pathlib import Path
-import subprocess
 
 if platform.machine() == 'aarch64':  # Jetson
     os.environ['OPENBLAS_CORETYPE'] = "ARMV8"
@@ -126,11 +54,6 @@ from depthai_helpers.config_manager import ConfigManager, DEPTHAI_ZOO, DEPTHAI_V
 from depthai_helpers.version_check import checkRequirementsVersion
 from depthai_sdk import loadModule, getDeviceInfo, downloadYTVideo, createBlankFrame
 from depthai_sdk.managers import NNetManager, SyncedPreviewManager, PreviewManager, PipelineManager, EncodingManager, BlobManager
-
-import multiprocessing
-import zmq
-from Speech.pickAndPlaceVoiceDetection import run_speech_detection
-
 
 
 class OverheatError(RuntimeError):
@@ -190,31 +113,6 @@ noop = lambda *a, **k: None
 
 
 class Demo:
-    """
-    Main Demo class that handles the DepthAI pipeline and all its components.
-
-    This class is responsible for:
-    1. Setting up the DepthAI pipeline
-    2. Managing camera configurations
-    3. Handling neural network inference
-    4. Processing depth information
-    5. Visualizing results
-
-    Attributes:
-        _openvinoVersion: OpenVINO version for neural network inference
-        _displayFrames: Boolean to control frame display
-        _device: DepthAI device instance
-        _pm: Pipeline manager instance
-        _nnManager: Neural network manager instance
-        ...
-
-    Methods:
-        setup(): Initialize pipeline and components
-        run(): Main processing loop
-        stop(): Cleanup and close device
-        ...
-    """
-
     DISP_CONF_MIN = int(os.getenv("DISP_CONF_MIN", 0))
     DISP_CONF_MAX = int(os.getenv("DISP_CONF_MAX", 255))
     SIGMA_MIN = int(os.getenv("SIGMA_MIN", 0))
@@ -235,20 +133,6 @@ class Demo:
             self.run()
 
     def __init__(self, displayFrames=True, onNewFrame = noop, onShowFrame = noop, onNn = noop, onReport = noop, onSetup = noop, onTeardown = noop, onIter = noop, onAppSetup = noop, onAppStart = noop, shouldRun = lambda: True, showDownloadProgress=None):
-        """
-        Initialize Demo instance.
-
-        Args:
-            displayFrames (bool): Whether to display camera frames
-            onNewFrame (callable): Callback for new frames
-            onShowFrame (callable): Callback for frame display
-            onNn (callable): Callback for neural network results
-            onReport (callable): Callback for system reports
-            ...
-
-        Raises:
-            RuntimeError: If device initialization fails
-        """
         self._openvinoVersion = None
         self._displayFrames = displayFrames
 
@@ -289,46 +173,8 @@ class Demo:
             self.onAppStart = onAppStart
 
     def setup(self, conf: ConfigManager):
-        """
-        Set up the DepthAI pipeline and its components.
-
-        This method:
-        1. Initializes the device
-        2. Sets up neural networks if enabled
-        3. Configures cameras
-        4. Sets up depth perception
-        5. Initializes visualization
-
-        Args:
-            conf (ConfigManager): Configuration manager instance
-
-        Raises:
-            RuntimeError: If setup fails
-            ValueError: If configuration is invalid
-        """
         print("Setting up demo...")
         self._conf = conf
-        
-        if self._conf.useNN:
-            model_dir = Path(DEPTHAI_ZOO) / self._conf.getModelName()
-            if not model_dir.exists():
-                print(f"Downloading model files to {model_dir}...")
-                try:
-                    # Remove the file if it exists
-                    if model_dir.is_file():
-                        model_dir.unlink()
-                    # Create directory and parent directories
-                    model_dir.parent.mkdir(parents=True, exist_ok=True)
-                    model_dir.mkdir(exist_ok=True)
-                    
-                    self._blobManager = BlobManager(
-                        zooDir=DEPTHAI_ZOO,
-                        zooName=self._conf.getModelName(),
-                        progressFunc=self.showDownloadProgress
-                    )
-                except Exception as e:
-                    raise RuntimeError(f"Failed to set up model directory: {e}")
-        
         if self._conf.args.openvinoVersion:
             self._openvinoVersion = getattr(dai.OpenVINO.Version, 'VERSION_' + self._conf.args.openvinoVersion)
         self._deviceInfo = getDeviceInfo(self._conf.args.deviceId, args.debug)
@@ -344,20 +190,6 @@ class Demo:
         if self._conf.args.cameraTuning:
             self._pm.setCameraTuningBlob(self._conf.args.cameraTuning)
 
-        maxUsbSpeed = dai.UsbSpeed.HIGH if self._conf.args.usbSpeed == "usb2" else dai.UsbSpeed.SUPER
-        self._device = dai.Device(self._pm.pipeline.getOpenVINOVersion(), self._deviceInfo, maxUsbSpeed)
-        self._device.addLogCallback(self._logMonitorCallback)
-        if not self._device:
-            raise RuntimeError("Device initialization failed!")
-        
-    # Now read calibration
-        try:
-            self._calibration = self._device.readCalibration()
-            self._pm.pipeline.setCalibrationData(self._calibration)
-        except Exception as e:
-            print(f"Failed to read calibration: {e}")
-            raise
-        
         self._nnManager = None
         if self._conf.useNN:
             self._blobManager = BlobManager(
@@ -365,20 +197,18 @@ class Demo:
                 zooName=self._conf.getModelName(),
                 progressFunc=self.showDownloadProgress
             )
-            
-            # here is where the nn manager instance is created. 
             self._nnManager = NNetManager(inputSize=self._conf.inputSize, sync=self._conf.args.sync)
-            
 
             if self._conf.getModelDir() is not None:
                 configPath = self._conf.getModelDir() / Path(self._conf.getModelName()).with_suffix(f".json")
-                print(configPath)
                 self._nnManager.readConfig(configPath)
 
             self._nnManager.countLabel(self._conf.getCountLabel(self._nnManager))
             self._pm.setNnManager(self._nnManager)
- 
-        
+
+        maxUsbSpeed = dai.UsbSpeed.HIGH if self._conf.args.usbSpeed == "usb2" else dai.UsbSpeed.SUPER
+        self._device = dai.Device(self._pm.pipeline.getOpenVINOVersion(), self._deviceInfo, maxUsbSpeed)
+        self._device.addLogCallback(self._logMonitorCallback)
         if sentryEnabled:
             try:
                 from sentry_sdk import set_user
@@ -440,6 +270,11 @@ class Demo:
                            xoutSbb=self._conf.args.spatialBoundingBox and self._conf.useDepth)
 
     def run(self):
+        self._device.startPipeline(self._pm.pipeline)
+        self._pm.createDefaultQueues(self._device)
+        if self._conf.useNN:
+            self._nnManager.createQueues(self._device)
+
         self._sbbOut = self._device.getOutputQueue("sbb", maxSize=1, blocking=False) if self._conf.useNN and self._conf.args.spatialBoundingBox else None
         self._logOut = self._device.getOutputQueue("systemLogger", maxSize=30, blocking=False) if len(self._conf.args.report) > 0 else None
 
@@ -480,24 +315,7 @@ class Demo:
             while self.shouldRun() and self.canRun():
                 self._fps.nextIter()
                 self.onIter(self)
-                
-                # Add coordinate processing here
-                if hasattr(self, '_nnManager') and self._nnManager is not None:
-                    if len(self._nnManager.measurement_buffer) >= self._nnManager.max_buffer_size and not self._nnManager.coordinates_sent:
-                        filtered_measurements = self.filter_measurements_iqr(self._nnManager.measurement_buffer)
-                        if filtered_measurements:
-                            mean_x = np.mean([m['position']['x'] for m in filtered_measurements])
-                            mean_y = np.mean([m['position']['y'] for m in filtered_measurements])
-                            mean_z = np.mean([m['position']['z'] for m in filtered_measurements])
-                            print(f"Publishing final mean coordinates: {mean_x:.5f}, {mean_y:.5f}, {mean_z:.5f}")
-                            coord_str = f"{mean_x:.5f},{mean_y:.5f},{mean_z:.5f}"
-                            self.coord_socket.send_string(coord_str)
-                            print("Coordinates sent to robot")
-                            self._nnManager.coordinates_sent = True
-                            self._nnManager.measurement_buffer = []
-                
                 self.loop()
-                
         except StopIteration:
             pass
         except Exception as ex:
@@ -509,36 +327,23 @@ class Demo:
             self.stop()
 
     def stop(self, *args, **kwargs):
-        print("Stopping demo...")
-        if hasattr(self, '_device'):
+        if hasattr(self, "_device"):
+            print("Stopping demo...")
             self._device.close()
             del self._device
-        if hasattr(self, '_pm'):
-            try:
-                self._pm.closeDefaultQueues()
-            except:
-                pass
-        if hasattr(self, '_pv'):
-            try:
-                self._pv.closeQueues()
-            except:
-                pass
-        if hasattr(self, '_nnManager'):
-            try:
-                self._nnManager.closeQueues()
-            except:
-                pass
-        if hasattr(self, '_encManager') and self._encManager is not None:
-            try:
+            self._fps.printStatus()
+        self._pm.closeDefaultQueues()
+        if self._conf.useCamera:
+            self._pv.closeQueues()
+            if self._encManager is not None:
                 self._encManager.close()
-            except:
-                pass
-        if hasattr(self, '_sbbOut') and self._sbbOut is not None:
+        if self._nnManager is not None:
+            self._nnManager.closeQueues()
+        if self._sbbOut is not None:
             self._sbbOut.close()
-        if hasattr(self, '_logOut') and self._logOut is not None:
+        if self._logOut is not None:
             self._logOut.close()
-        if hasattr(self, 'onTeardown'):
-            self.onTeardown(self)
+        self.onTeardown(self)
 
     def canRun(self):
         return hasattr(self, "_device") and not self._device.isClosed()
@@ -609,7 +414,6 @@ class Demo:
             self._pv.showFrames(callback=self._showFramesCallback)
         elif self._hostFrame is not None:
             debugHostFrame = self._hostFrame.copy()
-            # might be the draw method we are looking for 
             if self._nnManager is not None:
                 self._nnManager.draw(debugHostFrame, self._nnData)
             self._fps.drawFps(debugHostFrame, "host")
@@ -687,36 +491,6 @@ class Demo:
                          lambda value: self._device.setIrFloodLightBrightness(value))
 
     def _updateCameraConfigs(self, config):
-        """
-        Update camera configurations based on user settings.
-
-        This method handles:
-        1. Camera exposure settings
-        2. Sensitivity adjustments
-        3. Color corrections (saturation, contrast, brightness)
-        4. Image quality settings (sharpness)
-
-        The configuration is applied to:
-        - Left mono camera
-        - Right mono camera
-        - RGB camera
-
-        Args:
-            config (dict): Configuration dictionary with the following structure:
-                {
-                    "exposure": [(camera_name, value), ...],
-                    "sensitivity": [(camera_name, value), ...],
-                    "saturation": [(camera_name, value), ...],
-                    ...
-                }
-
-        Example:
-            config = {
-                "exposure": [("rgb", 500), ("mono", 300)],
-                "sensitivity": [("rgb", 800)]
-            }
-            _updateCameraConfigs(config)
-        """
         parsedConfig = {}
         for configOption, values in config.items():
             if values is not None:
@@ -944,8 +718,7 @@ def runQt():
             self.signals.setDataSignal.emit(["irDotBrightness", self.conf.args.irDotBrightness if self.conf.irEnabled(instance._device) else 0])
             self.signals.setDataSignal.emit(["irFloodBrightness", self.conf.args.irFloodBrightness if self.conf.irEnabled(instance._device) else 0])
             self.signals.setDataSignal.emit(["lrc", self.conf.args.stereoLrCheck])
-            self.signals.setDataSignal.emit(["modelChoices", sorted(self.conf.getAvailableZooModels(), key=cmp_to_key(lambda a, b: -1 if a == "yolo-v3" else 1 if b == "yolo-v3" else -1 if a < b else 1))])
-            
+            self.signals.setDataSignal.emit(["modelChoices", sorted(self.conf.getAvailableZooModels(), key=cmp_to_key(lambda a, b: -1 if a == "mobilenet-ssd" else 1 if b == "mobilenet-ssd" else -1 if a < b else 1))])
 
 
     class GuiApp(DemoQtGui):
@@ -1138,7 +911,6 @@ def runQt():
                 devices = list(map(lambda info: info.getMxId(), dai.XLinkConnection.getAllConnectedDevices()))
             else:
                 devices = list(map(lambda info: info.getMxId(), dai.Device.getAllAvailableDevices()))
-
             if hasattr(self._demoInstance, "_deviceInfo"):
                 devices.insert(0, self._demoInstance._deviceInfo.getMxId())
             self.worker.signals.setDataSignal.emit(["deviceChoices", devices])
@@ -1261,264 +1033,11 @@ def runQt():
     signal.signal(signal.SIGTERM, app.stopGui)
     atexit.register(app.stopGui)
     app.start()
-    
-class SpeechEnabledDemo(Demo):
-    def __init__(self):
-        super().__init__()
-        self.speech_process = None
-        self.robot_process = None  
-        self.current_target = None
-        
-        # Speech command subscriber (port 5558)
-        self.context = zmq.Context()
-        self.socket = self.context.socket(zmq.SUB)
-        self.socket.connect("tcp://localhost:5558")
-        self.socket.setsockopt_string(zmq.SUBSCRIBE, "")
-        
-        # Coordinate publisher (port 5559)
-        self.coord_context = zmq.Context()
-        self.coord_socket = self.coord_context.socket(zmq.PUB)
-        self.coord_socket.bind("tcp://*:5559")
 
-    def filter_measurements_iqr(self, measurements):
-        print(f"Starting IQR filtering with {len(measurements)} measurements")
-        
-        import numpy as np
-        
-        x_coords = [m['position']['x'] for m in measurements]
-        y_coords = [m['position']['y'] for m in measurements]
-        z_coords = [m['position']['z'] for m in measurements]
-        widths = [m['dimensions']['width'] for m in measurements]
-        heights = [m['dimensions']['height'] for m in measurements]
-        
-        print(f"Extracted coordinates ranges:")
-        print(f"X: {min(x_coords):.5f} to {max(x_coords):.5f}")
-        print(f"Y: {min(y_coords):.5f} to {max(y_coords):.5f}")
-        print(f"Z: {min(z_coords):.5f} to {max(z_coords):.5f}")
-        
-        def apply_iqr_filter(data):
-            Q1 = np.percentile(data, 25)
-            Q3 = np.percentile(data, 75)
-            IQR = Q3 - Q1
-            lower_bound = Q1 - 1.5 * IQR
-            upper_bound = Q3 + 1.5 * IQR
-            return lower_bound, upper_bound
-        
-        x_bounds = apply_iqr_filter(x_coords)
-        y_bounds = apply_iqr_filter(y_coords)
-        z_bounds = apply_iqr_filter(z_coords)
-        width_bounds = apply_iqr_filter(widths)
-        height_bounds = apply_iqr_filter(heights)
-        
-        print(f"IQR Bounds:")
-        print(f"X: {x_bounds[0]:.5f} to {x_bounds[1]:.5f}")
-        print(f"Y: {y_bounds[0]:.5f} to {y_bounds[1]:.5f}")
-        print(f"Z: {z_bounds[0]:.5f} to {z_bounds[1]:.5f}")
-        
-        filtered_measurements = []
-        print(filtered_measurements)
-        for m in measurements:
-            x, y, z = m['position']['x'], m['position']['y'], m['position']['z']
-            w, h = m['dimensions']['width'], m['dimensions']['height']
-            
-            if (x_bounds[0] <= x <= x_bounds[1] and
-                y_bounds[0] <= y <= y_bounds[1] and
-                z_bounds[0] <= z <= z_bounds[1] and
-                width_bounds[0] <= w <= width_bounds[1] and
-                height_bounds[0] <= h <= height_bounds[1]):
-                filtered_measurements.append(m)
-        
-        print(f"After IQR filtering: {len(filtered_measurements)} measurements remain")
-        
-        return filtered_measurements
-
-    def calculate_mean_coordinates(self, filtered_measurements):
-        
-        x_coords = [m['position']['x'] for m in filtered_measurements]
-        y_coords = [m['position']['y'] for m in filtered_measurements]
-        z_coords = [m['position']['z'] for m in filtered_measurements]
-        
-        mean_x = sum(x_coords) / len(x_coords)
-        mean_y = sum(y_coords) / len(y_coords)
-        mean_z = sum(z_coords) / len(z_coords)
-        
-        return mean_x, mean_y, mean_z
-
-    def setup(self, conf):
-        super().setup(conf)
-        
-        # Set up ZMQ subscriber
-        print("Setting up ZMQ subscriber...")
-        try:
-            self.context = zmq.Context()
-            self.socket = self.context.socket(zmq.SUB)
-            print("Connecting to tcp://localhost:5558")
-            self.socket.connect("tcp://localhost:5558")
-            self.socket.setsockopt_string(zmq.SUBSCRIBE, "")
-            print("ZMQ subscriber connected successfully")
-        except Exception as e:
-            print(f"Error setting up ZMQ subscriber: {e}")
-
-        # Start speech detection process
-        print("Starting speech detection process...")
-        try:
-            current_dir = os.path.dirname(os.path.abspath(__file__))
-            project_root = os.path.dirname(os.path.dirname(current_dir))
-            speech_script_path = os.path.join(project_root, "Speech", "pickAndPlaceVoiceDetection.py")
-            
-            venv_path = os.environ.get('VIRTUAL_ENV', '')
-            if venv_path:
-                activate_cmd = f"source {venv_path}/bin/activate && "
-            else:
-                activate_cmd = ""
-            
-            speech_cmd = f"lxterminal -e 'bash -c \"{activate_cmd}python3 {speech_script_path} 2>/dev/null; echo Press Enter to close...; read\"'"
-            
-            self.speech_process = subprocess.Popen(
-                speech_cmd,
-                shell=True,
-                preexec_fn=os.setsid
-            )
-            
-            time.sleep(1)
-            if self.speech_process.poll() is None:
-                print("Speech detection process started successfully in new terminal")
-            else:
-                print("Warning: Speech detection process failed to start")
-        except Exception as e:
-            print(f"Error starting speech detection: {e}")
-
-        # Start robot control process
-        print("Starting robot control process...")
-        try:
-            current_dir = os.path.dirname(os.path.abspath(__file__))
-            project_root = os.path.dirname(os.path.dirname(current_dir))
-            robot_script_path = os.path.join(project_root, "backend", "Testing", "finlyPickAndPlace.py")
-            
-            venv_path = os.environ.get('VIRTUAL_ENV', '')
-            if venv_path:
-                activate_cmd = f"source {venv_path}/bin/activate && "
-            else:
-                activate_cmd = ""
-            
-            robot_cmd = f"lxterminal -e 'bash -c \"export PYTHONPATH=/home/finley/Documents/GitHub/Vision:$PYTHONPATH; {activate_cmd}python3 {robot_script_path}; echo Press Enter to close...; read\"'"
-
-            self.robot_process = subprocess.Popen(
-                robot_cmd,
-                shell=True,
-                preexec_fn=os.setsid
-            )
-            
-            time.sleep(1)
-            if self.robot_process.poll() is None:
-                print("Robot control process started successfully in new terminal")
-            else:
-                print("Warning: Robot control process failed to start")
-        except Exception as e:
-            print(f"Error starting robot control: {e}")
-    
-    def run(self):
-        self._device.startPipeline(self._pm.pipeline)
-        self._pm.createDefaultQueues(self._device)
-        if self._conf.useNN:
-            self._nnManager.createQueues(self._device)
-        target_object = None
-        
-        while target_object == None:
-            try:
-                command = self.socket.recv_string(flags=zmq.NOBLOCK)
-                print(f"Received command: {command}")
-                
-                if command.startswith("pick up"):
-                    target_object = command.split("pick up ")[1]
-                    self.current_target = target_object
-                    print(f"New target received: {target_object}")
-                    if hasattr(self, '_nnManager'):
-                        print("Setting target object in NNetManager")
-                        self._nnManager.set_target_object(target_object)
-                        print(f"Target object set to: {self._nnManager._target_object}")
-                        
-                        # Create measurements file
-                        self.measurements_file = open('test_tuple.txt', 'w')
-                        print("Created measurements file: test_tuple.txt")
-                        
-            except zmq.Again:
-                pass
-            except Exception as e:
-                print(f"Error in ZMQ receive: {e}")
-                time.sleep(0.001)
-                
-        super().run()
-        try:
-            while self.shouldRun() and self.canRun():
-                self._fps.nextIter()
-                self.onIter(self)
-                
-                # Add coordinate processing here
-                if hasattr(self, '_nnManager') and self._nnManager is not None:
-                    if len(self._nnManager.measurement_buffer) >= self._nnManager.max_buffer_size and not self._nnManager.coordinates_sent:
-                        filtered_measurements = self.filter_measurements_iqr(self._nnManager.measurement_buffer)
-                        if filtered_measurements:
-                            mean_x = np.mean([m['position']['x'] for m in filtered_measurements])
-                            mean_y = np.mean([m['position']['y'] for m in filtered_measurements])
-                            mean_z = np.mean([m['position']['z'] for m in filtered_measurements])
-                            print(f"Publishing final mean coordinates: {mean_x:.5f}, {mean_y:.5f}, {mean_z:.5f}")
-                            coord_str = f"{mean_x:.5f},{mean_y:.5f},{mean_z:.5f}"
-                            self.coord_socket.send_string(coord_str)
-                            print("Coordinates sent to robot")
-                            self._nnManager.coordinates_sent = True
-                            self._nnManager.measurement_buffer = []
-                
-                self.loop()
-                
-        except StopIteration:
-            pass
-        except Exception as ex:
-            raise
-        finally:
-            if hasattr(self, 'measurements_file'):
-                self.measurements_file.close()
-            if self.socket:
-                self.socket.close()
-            if self.context:
-                self.context.term()
-            self.stop()
-
-    def stop(self, *args, **kwargs):
-        """Clean up all processes and resources"""
-        # Terminate speech process if running
-        if self.speech_process:
-            try:
-                os.killpg(os.getpgid(self.speech_process.pid), signal.SIGTERM)
-            except Exception as e:
-                print(f"Error terminating speech process: {e}")
-
-        # Terminate robot process if running
-        if self.robot_process:
-            try:
-                os.killpg(os.getpgid(self.robot_process.pid), signal.SIGTERM)
-            except Exception as e:
-                print(f"Error terminating robot process: {e}")
-
-        # Clean up ZMQ resources
-        if hasattr(self, 'socket'):
-            self.socket.close()
-        if hasattr(self, 'context'):
-            self.context.term()
-        if hasattr(self, 'coord_socket'):
-            self.coord_socket.close()
-        if hasattr(self, 'coord_context'):
-            self.coord_context.term()
-
-        # Close measurement file if open
-        if hasattr(self, 'measurements_file'):
-            self.measurements_file.close()
-
-        super().stop(*args, **kwargs)
 
 def runOpenCv():
     confManager = prepareConfManager(args)
-    demo = SpeechEnabledDemo()
+    demo = Demo()
     signal.signal(signal.SIGINT, demo.stop)
     signal.signal(signal.SIGTERM, demo.stop)
     atexit.register(demo.stop)
