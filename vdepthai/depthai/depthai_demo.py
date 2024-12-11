@@ -1418,9 +1418,12 @@ class SpeechEnabledDemo(Demo):
             print(f"Error starting robot control: {e}")
     
     def run(self):
+        print("Starting pipeline...")
         self._device.startPipeline(self._pm.pipeline)
+        print("Creating default queues...")
         self._pm.createDefaultQueues(self._device)
         if self._conf.useNN:
+            print("Creating NN queues...")
             self._nnManager.createQueues(self._device)
         target_object = None
         
@@ -1434,9 +1437,17 @@ class SpeechEnabledDemo(Demo):
                     self.current_target = target_object
                     print(f"New target received: {target_object}")
                     if hasattr(self, '_nnManager'):
+                        # Ensure device is properly initialized
+                        if not hasattr(self._nnManager, 'device') or self._nnManager.device is None:
+                            print("Reinitializing device reference...")
+                            self._nnManager.device = self._device
+                        
                         print("Setting target object in NNetManager")
-                        self._nnManager.set_target_object(target_object)
-                        print(f"Target object set to: {self._nnManager._target_object}")
+                        if self._nnManager.set_target_object(target_object):
+                            print(f"Target object set to: {self._nnManager._target_object}")
+                        else:
+                            print("Failed to set target object")
+                            continue
                         
                         # Create measurements file
                         self.measurements_file = open('test_tuple.txt', 'w')
