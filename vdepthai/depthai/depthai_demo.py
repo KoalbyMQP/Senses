@@ -74,22 +74,6 @@ import os
 import warnings
 import logging
 
-# Disable ALSA error output
-os.environ['ALSA_ERRORS_TO_STDERR'] = 'no'
-logging.getLogger('ALSA').setLevel(logging.CRITICAL)
-
-# Create a custom stderr that does nothing
-class NullStream:
-    def write(self, *args):
-        pass
-    def flush(self, *args):
-        pass
-
-# Redirect stderr to null stream
-null_stream = NullStream()
-stderr_backup = sys.stderr
-sys.stderr = null_stream
-
 if sys.version_info[0] < 3:
     raise Exception("Must be using Python 3")
 import argparse

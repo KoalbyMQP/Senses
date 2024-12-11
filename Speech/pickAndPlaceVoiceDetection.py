@@ -27,7 +27,7 @@ null_stream = NullStream()
 stderr_backup = sys.stderr
 sys.stderr = null_stream
 
-load_dotenv("Documents/GitHub/Vision-Backup/Speech/tts.env")
+load_dotenv("Documents/GitHuh/Vision/Speech/tts.env")
 
 api_key = "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"
 if not api_key:
