@@ -9,6 +9,7 @@ sys.path.append("./")
 from backend.KoalbyHumanoid.Robot import Robot
 from backend.KoalbyHumanoid.trajPlannerTime import TrajPlannerTime
 from backend.Testing import finlyViaPoints as via
+import os
 
 # ZMQ setup
 context = zmq.Context()
@@ -17,16 +18,33 @@ socket.connect("tcp://localhost:5559")
 socket.setsockopt_string(zmq.SUBSCRIBE, "")
 socket.setsockopt(zmq.RCVTIMEO, 180000)  
 
-left_leg_chain = Chain.from_urdf_file(
-    "backend/Testing/FinleyJNEWARMS_2024_2.urdf",
+def find_file(filename, search_path="/home/finley"): 
+    result = []    
+    for root, dirs, files in os.walk(search_path):        
+        if filename in files: 
+            result.append(os.path.join(root, filename))    
+    return result 
+    
+# Find all instances of your URDF file 
+found_paths = find_file("FinleyJNEWARMS_2024_2.urdf")
+print("Found URDF files at:", found_paths)
+
+# If found, use the first instance
+if found_paths: 
+    urdf_path = found_paths[0] 
+
+    left_leg_chain = Chain.from_urdf_file(
+    urdf_path,
     base_elements=['shoulder1_left', 'shoulder1_left'],
     active_links_mask=[False, True, True, True, True, True, True]
 )
 
-camera = Chain.from_urdf_file(
-    "backend/Testing/FinleyJNEWARMS_2024_2.urdf",
+    camera = Chain.from_urdf_file(
+    urdf_path,
     base_elements=['neck', 'neck']   
 )
+
+
 
 camera_angles=np.array([0,0,0,0])
 camera_frame_transformation=camera.forward_kinematics(camera_angles)
@@ -73,7 +91,7 @@ while time.time() - simStartTime < 2:
     robot.IMUBalance(0,0)
     robot.moveAllToTarget()
 
-B = np.array([[final_points[0]], [final_points[1]], [final_points[2]], [1]])
+B = np.array([[final_points[0]], [final_points[2]], [final_points[1]], [1]])
 A = camera_frame_transformation
 C = np.dot(A, B)
 print(C)
