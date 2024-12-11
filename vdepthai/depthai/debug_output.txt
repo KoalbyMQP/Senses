@@ -4,12 +4,12 @@ Logging and crash reporting disabled! No module named 'sentry_sdk'
 Setting up demo...
 Available devices:
 [0] 184430100197CA0F00 [X_LINK_UNBOOTED]
-/home/finley/Documents/GitHub/Vision-Backup/vdepthai/depthai/resources/nn/yolov8n_coco_640x352/yolov8n_coco_640x352.json
+/home/finley/Documents/GitHub/Vision/vdepthai/depthai/resources/nn/yolov8n_coco_640x352/yolov8n_coco_640x352.json
 USB Connection speed: UsbSpeed.HIGH
 Enabling low-bandwidth mode due to low USB speed... (speed: UsbSpeed.HIGH)
 Stopping demo...
 pygame 2.6.1 (SDL 2.28.4, Python 3.11.2)
 Hello from the pygame community. https://www.pygame.org/contribute.html
-Using depthai module from:  /home/finley/Documents/GitHub/Vision-Backup/vdepthai/depthai/venv/lib/python3.11/site-packages/depthai.cpython-311-aarch64-linux-gnu.so
+Using depthai module from:  /home/finley/Documents/GitHub/Vision/vdepthai/depthai/venv/lib/python3.11/site-packages/depthai.cpython-311-aarch64-linux-gnu.so
 Depthai version installed:  2.24.0.0
 Logging and crash reporting disabled! No module named 'sentry_sdk'

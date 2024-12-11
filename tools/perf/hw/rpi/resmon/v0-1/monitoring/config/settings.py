@@ -7,8 +7,8 @@ from pathlib import Path
 class Settings:
     def __init__(self):
         self.settings = {
-            'depthai_path': Path('/home/finley/Documents/GitHub/Vision-Backup/vdepthai/depthai'),
-            'venv_path': Path('/home/finley/Documents/GitHub/Vision-Backup/vdepthai'),
+            'depthai_path': Path('/home/finley/Documents/GitHub/Vision/vdepthai/depthai'),
+            'venv_path': Path('/home/finley/Documents/GitHub/Vision/vdepthai'),
             'sampling_interval': 0.1  # seconds
         }
 

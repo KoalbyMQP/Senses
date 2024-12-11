@@ -1,4 +1,4 @@
-#!/home/finley/Documents/GitHub/Vision-Backup/Speech/myenv/bin/python
+#!/home/finley/Documents/GitHub/Vision/Speech/myenv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys
