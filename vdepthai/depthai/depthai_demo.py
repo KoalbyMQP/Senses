@@ -1433,25 +1433,14 @@ class SpeechEnabledDemo(Demo):
                 print(f"Received command: {command}")
                 
                 if command.startswith("pick up"):
-                    try:
-                        # Check device status
-                        if not self._device.isPipelineRunning():
-                            logging.warning("Pipeline not running, attempting to restart...")
-                            self._device.startPipeline(self._pm.pipeline)
-                            time.sleep(1)  # Give device time to start
-                            
-                        target_object = command.split("pick up ")[1]
-                        self.current_target = target_object
-                        logging.info(f"New target received: {target_object}")
-                        
-                        if hasattr(self, '_nnManager'):
-                            with self._device.lock:  # Ensure thread-safe device access
-                                if not hasattr(self._nnManager, 'device') or self._nnManager.device is None:
-                                    logging.info("Reinitializing device reference...")
-                                    self._nnManager.device = self._device
-                    except Exception as e:
-                        logging.error(f"Error processing target: {str(e)}")
-                        traceback.print_exc()
+                    target_object = command.split("pick up ")[1]
+                    self.current_target = target_object
+                    print(f"New target received: {target_object}")
+                    if hasattr(self, '_nnManager'):
+                        # Ensure device is properly initialized
+                        if not hasattr(self._nnManager, 'device') or self._nnManager.device is None:
+                            print("Reinitializing device reference...")
+                            self._nnManager.device = self._device
                         
                         print("Setting target object in NNetManager")
                         if self._nnManager.set_target_object(target_object):
@@ -1521,19 +1510,22 @@ class SpeechEnabledDemo(Demo):
                 os.killpg(os.getpgid(self.robot_process.pid), signal.SIGTERM)
             except Exception as e:
                 print(f"Error terminating robot process: {e}")
-        try:
-            if hasattr(self, 'socket'):
-                self.socket.close()
-            if hasattr(self, 'context'):
-                self.context.term()
-            if hasattr(self, 'coord_socket'):
-                self.coord_socket.close()
-            if hasattr(self, 'coord_context'):
-                self.coord_context.term()
-        except Exception as e:
-            print(f"Error during cleanup: {e}")
-        finally:
-            super().stop(*args, **kwargs)
+
+        # Clean up ZMQ resources
+        if hasattr(self, 'socket'):
+            self.socket.close()
+        if hasattr(self, 'context'):
+            self.context.term()
+        if hasattr(self, 'coord_socket'):
+            self.coord_socket.close()
+        if hasattr(self, 'coord_context'):
+            self.coord_context.term()
+
+        # Close measurement file if open
+        if hasattr(self, 'measurements_file'):
+            self.measurements_file.close()
+
+        super().stop(*args, **kwargs)
 
 def runOpenCv():
     confManager = prepareConfManager(args)
