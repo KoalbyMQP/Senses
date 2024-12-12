@@ -50,7 +50,7 @@ camera_angles=np.array([0,0,0,0])
 camera_frame_transformation=camera.forward_kinematics(camera_angles)
 
 # sim or real robot
-is_real = False
+is_real = True
 robot = Robot(is_real)
 print("Setup Complete")
 
@@ -88,7 +88,7 @@ simStartTime = time.time()
 
 while time.time() - simStartTime < 2:
     time.sleep(0.01)
-    robot.IMUBalance(0,0)
+    #robot.IMUBalance(0,0)
     robot.moveAllToTarget()
 
 B = np.array([[final_points[0]], [final_points[2]], [final_points[1]], [1]])
@@ -128,5 +128,5 @@ while time.time() - startTime < 20:
         
         print(motor_angle_task)
 
-        robot.IMUBalance(0, 0)
+        #robot.IMUBalance(0, 0)
         robot.moveAllToTarget()
