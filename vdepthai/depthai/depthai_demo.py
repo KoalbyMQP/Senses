@@ -87,15 +87,6 @@ import platform
 from pathlib import Path
 import subprocess
 
-def check_power_status():
-    try:
-        # Check USB device power status
-        usb_power = subprocess.check_output(['vcgencmd', 'get_throttled']).decode()
-        return usb_power.strip()
-    except:
-        return "Unable to check power status"
-
-
 if platform.machine() == 'aarch64':  # Jetson
     os.environ['OPENBLAS_CORETYPE'] = "ARMV8"
 
@@ -1289,54 +1280,6 @@ class SpeechEnabledDemo(Demo):
         self.coord_socket = self.coord_context.socket(zmq.PUB)
         self.coord_socket.bind("tcp://*:5559")
 
-    def _recover_from_crash(self):
-        try:
-            # Close and reopen device
-            if hasattr(self, '_device'):
-                self._device.close()
-                time.sleep(1)
-                
-            # Reinitialize pipeline with lower power settings
-            if hasattr(self, '_pm'):
-                self._pm.createPipeline(
-                    openvinoVersion=None,
-                    lowPower=True,  # Enable low power mode
-                    lowBandwidth=True  # Reduce bandwidth requirements
-                )
-                
-            self._device.startPipeline(self._pm.pipeline)
-        except Exception as e:
-            logging.error(f"Recovery failed: {e}")
-
-    def check_device_connection(self):
-        try:
-            import usb.core
-            import usb.util
-            
-            # Oak-D Lite VID:PID (03e7:2485)
-            dev = usb.core.find(idVendor=0x03e7, idProduct=0x2485)
-            
-            if dev is not None:
-                # Verify it's the correct device by checking manufacturer and product strings
-                try:
-                    if dev.manufacturer == "Movidius Ltd." and "Movidius MyriadX" in dev.product:
-                        # Check if it's on USB 3.0 (Bus 003)
-                        if dev.bus == 3:  # Bus 003
-                            logging.info("Oak-D Lite found on USB 3.0 bus")
-                            return True
-                        else:
-                            logging.warning(f"Oak-D Lite found on Bus {dev.bus}, not on USB 3.0 (Bus 3)")
-                            return False
-                except:
-                    # If we can't read strings, just verify VID:PID
-                    return True
-                    
-            logging.error("Oak-D Lite not found")
-            return False
-        except Exception as e:
-            logging.error(f"Error checking device connection: {e}")
-            return False
-
     def filter_measurements_iqr(self, measurements):
         print(f"Starting IQR filtering with {len(measurements)} measurements")
         
@@ -1490,15 +1433,6 @@ class SpeechEnabledDemo(Demo):
                 print(f"Received command: {command}")
                 
                 if command.startswith("pick up"):
-                    power_status = check_power_status()
-                    logging.info(f"Power status before processing: {power_status}")
-                     # Add device connection check here
-                    if not self.check_device_connection():
-                        logging.error("Device disconnected, attempting recovery...")
-                        self._recover_from_crash()
-                        if not self.check_device_connection():
-                            logging.error("Recovery failed, device still disconnected")
-                            continue
                     try:
                         # Check device status
                         if not self._device.isPipelineRunning():
