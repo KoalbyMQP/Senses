@@ -116,7 +116,7 @@ print("phase 2")
 currentAngleTest=0
 
 while time.time() - startTime < 20:
-        currentAngleTest=(time.time()-startTime)*2
+        currentAngleTest=int(time.time()-startTime)*2
         # target_position_task = lArm_tj_joint.getQuinticPositions(time.time() - startTime)
         # target_position_2 = np.array([(target_position_task[0]), (target_position_task[1]), (target_position_task[2])])
         # ik_solution = left_leg_chain.inverse_kinematics(target_position_2, initial_position=ik_solution_2)
