@@ -113,30 +113,39 @@ startTime = time.time()
 
 print("phase 2")
 
-currentAngleTest=0
+
 
 while time.time() - startTime < 20:
+<<<<<<< Updated upstream
         currentAngleTest=int(time.time()-startTime)*2
         # target_position_task = lArm_tj_joint.getQuinticPositions(time.time() - startTime)
         # target_position_2 = np.array([(target_position_task[0]), (target_position_task[1]), (target_position_task[2])])
         # ik_solution = left_leg_chain.inverse_kinematics(target_position_2, initial_position=ik_solution_2)
         # ik_solution_2 = ik_solution
         # motor_angle_task = ik_solution
+=======
+       
+        target_position_task = lArm_tj_joint.getQuinticPositions(time.time() - startTime)
+        target_position_2 = np.array([(target_position_task[0]), (target_position_task[1]), (target_position_task[2])])
+        ik_solution = left_leg_chain.inverse_kinematics(target_position_2, initial_position=ik_solution_2)
+        ik_solution_2 = ik_solution
+        motor_angle_task = ik_solution
+>>>>>>> Stashed changes
 
-        # robot.motors[5].target = (motor_angle_task[1], 'P')
-        # robot.motors[6].target = (motor_angle_task[2], 'P')
-        # robot.motors[7].target = (motor_angle_task[3], 'P')
-        # robot.motors[8].target = (motor_angle_task[4], 'P')
-        # robot.motors[9].target = (motor_angle_task[5], 'P')
+        robot.motors[5].target = (-motor_angle_task[1], 'P')
+        robot.motors[6].target = (motor_angle_task[2], 'P')
+        robot.motors[7].target = (motor_angle_task[3], 'P')
+        robot.motors[8].target = (motor_angle_task[4], 'P')
+        robot.motors[9].target = (motor_angle_task[5], 'P')
         
         # print(motor_angle_task)
         
-        robot.motors[5].target = (math.radians(currentAngleTest), 'P')
-        robot.motors[6].target = (math.radians(0), 'P')
-        robot.motors[7].target = (math.radians(0), 'P')
-        robot.motors[8].target = (math.radians(0), 'P')
-        robot.motors[9].target = (math.radians(0), 'P')
-        robot.motors[10].target = (math.radians(0), 'P')
+        # robot.motors[5].target = (math.radians(currentAngleTest), 'P')
+        # robot.motors[6].target = (math.radians(0), 'P')
+        # robot.motors[7].target = (math.radians(0), 'P')
+        # robot.motors[8].target = (math.radians(0), 'P')
+        # robot.motors[9].target = (math.radians(0), 'P')
+        # robot.motors[10].target = (math.radians(0), 'P')
         
 
         #robot.IMUBalance(0, 0)
