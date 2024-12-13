@@ -122,7 +122,7 @@ while time.time() - startTime < 20:
 
         robot.motors[5].target = (-motor_angle_task[1], 'P')
         robot.motors[6].target = (motor_angle_task[2], 'P')
-        robot.motors[7].target = (motor_angle_task[3], 'P')
+        robot.motors[7].target = (-motor_angle_task[3], 'P')
         robot.motors[8].target = (motor_angle_task[4], 'P')
         robot.motors[9].target = (motor_angle_task[5], 'P')
         
