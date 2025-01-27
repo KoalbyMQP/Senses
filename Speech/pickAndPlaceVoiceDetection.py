@@ -27,11 +27,12 @@ null_stream = NullStream()
 stderr_backup = sys.stderr
 sys.stderr = null_stream
 
-load_dotenv("Documents/GitHuh/Vision/Speech/tts.env")
+# Load from .env file if it exists (local development)
+load_dotenv("Speech/tts.env")
 
-api_key = "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"
+api_key = os.getenv("OPENAI_API_KEY")
 if not api_key:
-    raise ValueError("API key not found. Please check your tts.env file.")
+    raise ValueError("OPENAI_API_KEY environment variable not found. For local development, create a Speech/tts.env file with OPENAI_API_KEY=your-key")
 
 openai.api_key = api_key  
 
