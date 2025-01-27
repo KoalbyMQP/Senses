@@ -9,6 +9,9 @@ __pycache__/
 # Generated Speech output
 Speech/output.mp3
 
+# Environment files
+*.env
+
 Speech/__pycache__/__init__.cpython-311.pyc
 Speech/__pycache__/pickAndPlaceVoiceDetection.cpython-311.pyc
 Speech/__pycache__/pickAndPlaceVoiceDetection.cpython-311.pyc
