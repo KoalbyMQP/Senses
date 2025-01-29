@@ -140,7 +140,10 @@ chmod -R 755 ./grafana
 
 CURRENT_USER=$SUDO_USER
 
-if ! docker-compose up -d; then
+echo -e "${YELLOW}Cleaning up any existing containers...${NC}"
+docker-compose down --remove-orphans
+
+if ! docker-compose up -d --force-recreate; then
     show_error "Failed to start containers. Check 'docker-compose logs' for details."
 fi
 
