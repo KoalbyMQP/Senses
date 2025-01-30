@@ -1,0 +1,64 @@
+import zmq
+import time
+import subprocess
+import os
+import signal
+import socket
+
+class HostPi:
+    def __init__(self):
+        self.context = zmq.Context()
+        
+        #receive from voice detection
+        self.command_receiver = self.context.socket(zmq.SUB)
+        self.command_receiver.bind("tcp://*:5560")
+        self.command_receiver.setsockopt_string(zmq.SUBSCRIBE, "")
+        
+        #send to clientPi
+        self.client_publisher = self.context.socket(zmq.PUB)
+        self.client_publisher.bind("tcp://*:5561")
+
+        # Start voice detection in new terminal
+        self.voice_process = self._start_voice_detection()
+
+        # Get and display IP at startup
+        self.host_ip = self._get_host_ip()
+        print(f"\n=== Host Pi IP: {self.host_ip} ===")
+        print("Use this IP when starting the client Pi\n")
+
+    def _start_voice_detection(self):
+        """Start voice detection in a separate terminal window"""
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        voice_script = os.path.join(current_dir, "..", "..", "Speech", "gripperswapVoiceDetection.py")
+        
+        return subprocess.Popen(
+            f"lxterminal -e 'python3 {voice_script}'",
+            shell=True,
+            preexec_fn=os.setsid
+        )
+
+    def _get_host_ip(self):
+        """Get the first non-localhost IP address"""
+        try:
+            ips = subprocess.check_output(['hostname', '-I']).decode().strip().split()
+            return ips[0] if ips else '127.0.0.1'
+        except:
+            return socket.gethostbyname(socket.gethostname())
+
+    def process_commands(self):
+        print("HostPi started. Waiting for commands...")
+        try:
+            while True:
+                try:
+                    message = self.command_receiver.recv_string(flags=zmq.NOBLOCK)
+                    print(f"Received command: {message}")
+                    self.client_publisher.send_string(message)
+                except zmq.Again:
+                    time.sleep(0.1)
+        finally:
+            if self.voice_process:
+                os.killpg(os.getpgid(self.voice_process.pid), signal.SIGTERM)
+
+if __name__ == "__main__":
+    host = HostPi()
+    host.process_commands()

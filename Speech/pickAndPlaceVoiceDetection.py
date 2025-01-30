@@ -13,20 +13,6 @@ import sys
 import warnings
 import logging
 
-# Disable ALSA error output
-os.environ['ALSA_ERRORS_TO_STDERR'] = 'no'
-logging.getLogger('ALSA').setLevel(logging.CRITICAL)
-class NullStream:
-    def write(self, *args):
-        pass
-    def flush(self, *args):
-        pass
-
-# Redirect stderr to null stream
-null_stream = NullStream()
-stderr_backup = sys.stderr
-sys.stderr = null_stream
-
 # Load from .env file if it exists (local development)
 load_dotenv("Speech/tts.env")
 
