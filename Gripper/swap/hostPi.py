@@ -37,7 +37,7 @@ class HostPi:
         temp_script = "/tmp/voice_launcher.sh"
         with open(temp_script, "w") as f:
             f.write(f"""#!/bin/bash
-export PYTHONPATH="/home/finley/Documents/GitHub/Vision:$PYTHONPATH"
+export PYTHONPATH="/home/finley/Documents/GitHub/Senses:$PYTHONPATH"
 cd {os.path.dirname(voice_script)}
 python3 {os.path.basename(voice_script)} || read -p "Error occurred! Press Enter to close..."
 """)
