@@ -40,13 +40,13 @@ class HostPi:
             f.write(f"""#!/bin/bash
 # Create virtual environment if missing
 if [ ! -d "{venv_path}" ]; then
-    python3 -m venv "{venv_path}"
+    python3 -m venv "{venv_path}" --system-site-packages
 fi
 
 # Activate and install requirements
 source "{venv_path}/bin/activate"
 python3 -m pip install --upgrade pip
-python3 -m pip install -r "{os.path.dirname(voice_script)}/requirements.txt"
+python3 -m pip install -r "{os.path.dirname(voice_script)}/requirements.txt" --no-warn-script-location
 export PYTHONPATH="/home/finley/Documents/GitHub/Senses:$PYTHONPATH"
 cd {os.path.dirname(voice_script)}
 python3 {os.path.basename(voice_script)} || read -p "Error occurred! Press Enter to close..."
