@@ -34,9 +34,17 @@ class HostPi:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         voice_script = os.path.join(current_dir, "..", "..", "Speech", "gripperswapVoiceDetection.py")
         
-        # Modified command to keep terminal open on error
+        temp_script = "/tmp/voice_launcher.sh"
+        with open(temp_script, "w") as f:
+            f.write(f"""#!/bin/bash
+export PYTHONPATH="/home/finley/Documents/GitHub/Vision:$PYTHONPATH"
+cd {os.path.dirname(voice_script)}
+python3 {os.path.basename(voice_script)} || read -p "Error occurred! Press Enter to close..."
+""")
+        os.chmod(temp_script, 0o755)
+
         return subprocess.Popen(
-            f"lxterminal -e 'bash -c \"python3 {voice_script} || read -p 'Error occurred! Press enter to close...'\"'",
+            f"lxterminal --geometry=80x24 -e 'bash -c \"{temp_script}; exec bash\"'",
             shell=True,
             preexec_fn=os.setsid
         )
@@ -71,7 +79,7 @@ class HostPi:
         finally:
             if self.voice_process:
                 os.killpg(os.getpgid(self.voice_process.pid), signal.SIGTERM)
-
+                
 if __name__ == "__main__":
     host = HostPi()
     host.process_commands()
