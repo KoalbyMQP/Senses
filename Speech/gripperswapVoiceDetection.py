@@ -83,4 +83,10 @@ def play_tts(text):
     os.remove("temp.mp3")
 
 if __name__ == "__main__":
-    run_gripper_swap_detection()
+    try:
+        run_gripper_swap_detection()
+    except Exception as e:
+        print(f"\n!!! VOICE DETECTION CRASHED: {str(e)} !!!")
+        import traceback
+        traceback.print_exc()
+        input("Press Enter to close this error window...")

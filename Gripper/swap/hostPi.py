@@ -26,13 +26,17 @@ class HostPi:
         print(f"\n=== Host Pi IP: {self.host_ip} ===")
         print("Use this IP when starting the client Pi\n")
 
+        # Add error tracking
+        self.error_occurred = False
+
     def _start_voice_detection(self):
-        """Start voice detection in a separate terminal window"""
+        """Start voice detection with error handling"""
         current_dir = os.path.dirname(os.path.abspath(__file__))
         voice_script = os.path.join(current_dir, "..", "..", "Speech", "gripperswapVoiceDetection.py")
         
+        # Modified command to keep terminal open on error
         return subprocess.Popen(
-            f"lxterminal -e 'python3 {voice_script}'",
+            f"lxterminal -e 'bash -c \"python3 {voice_script} || read -p 'Error occurred! Press enter to close...'\"'",
             shell=True,
             preexec_fn=os.setsid
         )
@@ -55,6 +59,15 @@ class HostPi:
                     self.client_publisher.send_string(message)
                 except zmq.Again:
                     time.sleep(0.1)
+                except Exception as e:
+                    print(f"Critical error: {str(e)}")
+                    self.error_occurred = True
+                    break
+                    
+            if self.error_occurred:
+                print("\n!!! Critical error occurred - keeping terminal open for 60 seconds !!!")
+                print("Check the voice detection terminal for possible errors")
+                time.sleep(60)
         finally:
             if self.voice_process:
                 os.killpg(os.getpgid(self.voice_process.pid), signal.SIGTERM)
