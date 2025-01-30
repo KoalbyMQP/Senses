@@ -33,16 +33,24 @@ class HostPi:
         """Start voice detection with error handling"""
         current_dir = os.path.dirname(os.path.abspath(__file__))
         voice_script = os.path.join(current_dir, "..", "..", "Speech", "gripperswapVoiceDetection.py")
+        venv_path = os.path.join(os.path.dirname(voice_script), ".venv")
         
         temp_script = "/tmp/voice_launcher.sh"
         with open(temp_script, "w") as f:
             f.write(f"""#!/bin/bash
-# Install missing dependencies if needed
-python3 -m pip install --upgrade pip || true
-python3 -m pip install speechrecognition pygame gtts pyzmq python-dotenv || true
+# Create virtual environment if missing
+if [ ! -d "{venv_path}" ]; then
+    python3 -m venv "{venv_path}"
+fi
+
+# Activate and install requirements
+source "{venv_path}/bin/activate"
+python3 -m pip install --upgrade pip
+python3 -m pip install -r "{os.path.dirname(voice_script)}/requirements.txt"
 export PYTHONPATH="/home/finley/Documents/GitHub/Senses:$PYTHONPATH"
 cd {os.path.dirname(voice_script)}
 python3 {os.path.basename(voice_script)} || read -p "Error occurred! Press Enter to close..."
+deactivate
 """)
         os.chmod(temp_script, 0o755)
 
