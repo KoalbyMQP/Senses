@@ -34,6 +34,10 @@ class HostPi:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         voice_script = os.path.join(current_dir, "..", "..", "Speech", "gripperswapVoiceDetection.py")
         venv_path = os.path.join(os.path.dirname(voice_script), ".venv")
+        print(f"Current directory: {current_dir}")
+        print(f"Voice script: {voice_script}")
+        print(f"Venv path: {venv_path}")
+
         
         temp_script = "/tmp/gripperVoiceListener.sh"
         with open(temp_script, "w") as f:
