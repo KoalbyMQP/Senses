@@ -21,12 +21,25 @@ class HostPi:
         # Start voice detection in new terminal
         self.voice_process = self._start_voice_detection()
 
-        # Get and display IP at startup
+        # Start confirmation listener in new terminal
+        self.confirmation_process = self._start_confirmation_listener()
+
+        # Get and display IP and gripper IDs at startup
         self.host_ip = self._get_host_ip()
         print(f"\n=== Host Pi IP: {self.host_ip} ===")
         print("Use this IP when starting the client Pi\n")
+        print(f"\n=== Gripper IDs: ===")
+        print("1: Default hand")
+        print("2: Scoop gripper")
+        print("3: Vitals gripper")
+        print("4: Thermometer gripper")
+        print("5: Board game gripper")
+        print("6: Main gripper")
+        print("7: Type 2 gripper")
+        print("8: Type 3 gripper")
+        print("9: Type 4 gripper")
+        print("10: Type 5 gripper")
 
-        # Add error tracking
         self.error_occurred = False
 
     def _start_voice_detection(self):
@@ -42,17 +55,32 @@ class HostPi:
         temp_script = "/tmp/gripperVoiceListener.sh"
         with open(temp_script, "w") as f:
             f.write(f"""#!/bin/bash
-# Create virtual environment if missing
-if [ ! -d "{venv_path}" ]; then
-    python3 -m venv "{venv_path}"
-fi
-
-# Activate and install requirements
 source "{venv_path}/bin/activate"
 export PYTHONPATH="/home/finley/Documents/GitHub/Senses:$PYTHONPATH"
 cd {os.path.dirname(voice_script)}
 python3 {os.path.basename(voice_script)} || read -p "Error occurred! Press Enter to close..."
-deactivate
+""")
+        os.chmod(temp_script, 0o755)
+
+        return subprocess.Popen(
+            f"lxterminal --geometry=80x24 -e 'bash -c \"{temp_script}; exec bash\"'",
+            shell=True,
+            preexec_fn=os.setsid
+        )
+
+    def _start_confirmation_listener(self):
+        """Start confirmation listener in new terminal"""
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        listener_script = os.path.join(current_dir, "confirmationListener.py")
+        venv_path = "/home/finley/Documents/GitHub/Senses/myvirtual" 
+        
+        temp_script = "/tmp/confirmationListener.sh"
+        with open(temp_script, "w") as f:
+            f.write(f"""#!/bin/bash
+source "{venv_path}/bin/activate"
+export PYTHONPATH="/home/finley/Documents/GitHub/Senses:$PYTHONPATH"
+cd {os.path.dirname(listener_script)}
+python3 {os.path.basename(listener_script)} {self.host_ip} || read -p "Error occurred! Press Enter to close..."
 """)
         os.chmod(temp_script, 0o755)
 
@@ -72,27 +100,36 @@ deactivate
 
     def process_commands(self):
         print("HostPi started. Waiting for commands...")
-        try:
-            while True:
-                try:
-                    message = self.command_receiver.recv_string(flags=zmq.NOBLOCK)
-                    print(f"Received command: {message}")
-                    self.client_publisher.send_string(message)
-                except zmq.Again:
-                    time.sleep(0.1)
-                except Exception as e:
-                    print(f"Critical error: {str(e)}")
-                    self.error_occurred = True
-                    break
-                    
-            if self.error_occurred:
-                print("\n!!! Critical error occurred - keeping terminal open for 60 seconds !!!")
-                print("Check the voice detection terminal for possible errors")
-                time.sleep(60)
+        while True:  
+            try:
+                time.sleep(0.1) 
+                message = self.command_receiver.recv_string(flags=zmq.NOBLOCK)
+                receive_time = time.time()
+                parts = message.split()
+                if len(parts) == 3 and parts[0] == "SWAP":
+                    voice_sent = float(parts[2])
+                    host_latency = receive_time - voice_sent
+                    print(f"Voice->Host latency: {host_latency*1000:.2f}ms")
+                    forward_msg = f"{message} {receive_time}"
+                    self.client_publisher.send_string(forward_msg)
+            except zmq.Again:
+                time.sleep(0.1)  
+            except Exception as e:
+                print(f"Critical error: {str(e)}")
+                
         finally:
             if self.voice_process:
                 os.killpg(os.getpgid(self.voice_process.pid), signal.SIGTERM)
+            if self.confirmation_process:
+                os.killpg(os.getpgid(self.confirmation_process.pid), signal.SIGTERM)
                 
+    def __del__(self):
+        # Clean up both processes
+        if self.voice_process:
+            os.killpg(os.getpgid(self.voice_process.pid), signal.SIGTERM)
+        if self.confirmation_process:
+            os.killpg(os.getpgid(self.confirmation_process.pid), signal.SIGTERM)
+
 if __name__ == "__main__":
     host = HostPi()
     host.process_commands()

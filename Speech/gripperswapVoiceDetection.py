@@ -24,6 +24,11 @@ class SpeechDetector:
     def __init__(self):
         self.current_state = State.IDLE
         self.speech_handler = SpeechHandler()
+        self.previous_gripper = None
+        self.confirm_context = zmq.Context()
+        self.confirm_socket = self.confirm_context.socket(zmq.SUB)
+        self.confirm_socket.connect("tcp://localhost:5562")
+        self.confirm_socket.setsockopt_string(zmq.SUBSCRIBE, "")
         
     def listen_and_process(self):
         try:
@@ -59,6 +64,7 @@ class SpeechDetector:
                         
                         if 1 <= gripper_num <= 10:
                             self.speech_handler.send_command(gripper_num)
+                            self.previous_gripper = self.previous_gripper if self.previous_gripper else gripper_num
                             return gripper_num
                         else:
                             print("Number out of valid range (1-10)")
@@ -76,6 +82,12 @@ class SpeechDetector:
             traceback.print_exc()
             return None
 
+    def listen_for_confirmation(self):
+        try:
+            return self.confirm_socket.recv_string(flags=zmq.NOBLOCK)
+        except zmq.Again:
+            return None
+
 class SpeechHandler:
     def __init__(self):
         self.context = zmq.Context()
@@ -84,7 +96,8 @@ class SpeechHandler:
         print("Connected to host Pi at localhost:5560")
 
     def send_command(self, gripper_num):
-        message = f"SWAP {gripper_num}"
+        timestamp = time.time()
+        message = f"SWAP {gripper_num} {timestamp}"
         print(f"Sending command: {message}")
         self.socket.send_string(message)
 
@@ -99,9 +112,18 @@ def run_gripper_swap_detection():
         while True:
             try:
                 result = detector.listen_and_process()
-                if result:
-                    play_tts(f"Swapping to gripper {result}")
-                time.sleep(0.5)
+                confirmation = None
+                start_time = time.time()
+                while time.time() - start_time < 5:  # Wait for confirmation
+                    confirmation = detector.listen_for_confirmation()
+                    if confirmation:
+                        parts = confirmation.split('|')
+                        if parts[-1] == "success":
+                            play_tts(f"Swap to {parts[0]} successful")
+                        elif parts[-1] == "already_active":
+                            play_tts(f"Gripper {parts[0]} already active")
+                        break
+                    time.sleep(0.1)
             except KeyboardInterrupt:
                 print("\nExiting by user request...")
                 break
