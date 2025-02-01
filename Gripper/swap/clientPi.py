@@ -1,6 +1,7 @@
 import zmq
 import time
 import argparse
+import serial  
 
 class ClientPi:
     def __init__(self, host_ip):
@@ -15,6 +16,18 @@ class ClientPi:
         self.current_gripper = 1  # Default hand on startup
         self.previous_gripper = None  
 
+        # ---  Set up serial connection to Arduino ---
+        try:
+            # Adjust the device path and baud rate as needed.
+            #not sure what the buad rate is here in this example 
+            self.arduino = serial.Serial('/dev/ttyACM0', 9600, timeout=1) 
+            time.sleep(2)  # Give the Arduino time to reset after opening the port.
+            print("Connected to Arduino successfully.")
+        except Exception as e:
+            print("Error connecting to Arduino:", e)
+            self.arduino = None
+        # --- END NEW ---
+
     def handle_gripper_command(self, command):
         try:
             parts = command.split()
@@ -22,6 +35,7 @@ class ClientPi:
                 print("Invalid command format")
                 return
                 
+            # Command expected in the format: "<something> <gripper_num> <voice_sent> <host_forwarded>"
             _, gripper_num, voice_sent, host_forwarded = parts
             gripper_num = int(gripper_num)
             
@@ -49,8 +63,7 @@ class ClientPi:
             network_latency = client_received - host_forwarded
             print(f"Host->Client latency: {network_latency*1000:.2f}ms")
             
-            # Process command
-            # Add real gripper switching mechanism here
+            # Process command: switch gripper and send command to Arduino
             start_process = time.time()
             self._gripper_switch(gripper_num)
             processing_time = time.time() - start_process
@@ -69,28 +82,45 @@ class ClientPi:
             print("Invalid command format")
 
     def _gripper_switch(self, num):
-        """Switch case for different grippers"""
+        """Switch case for different grippers and send command to Arduino."""
         print(f"\n--- Performing action for gripper {num} ---")
-        # Update current gripper only if different
-        if num != self.current_gripper:
-            self.current_gripper = num
-            {
-                1: lambda: print("Swapping to default hand"),
-                2: lambda: print("Swapping to scoop gripper"),
-                3: lambda: print("Swapping to vitals gripper"),
-                4: lambda: print("Swapping to thermometer gripper"),
-                5: lambda: print("Swapping to board game gripper"),
-                6: lambda: print("Swapping to main gripper"),
-                7: lambda: print("Swapping to type 2 gripper"),
-                8: lambda: print("Swapping to type 3 gripper"),
-                9: lambda: print("Swapping to type 4 gripper"),
-                10: lambda: print("Swapping to type 5 gripper"),
-            }.get(num, lambda: print("Invalid gripper number"))()
+        
+        # ---  Send the gripper number to Arduino ---
+        if self.arduino is not None:
+            # Format the command in a way your Arduino can parse. Here we send:
+            #   GRIPPER <num>
+            command_str = f"GRIPPER {num}\n"
+            try:
+                self.arduino.write(command_str.encode())
+                print(f"Sent to Arduino: {command_str.strip()}")
+                # Optionally, if your Arduino sends a response, you can read it:
+                response = self.arduino.readline().decode().strip()
+                if response:
+                    print(f"Arduino response: {response}")
+            except Exception as e:
+                print("Error sending command to Arduino:", e)
+        else:
+            print("Arduino connection not available. Skipping sending command.")
+        # --- END NEW ---
+        
+        # Local action (e.g., logging or additional processing):
+        {
+            1: lambda: print("Swapping to default hand"),
+            2: lambda: print("Swapping to scoop gripper"),
+            3: lambda: print("Swapping to vitals gripper"),
+            4: lambda: print("Swapping to thermometer gripper"),
+            5: lambda: print("Swapping to board game gripper"),
+            6: lambda: print("Swapping to main gripper"),
+            7: lambda: print("Swapping to type 2 gripper"),
+            8: lambda: print("Swapping to type 3 gripper"),
+            9: lambda: print("Swapping to type 4 gripper"),
+            10: lambda: print("Swapping to type 5 gripper"),
+        }.get(num, lambda: print("Invalid gripper number"))()
 
     def _send_confirmation(self, current_gripper, previous_gripper, voice_sent, 
-                         host_forwarded, client_received, processing_time, status="success"):
+                           host_forwarded, client_received, processing_time, status="success"):
         message = (f"{current_gripper}|{previous_gripper}|{voice_sent}|{host_forwarded}|"
-                 f"{client_received}|{processing_time}|{time.time()}|{status}")
+                   f"{client_received}|{processing_time}|{time.time()}|{status}")
         self.confirm_sender.send_string(message)
         print(f"Sent confirmation: {message}")
 
