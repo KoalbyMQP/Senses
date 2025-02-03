@@ -18,12 +18,18 @@ class ConfirmationListener:
                 if len(parts) == 8:
                     current_gripper, previous_gripper, voice_sent, host_forwarded, \
                     client_received, processing_time, client_sent, status = parts
+
                     current_gripper = float(current_gripper)
                     previous_gripper = float(previous_gripper)
+                    voice_sent = float(voice_sent)
+                    host_forwarded = float(host_forwarded)
+                    client_received = float(client_received)
+                    processing_time = float(processing_time)
+                    client_sent = float(client_sent)
+                    
                     total_latency = client_sent - voice_sent
                     voice_to_host = host_forwarded - voice_sent
                     host_to_client = client_received - host_forwarded
-                    processing = processing_time
                     client_to_confirmation = client_sent - (client_received + processing_time)
                     
                     status_msg = {
@@ -38,7 +44,7 @@ class ConfirmationListener:
                           f"\nTotal: {total_latency*1000:.2f}ms"
                           f"\nVoice->Host: {voice_to_host*1000:.2f}ms"
                           f"\nHost->Client: {host_to_client*1000:.2f}ms"
-                          f"\nProcessing: {processing*1000:.2f}ms"
+                          f"\nProcessing: {processing_time*1000:.2f}ms"
                           f"\nClient->Confirmation: {client_to_confirmation*1000:.2f}ms")
             except zmq.Again:
                 time.sleep(0.1)
