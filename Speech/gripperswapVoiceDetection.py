@@ -144,7 +144,7 @@ class SpeechDetector:
                     gripper_num = int(gripper_num)
                     if 1 <= gripper_num <= 10:
                         self.speech_handler.send_command(gripper_num)
-                        self.previous_gripper = self.previous_gripper or gripper_num
+                        self.previous_gripper = self.previous_gripper if self.previous_gripper else gripper_num
                         return gripper_num
                     else:
                         print("Number out of range")
