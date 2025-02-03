@@ -9,22 +9,7 @@ class HostPi:
     def __init__(self):
         self.context = zmq.Context()
         
-        #receive from voice detection
-        self.command_receiver = self.context.socket(zmq.SUB)
-        self.command_receiver.bind("tcp://*:5560")
-        self.command_receiver.setsockopt_string(zmq.SUBSCRIBE, "")
-        
-        #send to clientPi
-        self.client_publisher = self.context.socket(zmq.PUB)
-        self.client_publisher.bind("tcp://*:5561")
-
-        # Start voice detection in new terminal
-        self.voice_process = self._start_voice_detection()
-
-        # Start confirmation listener in new terminal
-        self.confirmation_process = self._start_confirmation_listener()
-
-        # Get and display IP and gripper IDs at startup
+        # Get and display IP FIRST
         self.host_ip = self._get_host_ip()
         print(f"\n=== Host Pi IP: {self.host_ip} ===")
         print("Use this IP when starting the client Pi\n")
@@ -39,6 +24,19 @@ class HostPi:
         print("8: Type 3 gripper")
         print("9: Type 4 gripper")
         print("10: Type 5 gripper")
+
+        #receive from voice detection
+        self.command_receiver = self.context.socket(zmq.SUB)
+        self.command_receiver.bind("tcp://*:5560")
+        self.command_receiver.setsockopt_string(zmq.SUBSCRIBE, "")
+        
+        #send to clientPi
+        self.client_publisher = self.context.socket(zmq.PUB)
+        self.client_publisher.bind("tcp://*:5561")
+
+        # Start processes AFTER setting host_ip
+        self.voice_process = self._start_voice_detection()
+        self.confirmation_process = self._start_confirmation_listener()
 
         self.error_occurred = False
 
@@ -113,6 +111,7 @@ python3 {os.path.basename(listener_script)} {self.host_ip} || read -p "Error occ
                         print(f"Voice->Host latency: {host_latency*1000:.2f}ms")
                         forward_msg = f"{message} {receive_time}"
                         self.client_publisher.send_string(forward_msg)
+                        print(f"Forwarded message: {forward_msg}")
                 except zmq.Again:
                     time.sleep(0.1)  
                 except Exception as e:
@@ -126,10 +125,9 @@ python3 {os.path.basename(listener_script)} {self.host_ip} || read -p "Error occ
             print("Cleanly terminated all subprocesses")
 
     def __del__(self):
-        # Clean up both processes
-        if self.voice_process:
+        if hasattr(self, 'voice_process') and self.voice_process:
             os.killpg(os.getpgid(self.voice_process.pid), signal.SIGTERM)
-        if self.confirmation_process:
+        if hasattr(self, 'confirmation_process') and self.confirmation_process:
             os.killpg(os.getpgid(self.confirmation_process.pid), signal.SIGTERM)
 
 if __name__ == "__main__":
