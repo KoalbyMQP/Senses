@@ -100,29 +100,31 @@ python3 {os.path.basename(listener_script)} {self.host_ip} || read -p "Error occ
 
     def process_commands(self):
         print("HostPi started. Waiting for commands...")
-        while True:  
-            try:
-                time.sleep(0.1) 
-                message = self.command_receiver.recv_string(flags=zmq.NOBLOCK)
-                receive_time = time.time()
-                parts = message.split()
-                if len(parts) == 3 and parts[0] == "SWAP":
-                    voice_sent = float(parts[2])
-                    host_latency = receive_time - voice_sent
-                    print(f"Voice->Host latency: {host_latency*1000:.2f}ms")
-                    forward_msg = f"{message} {receive_time}"
-                    self.client_publisher.send_string(forward_msg)
-            except zmq.Again:
-                time.sleep(0.1)  
-            except Exception as e:
-                print(f"Critical error: {str(e)}")
-                
+        try:
+            while True:  
+                try:
+                    time.sleep(0.1) 
+                    message = self.command_receiver.recv_string(flags=zmq.NOBLOCK)
+                    receive_time = time.time()
+                    parts = message.split()
+                    if len(parts) == 3 and parts[0] == "SWAP":
+                        voice_sent = float(parts[2])
+                        host_latency = receive_time - voice_sent
+                        print(f"Voice->Host latency: {host_latency*1000:.2f}ms")
+                        forward_msg = f"{message} {receive_time}"
+                        self.client_publisher.send_string(forward_msg)
+                except zmq.Again:
+                    time.sleep(0.1)  
+                except Exception as e:
+                    print(f"Critical error: {str(e)}")
+                    break
         finally:
-            if self.voice_process:
+            if hasattr(self, 'voice_process') and self.voice_process:
                 os.killpg(os.getpgid(self.voice_process.pid), signal.SIGTERM)
-            if self.confirmation_process:
+            if hasattr(self, 'confirmation_process') and self.confirmation_process:
                 os.killpg(os.getpgid(self.confirmation_process.pid), signal.SIGTERM)
-                
+            print("Cleanly terminated all subprocesses")
+
     def __del__(self):
         # Clean up both processes
         if self.voice_process:
