@@ -12,15 +12,8 @@ import multiprocessing
 import sys
 import warnings
 import logging
-
-# Load from .env file if it exists (local development)
-load_dotenv("Speech/tts.env")
-
-api_key = os.getenv("OPENAI_API_KEY")
-if not api_key:
-    raise ValueError("OPENAI_API_KEY environment variable not found. For local development, create a Speech/tts.env file with OPENAI_API_KEY=your-key")
-
-openai.api_key = api_key  
+import whisper
+import requests
 
 r = sr.Recognizer()
 pygame.init()
@@ -55,50 +48,157 @@ class SpeechDetector:
         self.current_state = State.IDLE
         self.speech_handler = None
         self.current_target = None
+        self.whisper_model = self._load_whisper_model()
+        self.openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
+        self.audit_prompt = """Analyze this command for a robotic pick-and-place system. 
+        Validate if it contains a request to pick up one of: apple, orange, bottle, cup, remote.
+        Consider:
+        1. Direct commands ("Pick up the apple")
+        2. Implicit requests ("Grab the orange")
+        3. Error correction ("I meant the bottle")
+        4. Language translation (original may be non-English)
+        5. Alternative phrasings ("Take the remote control")
         
+        Respond ONLY with the object name if valid, or 'invalid' otherwise."""
+        
+    def _load_whisper_model(self):
+        try:
+            return whisper.load_model("turbo")
+        except Exception as e:
+            print(f"Whisper load failed: {e}. Using Google fallback")
+            return None
+
+    def _transcribe_with_whisper(self, audio_path):
+        try:
+            if not self.whisper_model:
+                return None
+                
+            audio = whisper.load_audio(audio_path)
+            audio = whisper.pad_or_trim(audio)
+            mel = whisper.log_mel_spectrogram(audio).to(self.whisper_model.device)
+            
+            options = whisper.DecodingOptions(task="translate")
+            result = whisper.decode(self.whisper_model, mel, options)
+            return result.text.lower()
+        except Exception as e:
+            print(f"Whisper error: {e}")
+            return None
+
+    def _audit_with_openrouter(self, text):
+        if not self.openrouter_api_key:
+            return text
+            
+        try:
+            response = requests.post(
+                url="https://openrouter.ai/api/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {self.openrouter_api_key}",
+                    "HTTP-Referer": "http://localhost/",
+                    "X-Title": "PickAndPlaceSystem"
+                },
+                json={
+                    "model": "anthropic/claude-3-5-sonnet",
+                    "messages": [
+                        {"role": "system", "content": self.audit_prompt},
+                        {"role": "user", "content": text}
+                    ],
+                    "temperature": 0.1
+                },
+                timeout=3
+            )
+            
+            audited_text = response.json()['choices'][0]['message']['content'].strip().lower()
+            valid_objects = ["apple", "orange", "bottle", "cup", "remote"]
+            return audited_text if audited_text in valid_objects else "invalid"
+        except Exception as e:
+            print(f"Audit error: {e}")
+            return text
+
     def listen_and_process(self):
         try:
             with sr.Microphone() as src:
-                # Announce the current target
-                if self.current_target:
-                    play_tts(f"Current target is: {self.current_target}")
-                
                 print("Adjusting for ambient noise...")
                 r.adjust_for_ambient_noise(src, duration=0.2)
                 print("Listening for speech")
                 
-                # Add a timeout to prevent blocking indefinitely
                 try:
                     audio = r.listen(src, timeout=1.0, phrase_time_limit=3.0)
                 except sr.WaitTimeoutError:
-                    # If no speech detected within timeout, return to idle
                     return
+
+                # Save audio to temp file for Whisper processing
+                temp_audio = f"temp_audio_{time.time()}.wav"
+                with open(temp_audio, "wb") as f:
+                    f.write(audio.get_wav_data())
+
+                text = None
+                # Try Whisper first
+                if self.whisper_model:
+                    text = self._transcribe_with_whisper(temp_audio)
                 
-                try:
-                    print("Converting to text...")
-                    spoken_text = r.recognize_google(audio)
-                    print(f"You said: {spoken_text}")
-                    
-                    # Only change state and process if it's a "pick up" command
-                    if "pick up" in spoken_text.lower():
-                        self.current_state = State.KEYWORD_SPOTTING
-                        self.speech_handler.process_command(spoken_text)
-                        # Update the current target
-                        self.current_target = spoken_text.lower().split("pick up ")[-1].strip()
+                # Fallback to Google if Whisper fails
+                if not text:
+                    try:
+                        text = r.recognize_google(audio).lower()
+                    except (sr.UnknownValueError, sr.RequestError):
+                        pass
+
+                # Cleanup temp file
+                if os.path.exists(temp_audio):
+                    os.remove(temp_audio)
+
+                if not text:
+                    print("No speech detected")
+                    return
+
+                # Audit with OpenRouter
+                audited_text = self._audit_with_openrouter(text)
+                print(f"Processed text: {text} | Audited: {audited_text}")
+
+                # Handle audit results
+                if audited_text != "invalid":
+                    valid_command = f"pick up {audited_text}"
+                    self._process_valid_command(valid_command)
+                else:
+                    if "pick up" in text.lower() or any(word in text.lower() for word in ["grab", "take", "get"]):
+                        self._handle_object_recognition(text)
                     else:
-                        print("Command not recognized. Please say 'pick up' followed by an object name.")
+                        print("Command not recognized.")
                         play_tts("Please say pick up followed by an object name.")
-                        
-                except sr.UnknownValueError:
-                    print("Sorry, could not understand the audio.")
-                except sr.RequestError:
-                    print("Could not request results; check your internet connection.")
-                    
+
         except Exception as e:
             print(f"Error in listen_and_process: {e}")
         
-        # Always return to IDLE state after processing
         self.current_state = State.IDLE
+
+    def _process_valid_command(self, command_text):
+        try:
+            self.current_state = State.KEYWORD_SPOTTING
+            self.speech_handler.process_command(command_text)
+            self.current_target = command_text.lower().split("pick up ")[-1].strip()
+            print(f"Validated command: {command_text}")
+        except Exception as e:
+            print(f"Command processing error: {e}")
+
+    def _handle_object_recognition(self, text):
+        object_map = {
+            "apple": State.APPLE,
+            "orange": State.ORANGE,
+            "bottle": State.BOTTLE,
+            "cup": State.CUP,
+            "remote": State.REMOTE
+        }
+        
+        detected_object = next(
+            (obj for obj in object_map if obj in text.lower()),
+            None
+        )
+        
+        if detected_object:
+            self._process_valid_command(f"pick up {detected_object}")
+        else:
+            print("Valid object not detected")
+            play_tts("Please specify a valid object: apple, orange, bottle, cup, or remote.")
 
 class SpeechHandler:
     def __init__(self):
@@ -108,7 +208,6 @@ class SpeechHandler:
         max_retries = 3
         retry_delay = 1
         
-        # Clean up any existing connections
         self._cleanup_port()
         
         for attempt in range(max_retries):
@@ -186,20 +285,14 @@ def run_speech_detection():
         pygame.init()
         pygame.mixer.init()
         
-        # Initial greeting with preparation time notice
         play_tts("Hi! I'm Finley, your personal assistant.")
-        
-        # Give time for the tester to prepare
         print("Waiting 5 seconds before starting to listen...")
         time.sleep(5)
-        
-        # Confirmation that we're ready to listen
         play_tts("I'm now listening. Please speak clearly.")
         
         while True:
             if detector.current_state == State.IDLE:
                 detector.listen_and_process()
-                # Add a small sleep to prevent CPU spinning
                 time.sleep(0.1)
             else:
                 print("Returning to idle state...")
