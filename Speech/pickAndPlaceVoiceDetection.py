@@ -1,6 +1,4 @@
 import os
-from dotenv import load_dotenv
-import openai
 import speech_recognition as sr
 import pygame
 from gtts import gTTS
@@ -12,15 +10,6 @@ import multiprocessing
 import sys
 import warnings
 import logging
-
-# Load from .env file if it exists (local development)
-load_dotenv("Speech/tts.env")
-
-api_key = os.getenv("OPENAI_API_KEY")
-if not api_key:
-    raise ValueError("OPENAI_API_KEY environment variable not found. For local development, create a Speech/tts.env file with OPENAI_API_KEY=your-key")
-
-openai.api_key = api_key  
 
 r = sr.Recognizer()
 pygame.init()
