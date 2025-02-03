@@ -137,7 +137,10 @@ class ClientPi:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Client Pi for gripper control')
-    parser.add_argument('--host-ip', required=True, help='IP address of the host Pi')
+    parser.add_argument('--host-ip', 
+                       required=False,
+                       default='130.215.122.156',
+                       help='IP address of the host Pi (default: %(default)s)')
     args = parser.parse_args()
     
     client = ClientPi(args.host_ip)
