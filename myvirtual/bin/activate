@@ -38,11 +38,11 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="/home/finley/Documents/GitHub/Vision/myvirtual"
+VIRTUAL_ENV=/home/finley/Documents/GitHub/Senses/myvirtual
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
-PATH="$VIRTUAL_ENV/bin:$PATH"
+PATH="$VIRTUAL_ENV/"bin":$PATH"
 export PATH
 
 # unset PYTHONHOME if set
@@ -55,9 +55,9 @@ fi
 
 if [ -z "${VIRTUAL_ENV_DISABLE_PROMPT:-}" ] ; then
     _OLD_VIRTUAL_PS1="${PS1:-}"
-    PS1="(myvirtual) ${PS1:-}"
+    PS1='(myvirtual) '"${PS1:-}"
     export PS1
-    VIRTUAL_ENV_PROMPT="(myvirtual) "
+    VIRTUAL_ENV_PROMPT='(myvirtual) '
     export VIRTUAL_ENV_PROMPT
 fi
 

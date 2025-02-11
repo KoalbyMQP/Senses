@@ -1,6 +1,4 @@
 import os
-from dotenv import load_dotenv
-import openai
 import speech_recognition as sr
 import pygame
 from gtts import gTTS
