@@ -58,7 +58,8 @@ class HostPi:
     def _play_tts_offline(self, message):
         """Play TTS message offline using espeak."""
         try:
-            subprocess.Popen(["espeak", message])
+            if message == "No internet connection detected. Operating in offline mode.":
+                subprocess.Popen(["espeak", message])
         except Exception as e:
             print(f"Failed to play TTS using espeak: {e}")
 
