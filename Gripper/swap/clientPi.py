@@ -21,7 +21,8 @@ class ClientPi:
             # Adjust the device path and baud rate as needed.
             #not sure what the buad rate is here in this example 
             self.arduino = serial.Serial('/dev/ttyACM0', 9600, timeout=1) 
-            time.sleep(2)  # Give the Arduino time to reset after opening the port.
+            time.sleep(2)  
+            self.arduino.reset_input_buffer()  
             print("Connected to Arduino successfully.")
         except Exception as e:
             print("Error connecting to Arduino:", e)
@@ -79,6 +80,7 @@ class ClientPi:
             )
             
         except (ValueError, IndexError):
+            
             print("Invalid command format")
 
     def _gripper_switch(self, num):
@@ -93,10 +95,21 @@ class ClientPi:
             try:
                 self.arduino.write(command_str.encode())
                 print(f"Sent to Arduino: {command_str.strip()}")
-                # Optionally, if your Arduino sends a response, you can read it:
-                response = self.arduino.readline().decode().strip()
-                if response:
-                    print(f"Arduino response: {response}")
+                time.sleep(0.1)
+                response_lines = []
+                start = time.time()
+                while time.time() - start < 1:
+                    line = self.arduino.readline().decode().strip()
+                    if line:
+                        response_lines.append(line)
+                    else:
+                        break
+                if response_lines:
+                    print("Arduino response:")
+                    for line in response_lines:
+                        print(line)
+                else:
+                    print("No response from Arduino")
             except Exception as e:
                 print("Error sending command to Arduino:", e)
         else:
