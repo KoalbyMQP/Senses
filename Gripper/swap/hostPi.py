@@ -24,13 +24,19 @@ class HostPi:
         print("8: Type 3 gripper")
         print("9: Type 4 gripper")
         print("10: Type 5 gripper")
-
-        #receive from voice detection
+        
+        # Check Internet Connection and play TTS if missing
+        if not self._check_internet():
+            offline_message = "No internet connection detected. Operating in offline mode."
+            print(offline_message)
+            self._play_tts_offline(offline_message)
+        
+        # Receive from voice detection
         self.command_receiver = self.context.socket(zmq.SUB)
         self.command_receiver.bind("tcp://*:5560")
         self.command_receiver.setsockopt_string(zmq.SUBSCRIBE, "")
         
-        #send to clientPi
+        # Send to client Pi
         self.client_publisher = self.context.socket(zmq.PUB)
         self.client_publisher.bind("tcp://*:5561")
 
@@ -39,6 +45,22 @@ class HostPi:
         self.confirmation_process = self._start_confirmation_listener()
 
         self.error_occurred = False
+
+    def _check_internet(self, host="8.8.8.8", port=53, timeout=3):
+        """Check internet connectivity by trying to connect to a known host (Google DNS)"""
+        try:
+            socket.setdefaulttimeout(timeout)
+            with socket.create_connection((host, port), timeout=timeout) as s:
+                return True
+        except Exception:
+            return False
+
+    def _play_tts_offline(self, message):
+        """Play TTS message offline using espeak."""
+        try:
+            subprocess.Popen(["espeak", message])
+        except Exception as e:
+            print(f"Failed to play TTS using espeak: {e}")
 
     def _start_voice_detection(self):
         """Start voice detection with error handling"""
@@ -49,7 +71,6 @@ class HostPi:
         print(f"Voice script: {voice_script}")
         print(f"Venv path: {venv_path}")
 
-        
         temp_script = "/tmp/gripperVoiceListener.sh"
         with open(temp_script, "w") as f:
             f.write(f"""#!/bin/bash
