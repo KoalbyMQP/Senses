@@ -1,8 +1,28 @@
 import os
+from dotenv import load_dotenv
+
+if not os.path.exists('.env'):
+    with open('.env', 'w') as f:
+        f.write("OPENAI_API_KEY=\nOPENROUTER_API_KEY=\n")
+    print("No .env file found. A new .env file has been created with placeholder keys.")
+    while True:
+        resp = input("Have you filled in your keys in the .env file? (y/n): ").strip().lower()
+        if resp == 'y':
+            load_dotenv()
+            if not os.getenv("OPENAI_API_KEY") and not os.getenv("OPENROUTER_API_KEY"):
+                print("No API keys found in the .env file. Proceeding with fallbacks.")
+            break
+        elif resp == 'n':
+            print("Proceeding without API keys. Fallbacks will be used when necessary.")
+            break
+        else:
+            print("Invalid input. Please enter 'y' or 'n'.")
+
+load_dotenv()
+
 import speech_recognition as sr
 import pygame
 from gtts import gTTS
-import os
 import zmq
 import time
 import psutil
@@ -18,19 +38,53 @@ pygame.init()
 pygame.mixer.init()
 
 def play_tts(text):
-    tts = gTTS(text=text, lang='en')
-    output_file = "output.mp3"
-    tts.save(output_file)
-    pygame.mixer.music.load(output_file)
-    pygame.mixer.music.play()
-    
-    # Wait for playback to finish
-    while pygame.mixer.music.get_busy():
-        pygame.time.Clock().tick(10)
+    try:
+        import os, time, pygame, requests
+        openai_key = os.getenv("OPENAI_API_KEY")
+        temp_file = None
+        if openai_key:
+            try:
+                from openai import OpenAI
+                client = OpenAI()
+                temp_file = f"temp_{time.time()}.mp3"
+                response = client.audio.speech.create(
+                    model="tts-1-hd",
+                    voice="sage",
+                    input=text
+                )
+                response.stream_to_file(temp_file)
+                pygame.mixer.music.load(temp_file)
+                pygame.mixer.music.play()
+                start_time = time.time()
+                while pygame.mixer.music.get_busy():
+                    if time.time() - start_time > 5:
+                        print("Audio playback timeout")
+                        break
+                    pygame.time.Clock().tick(10)
+                return
+            except Exception as e:
+                print(f"OpenAI TTS error: {e}, falling back to Google TTS.")
+        from gtts import gTTS
+        tts = gTTS(text=text, lang='en')
+        temp_file = f"temp_{time.time()}.mp3"
+        tts.save(temp_file)
+        pygame.mixer.music.load(temp_file)
+        pygame.mixer.music.play()
+        start_time = time.time()
+        while pygame.mixer.music.get_busy():
+            if time.time() - start_time > 5:
+                print("Audio playback timeout")
+                break
+            pygame.time.Clock().tick(10)
+    except Exception as e:
+        print(f"TTS Error: {e}")
+    finally:
+        if temp_file and os.path.exists(temp_file):
+            try:
+                os.remove(temp_file)
+            except Exception as e:
+                print(f"Error cleaning up audio file: {e}")
 
-    pygame.mixer.music.unload()
-    os.remove(output_file)
-    
 class State:
     IDLE = "Idle"
     KEYWORD_SPOTTING = "Keyword Spotting"
@@ -66,6 +120,20 @@ class SpeechDetector:
             print(f"Whisper load failed: {e}. Using Google fallback")
             return None
 
+    def _transcribe_with_api(self, audio_path):
+        import openai
+        openai_api_key = os.getenv("OPENAI_API_KEY")
+        if not openai_api_key:
+            return None
+        openai.api_key = openai_api_key
+        try:
+            with open(audio_path, "rb") as audio_file:
+                transcript = openai.Audio.transcribe("whisper-1", audio_file)
+            return transcript.get("text", "").lower()
+        except Exception as e:
+            print(f"OpenAI API transcription error: {e}")
+            return None
+
     def _transcribe_with_whisper(self, audio_path):
         try:
             if not self.whisper_model:
@@ -82,35 +150,56 @@ class SpeechDetector:
             print(f"Whisper error: {e}")
             return None
 
-    def _audit_with_openrouter(self, text):
-        if not self.openrouter_api_key:
-            return text
-            
-        try:
-            response = requests.post(
-                url="https://openrouter.ai/api/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {self.openrouter_api_key}",
-                    "HTTP-Referer": "http://localhost/",
-                    "X-Title": "PickAndPlaceSystem"
-                },
-                json={
-                    "model": "anthropic/claude-3-5-sonnet",
-                    "messages": [
-                        {"role": "system", "content": self.audit_prompt},
-                        {"role": "user", "content": text}
-                    ],
-                    "temperature": 0.1
-                },
-                timeout=3
-            )
-            
-            audited_text = response.json()['choices'][0]['message']['content'].strip().lower()
-            valid_objects = ["apple", "orange", "bottle", "cup", "remote"]
-            return audited_text if audited_text in valid_objects else "invalid"
-        except Exception as e:
-            print(f"Audit error: {e}")
-            return text
+    def _audit_command(self, text):
+        import os, requests
+        valid_objects = ["apple", "orange", "bottle", "cup", "remote"]
+        openai_key = os.getenv("OPENAI_API_KEY")
+        if openai_key:
+            try:
+                response = requests.post(
+                    url="https://api.openai.com/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {openai_key}"},
+                    json={
+                        "model": "o3-mini",
+                        "messages": [
+                            {"role": "system", "content": self.audit_prompt},
+                            {"role": "user", "content": text}
+                        ],
+                        "temperature": 0.1
+                    },
+                    timeout=3
+                )
+                audited_text = response.json()['choices'][0]['message']['content'].strip().lower()
+                if audited_text in valid_objects:
+                    return audited_text
+            except Exception as e:
+                print(f"OpenAI Audit error: {e}")
+        if self.openrouter_api_key:
+            try:
+                response = requests.post(
+                    url="https://openrouter.ai/api/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {self.openrouter_api_key}",
+                        "HTTP-Referer": "http://localhost/",
+                        "X-Title": "PickAndPlaceSystem"
+                    },
+                    json={
+                        "model": "anthropic/claude-3-5-sonnet",
+                        "messages": [
+                            {"role": "system", "content": self.audit_prompt},
+                            {"role": "user", "content": text}
+                        ],
+                        "temperature": 0.1
+                    },
+                    timeout=3
+                )
+                audited_text = response.json()['choices'][0]['message']['content'].strip().lower()
+                if audited_text in valid_objects:
+                    return audited_text
+            except Exception as e:
+                print(f"OpenRouter Audit error: {e}")
+        print("Auditing failed, skipping auditing.")
+        return text
 
     def listen_and_process(self):
         try:
@@ -118,23 +207,19 @@ class SpeechDetector:
                 print("Adjusting for ambient noise...")
                 r.adjust_for_ambient_noise(src, duration=0.2)
                 print("Listening for speech")
-                
                 try:
                     audio = r.listen(src, timeout=1.0, phrase_time_limit=3.0)
                 except sr.WaitTimeoutError:
                     return
-
-                # Save audio to temp file for Whisper processing
+                
                 temp_audio = f"temp_audio_{time.time()}.wav"
                 with open(temp_audio, "wb") as f:
                     f.write(audio.get_wav_data())
 
                 text = None
-                # Try Whisper first
-                if self.whisper_model:
+                text = self._transcribe_with_api(temp_audio)
+                if not text:
                     text = self._transcribe_with_whisper(temp_audio)
-                
-                # Fallback to Google if Whisper fails
                 if not text:
                     try:
                         text = r.recognize_google(audio).lower()
@@ -149,11 +234,9 @@ class SpeechDetector:
                     print("No speech detected")
                     return
 
-                # Audit with OpenRouter
-                audited_text = self._audit_with_openrouter(text)
+                audited_text = self._audit_command(text)
                 print(f"Processed text: {text} | Audited: {audited_text}")
 
-                # Handle audit results
                 if audited_text != "invalid":
                     valid_command = f"pick up {audited_text}"
                     self._process_valid_command(valid_command)
