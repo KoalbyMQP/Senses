@@ -9,7 +9,6 @@ class HostPi:
     def __init__(self):
         self.context = zmq.Context()
         
-        # Get and display IP FIRST
         self.host_ip = self._get_host_ip()
         print(f"\n=== Host Pi IP: {self.host_ip} ===")
         print("Use this IP when starting the client Pi\n")
@@ -24,25 +23,26 @@ class HostPi:
         print("8: Type 3 gripper")
         print("9: Type 4 gripper")
         print("10: Type 5 gripper")
-        
-        # Check Internet Connection and play TTS if missing
-        if not self._check_internet():
-            offline_message = "No internet connection detected. Operating in offline mode."
-            print(offline_message)
-            self._play_tts_offline(offline_message)
-        
-        # Receive from voice detection
-        self.command_receiver = self.context.socket(zmq.SUB)
-        self.command_receiver.bind("tcp://*:5560")
-        self.command_receiver.setsockopt_string(zmq.SUBSCRIBE, "")
-        
-        # Send to client Pi
-        self.client_publisher = self.context.socket(zmq.PUB)
-        self.client_publisher.bind("tcp://*:5561")
 
-        # Start processes AFTER setting host_ip
-        self.voice_process = self._start_voice_detection()
-        self.confirmation_process = self._start_confirmation_listener()
+        self.connected = self._check_internet()
+        if not self.connected:
+            warning = "No internet connection detected. Please connect to the internet."
+            print(warning)
+            self._play_tts_offline(warning)
+            self.command_receiver = None
+            self.client_publisher = None
+            self.voice_process = None
+            self.confirmation_process = None
+        else:
+            self.command_receiver = self.context.socket(zmq.SUB)
+            self.command_receiver.bind("tcp://*:5560")
+            self.command_receiver.setsockopt_string(zmq.SUBSCRIBE, "")
+            
+            self.client_publisher = self.context.socket(zmq.PUB)
+            self.client_publisher.bind("tcp://*:5561")
+            
+            self.voice_process = self._start_voice_detection()
+            self.confirmation_process = self._start_confirmation_listener()
 
         self.error_occurred = False
 
@@ -58,8 +58,7 @@ class HostPi:
     def _play_tts_offline(self, message):
         """Play TTS message offline using espeak."""
         try:
-            if message == "No internet connection detected. Operating in offline mode.":
-                subprocess.Popen(["espeak", message])
+            subprocess.Popen(["espeak", message])
         except Exception as e:
             print(f"Failed to play TTS using espeak: {e}")
 
@@ -154,4 +153,10 @@ python3 {os.path.basename(listener_script)} {self.host_ip} || read -p "Error occ
 
 if __name__ == "__main__":
     host = HostPi()
-    host.process_commands()
+    if not host.connected:
+        while True:
+            warning = "No internet connection detected. Please connect to the internet."
+            host._play_tts_offline(warning)
+            time.sleep(60)
+    else:
+        host.process_commands()

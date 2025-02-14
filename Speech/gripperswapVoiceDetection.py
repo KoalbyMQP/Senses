@@ -1,11 +1,30 @@
 import os
 from dotenv import load_dotenv
+
+if not os.path.exists('.env'):
+    with open('.env', 'w') as f:
+        f.write("OPENAI_API_KEY=\nOPENROUTER_API_KEY=\n")
+    print("No .env file found. A new .env file has been created with placeholder keys.")
+    while True:
+        resp = input("Have you filled in your keys in the .env file? (y/n): ").strip().lower()
+        if resp == 'y':
+            load_dotenv()
+            if not os.getenv("OPENAI_API_KEY") and not os.getenv("OPENROUTER_API_KEY"):
+                print("No API keys found in the .env file. Proceeding with fallbacks.")
+            break
+        elif resp == 'n':
+            print("Proceeding without API keys. Fallbacks will be used when necessary.")
+            break
+        else:
+            print("Invalid input. Please enter 'y' or 'n'.")
+
+load_dotenv()
+
 import speech_recognition as sr
 import pygame
 from gtts import gTTS
 import zmq
 import time
-import whisper
 import requests
 
 class State:
@@ -31,39 +50,47 @@ class SpeechDetector:
         self.confirm_socket = self.confirm_context.socket(zmq.SUB)
         self.confirm_socket.connect("tcp://localhost:5562")
         self.confirm_socket.setsockopt_string(zmq.SUBSCRIBE, "")
-        self.whisper_model = self._load_whisper_model()
         self.openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
-        self.audit_prompt = """Analyze this command for a robotic gripper swap system. 
-        Validate if it contains a gripper swap request between 1-10. Consider:
-        1. Direct commands ("Swap to gripper 5")
-        2. Implicit requests ("Change to number seven")
-        3. Error correction ("I meant gripper three")
-        4. Language translation (original may be non-English)
+        self.audit_prompt = "This is a test prompt for auditing. Replace this prompt once we have the resources"
         
-        Respond ONLY with the number (1-10) if valid, or 'invalid' otherwise."""
-        
-    def _load_whisper_model(self):
+    def _transcribe_with_api(self, audio_path):
+        import openai
+        openai_api_key = os.getenv("OPENAI_API_KEY")
+        if not openai_api_key:
+            return None
+        openai.api_key = openai_api_key
         try:
-            return whisper.load_model("turbo")
+            with open(audio_path, "rb") as audio_file:
+                transcript = openai.Audio.transcribe("whisper-1", audio_file)
+            return transcript.get("text", "").lower()
         except Exception as e:
-            print(f"Whisper load failed: {e}. Using Google fallback")
+            print(f"OpenAI API transcription error: {e}")
             return None
 
-    def _transcribe_with_whisper(self, audio_path):
-        try:
-            if not self.whisper_model:
-                return None
-                
-            audio = whisper.load_audio(audio_path)
-            audio = whisper.pad_or_trim(audio)
-            mel = whisper.log_mel_spectrogram(audio).to(self.whisper_model.device)
-            
-            options = whisper.DecodingOptions(task="translate")
-            result = whisper.decode(self.whisper_model, mel, options)
-            return result.text.lower()
-        except Exception as e:
-            print(f"Whisper error: {e}")
-            return None
+    def parse_command(self, text):
+        import re
+        normalized = text.lower()
+        gripper_mapping = {
+            "default hand": 1,
+            "scoop gripper": 2,
+            "vitals gripper": 3,
+            "thermometer gripper": 4,
+            "board game gripper": 5,
+            "main gripper": 6,
+            "type 2 gripper": 7,
+            "type 3 gripper": 8,
+            "type 4 gripper": 9,
+            "type 5 gripper": 10
+        }
+        for name, num in gripper_mapping.items():
+            if name in normalized:
+                return num
+        match = re.search(r'\b(10|[1-9])\b', normalized)
+        if match:
+            num = int(match.group(0))
+            if 1 <= num <= 10:
+                return num
+        return None
 
     def _audit_with_openrouter(self, text):
         if not self.openrouter_api_key:
@@ -94,64 +121,97 @@ class SpeechDetector:
             print(f"Audit error: {e}")
             return text
 
+    def _audit_command(self, text):
+        import os, requests
+        openai_key = os.getenv("OPENAI_API_KEY")
+        if openai_key:
+            try:
+                response = requests.post(
+                    url="https://api.openai.com/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {openai_key}"},
+                    json={
+                        "model": "o3-mini",
+                        "messages": [
+                            {"role": "system", "content": self.audit_prompt},
+                            {"role": "user", "content": text}
+                        ],
+                        "temperature": 0.1
+                    },
+                    timeout=3
+                )
+                audited_text = response.json()['choices'][0]['message']['content'].strip()
+                if audited_text.isdigit() and 1 <= int(audited_text) <= 10:
+                    return audited_text
+            except Exception as e:
+                print(f"OpenAI Audit error: {e}")
+        if self.openrouter_api_key:
+            try:
+                response = requests.post(
+                    url="https://openrouter.ai/api/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {self.openrouter_api_key}",
+                        "HTTP-Referer": "http://localhost/",
+                        "X-Title": "GripperSwapSystem"
+                    },
+                    json={
+                        "model": "anthropic/claude-3-5-sonnet",
+                        "messages": [
+                            {"role": "system", "content": self.audit_prompt},
+                            {"role": "user", "content": text}
+                        ],
+                        "temperature": 0.1
+                    },
+                    timeout=3
+                )
+                audited_text = response.json()['choices'][0]['message']['content'].strip()
+                if audited_text.isdigit() and 1 <= int(audited_text) <= 10:
+                    return audited_text
+            except Exception as e:
+                print(f"OpenRouter Audit error: {e}")
+        print("Auditing failed, skipping auditing.")
+        return text
+
     def listen_and_process(self):
         try:
             with sr.Microphone() as src:
                 r = sr.Recognizer()
                 r.adjust_for_ambient_noise(src, duration=0.2)
                 print("Listening for swap commands...")
-                
                 try:
                     audio = r.listen(src, timeout=3, phrase_time_limit=3)
                 except sr.WaitTimeoutError:
                     print("Audio capture timeout - no speech detected")
                     return None
-                
                 temp_audio = f"temp_audio_{time.time()}.wav"
                 with open(temp_audio, "wb") as f:
                     f.write(audio.get_wav_data())
-
-                text = None
-                if self.whisper_model:
-                    text = self._transcribe_with_whisper(temp_audio)
-                
+                text = self._transcribe_with_api(temp_audio)
                 if not text:
                     try:
                         text = r.recognize_google(audio).lower()
                     except (sr.UnknownValueError, sr.RequestError):
                         pass
-
                 if os.path.exists(temp_audio):
                     os.remove(temp_audio)
-
                 if not text:
                     print("No speech detected")
                     return None
 
-                audited_text = self._audit_with_openrouter(text)
-                print(f"Processed text: {text} | Audited: {audited_text}")
-
-                if audited_text.isdigit():
-                    gripper_num = int(audited_text)
-                else:
-                    if "swap gripper" in text:
-                        parts = text.split("swap gripper")
-                        gripper_num = parts[-1].strip()
+                gripper_num = self.parse_command(text)
+                if gripper_num is None:
+                    audited_text = self._audit_command(text)
+                    print(f"Processed text: {text} | Audited: {audited_text}")
+                    if audited_text.isdigit():
+                        gripper_num = int(audited_text)
                     else:
                         return None
+                else:
+                    print(f"Recognized command: {text} mapped to gripper {gripper_num}")
 
-                try:
-                    gripper_num = int(gripper_num)
-                    if 1 <= gripper_num <= 10:
-                        self.speech_handler.send_command(gripper_num)
-                        self.previous_gripper = self.previous_gripper if self.previous_gripper else gripper_num
-                        return gripper_num
-                    else:
-                        print("Number out of range")
-                except (ValueError, IndexError) as e:
-                    print(f"Number parsing error: {e}")
-                    return None
-
+                self.speech_handler.send_command(gripper_num)
+                play_tts(f"Command received: switching to gripper {gripper_num}")
+                self.previous_gripper = self.previous_gripper if self.previous_gripper else gripper_num
+                return gripper_num
         except Exception as e:
             print(f"Critical error in audio processing: {str(e)}")
             import traceback
@@ -183,7 +243,7 @@ def run_gripper_swap_detection():
         pygame.init()
         pygame.mixer.init()
         
-        play_tts("Gripper swap system ready. Say 'swap gripper' followed by a number 1 through 10.")
+        play_tts("Gripper swap system ready. Say 'swap gripper' followed by a number 1 through 10 or the name of the gripper.")
         
         while True:
             try:
@@ -215,26 +275,47 @@ def run_gripper_swap_detection():
 
 def play_tts(text):
     try:
+        import os, time, pygame, requests
+        openai_key = os.getenv("OPENAI_API_KEY")
+        temp_file = None
+        if openai_key:
+            try:
+                from openai import OpenAI
+                client = OpenAI()
+                temp_file = f"temp_{time.time()}.mp3"
+                response = client.audio.speech.create(
+                    model="tts-1-hd",
+                    voice="sage",
+                    input=text
+                )
+                response.stream_to_file(temp_file)
+                pygame.mixer.music.load(temp_file)
+                pygame.mixer.music.play()
+                start_time = time.time()
+                while pygame.mixer.music.get_busy():
+                    if time.time() - start_time > 5:
+                        print("Audio playback timeout")
+                        break
+                    pygame.time.Clock().tick(10)
+                return
+            except Exception as e:
+                print(f"OpenAI TTS error: {e}, falling back to Google TTS.")
+        from gtts import gTTS
         tts = gTTS(text=text, lang='en')
         temp_file = f"temp_{time.time()}.mp3"
         tts.save(temp_file)
-        
         pygame.mixer.music.load(temp_file)
         pygame.mixer.music.play()
-        
         start_time = time.time()
         while pygame.mixer.music.get_busy():
             if time.time() - start_time > 5:
                 print("Audio playback timeout")
                 break
             pygame.time.Clock().tick(10)
-            
     except Exception as e:
         print(f"TTS Error: {e}")
-        import traceback
-        traceback.print_exc()
     finally:
-        if os.path.exists(temp_file):
+        if temp_file and os.path.exists(temp_file):
             try:
                 os.remove(temp_file)
             except Exception as e:
