@@ -49,7 +49,7 @@ def audit_command(text, audit_prompt, valid_check, openrouter_title):
                     "X-Title": openrouter_title
                 },
                 json={
-                    "model": "anthropic/claude-3-5-sonnet",
+                    "model": "deepseek/deepseek-r1-distill-llama-70b:free",
                     "messages": [
                         {"role": "system", "content": audit_prompt},
                         {"role": "user", "content": text}
