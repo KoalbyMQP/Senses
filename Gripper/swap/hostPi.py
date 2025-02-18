@@ -65,7 +65,7 @@ class HostPi:
     def _start_voice_detection(self):
         """Start voice detection with error handling"""
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        voice_script = os.path.join(current_dir, "..", "..", "Speech", "gripperswapVoiceDetection.py")
+        voice_script = os.path.join(current_dir, "..", "..", "Speech", "detection", "gripperswapVoiceDetection.py")
         venv_path = "/home/finley/Documents/GitHub/Senses/myvirtual"
         print(f"Current directory: {current_dir}")
         print(f"Voice script: {voice_script}")
