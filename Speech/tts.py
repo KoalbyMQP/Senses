@@ -1,6 +1,10 @@
 import os
 import time
 import pygame
+from Speech.config import initialize_api_keys
+
+
+initialize_api_keys()
 
 def play_tts(text):
     """
@@ -9,7 +13,7 @@ def play_tts(text):
     temp_file = None
     try:
         openai_key = os.getenv("OPENAI_API_KEY")
-        if openai_key:
+        if openai_key and openai_key != "YOUR_OPENAI_KEY":
             try:
                 from openai import OpenAI
                 client = OpenAI()

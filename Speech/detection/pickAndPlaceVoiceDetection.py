@@ -7,14 +7,15 @@ import warnings
 import logging
 import requests
 import speech_recognition as sr
-from dotenv import load_dotenv
+from Speech.config import initialize_api_keys
 
-load_dotenv()
+initialize_api_keys()
 
 from Listen.audio_capture import capture_audio
 from Listen.transcription import transcribe_with_api, transcribe_with_google, transcribe_with_whisper
 from Speech.tts import play_tts
 from Speech.auditing import audit_command  
+
 class State:
     IDLE = "Idle"
     KEYWORD_SPOTTING = "Keyword Spotting"
@@ -60,7 +61,7 @@ Respond ONLY with the object name if valid, or 'invalid' otherwise."""
         )
         print(f"Processed text: {text} | Audited: {audited_text}")
         
-        if audited_text != "invalid":
+        if audited_text.lower() != "invalid":
             valid_command = f"pick up {audited_text}"
             self._process_valid_command(valid_command)
         else:

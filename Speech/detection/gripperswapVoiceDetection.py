@@ -4,9 +4,9 @@ import zmq
 import requests
 import speech_recognition as sr
 import pygame
-from dotenv import load_dotenv
+from Speech.config import initialize_api_keys
 
-load_dotenv()
+initialize_api_keys()
 
 from Listen.audio_capture import capture_audio
 from Listen.transcription import transcribe_with_api, transcribe_with_google

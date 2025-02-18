@@ -1,5 +1,8 @@
 import os
 import requests
+from Speech.config import initialize_api_keys
+
+initialize_api_keys()
 
 def audit_command(text, audit_prompt, valid_check, openrouter_title):
     """
