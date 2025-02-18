@@ -35,8 +35,35 @@ class SpeechDetector:
         self.confirm_socket = self.confirm_context.socket(zmq.SUB)
         self.confirm_socket.connect("tcp://localhost:5562")
         self.confirm_socket.setsockopt_string(zmq.SUBSCRIBE, "")
-        self.audit_prompt = "This is a test prompt for auditing. Replace this prompt once we have the resources"
+        self.audit_prompt = """You are Finley, an elderly care robot with a gripper swapping system. Your task is to interpret user commands and return ONLY the number corresponding to the requested gripper. Here are the valid gripper mappings:
 
+            1: default hand / main hand
+            2: scoop gripper
+            3: vitals gripper
+            4: thermometer gripper
+            5: board game gripper
+            6: main gripper
+            7: type 2 gripper
+            8: type 3 gripper
+            9: type 4 gripper
+            10: type 5 gripper
+
+            Instructions:
+            - If the user says "swap gripper" or "swap" followed by a number 1-10, return that number
+            - If the user specifies a gripper by name, return its corresponding number
+            - If there are typos, misspellings, or extra words, try to interpret the command correctly and return the correct number
+            - Return ONLY the number, with no additional text or explanation
+
+            For example:
+            Input: "swap gripper 4" → Output: 4
+            Input: "swamp gripper 4" → Output: 4
+            Input: "swap thermometer gripper" → Output: 4
+            Input: "swap to vitals gripper please" → Output: 3
+            Input: "swap type 2" → Output: 7
+            Input: "gripper 8" → Output: 8
+            Input: "invalid command" → Output: 1
+
+            Return only a single number between 1 and 10."""
     def parse_command(self, text):
         import re
         normalized = text.lower()
