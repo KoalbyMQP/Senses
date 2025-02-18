@@ -61,7 +61,7 @@ class SpeechDetector:
             Input: "swap to vitals gripper please" → Output: 3
             Input: "swap type 2" → Output: 7
             Input: "gripper 8" → Output: 8
-            Input: "invalid command" → Output: 1
+            Input: "8" → Output: 8
 
             Return only a single number between 1 and 10."""
     def parse_command(self, text):
