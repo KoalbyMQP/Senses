@@ -13,4 +13,13 @@ def prepareConfManager(in_args):
             print("Youtube video downloaded.")
         if not Path(confManager.args.video).exists():
             raise ValueError("Path {} does not exists!".format(confManager.args.video))
-    return confManager 
+    return confManager
+
+def get_nnet_manager(conf, inputSize, nnFamily, labels, confidence, sync):
+    """
+    Factory for Neural Network Manager.
+    This version always uses the modified implementation from Vision/core/nnet_manager.py.
+    """
+    from core.nnet_manager import NNetManager
+    print("Using modified NNetManager")
+    return NNetManager(inputSize, nnFamily, labels, confidence, sync) 

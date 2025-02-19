@@ -1,4 +1,5 @@
 import json
+import math
 from pathlib import Path
 import depthai as dai
 import cv2
@@ -15,7 +16,7 @@ class NNetManager:
     decoding neural network output automatically or by using external handler file.
     """
 
-    def __init__(self, inputSize, nnFamily=None, labels=[], confidence=0.5, sync=False):
+    def __init__(self, inputSize, nnFamily=None, labels=[], confidence=0.5, sync=False, device=None):
         """
         Args:
             inputSize (tuple): Desired NN input size, should match the input size defined in the network itself (width, height)
@@ -31,6 +32,59 @@ class NNetManager:
         self._labels = labels
         self._confidence = confidence
         self._sync = sync
+        self.device = device
+        self.calibData = None
+        self.cameraIntrinsics = None
+        self.distCoeffs = None
+        self.measurement_buffer = []  
+        self.max_buffer_size = 500  # Reduced from 500 to prevent memory issues
+        self.min_confidence = 0.70   # Minimum confidence threshold (70%)
+        self.coordinates_sent = False  # Flag to track if coordinates have been sent
+
+    def initializeCalibration(self):
+        """Initialize camera calibration data from device following official implementation"""
+        if self.calibData is not None:  # Already initialized
+            return
+            
+        if self.device is None:
+            raise RuntimeError("Device not initialized! Pass device instance during NNetManager initialization.")
+            
+        self.calibData = self.device.readCalibration()
+        
+        # Get camera board type
+        eeprom = self.calibData.getEepromData()
+        if "OAK-1" in eeprom.boardName or "BW1093OAK" in eeprom.boardName:
+            # Handle OAK-1 case
+            self.cameraIntrinsics = np.array(self.calibData.getCameraIntrinsics(dai.CameraBoardSocket.CAM_A, 1280, 720))
+            self.distCoeffs = np.array(self.calibData.getDistortionCoefficients(dai.CameraBoardSocket.CAM_A))
+            self.fov = self.calibData.getFov(dai.CameraBoardSocket.CAM_A)
+        else:
+            # Handle other OAK cameras (OAK-D, etc)
+            M_rgb, width, height = self.calibData.getDefaultIntrinsics(dai.CameraBoardSocket.CAM_A)
+            self.cameraIntrinsics = np.array(M_rgb)
+            
+            # Get resized intrinsics for actual frame size (1920x1080 for RGB)
+            self.cameraIntrinsics = np.array(self.calibData.getCameraIntrinsics(dai.CameraBoardSocket.CAM_A, 
+                                                                            1920, 1080))
+            
+            self.distCoeffs = np.array(self.calibData.getDistortionCoefficients(dai.CameraBoardSocket.CAM_A))
+            self.fov = self.calibData.getFov(dai.CameraBoardSocket.CAM_A)
+            
+        return self.cameraIntrinsics, self.distCoeffs, self.fov
+
+    def getCameraIntrinsics(self, frame_width=None, frame_height=None):
+        """Get camera intrinsics matrix and distortion coefficients"""
+        if self.calibData is None:
+            self.initializeCalibration()
+        
+        if frame_width is not None and frame_height is not None:
+            # Return resized intrinsics if dimensions are provided
+            return (np.array(self.calibData.getCameraIntrinsics(dai.CameraBoardSocket.RGB, 
+                                                            frame_width, frame_height)),
+                    self.distCoeffs,
+                    self.fov)
+        
+        return self.cameraIntrinsics, self.distCoeffs, self.fov
 
     #: list: List of available neural network inputs
     sourceChoices = ("color", "left", "right", "rectifiedLeft", "rectifiedRight", "host")
@@ -112,7 +166,7 @@ class NNetManager:
         else:
             return 0
 
-    def createNN(self, pipeline, nodes, blobPath, source="color", useDepth=False, minDepth=100, maxDepth=10000, sbbScaleFactor=0.3, fullFov=True, useImageManip=True):
+    def createNN(self, pipeline, nodes, blobPath, source="color", useDepth=False, minDepth=100, maxDepth=10000, sbbScaleFactor=0.3, fullFov=True, useImageManip=True, device=None):
         """
         Creates nodes and connections in provided pipeline that will allow to run NN model and consume it's results.
 
@@ -145,7 +199,7 @@ class NNetManager:
             raise RuntimeError(f"Source {source} is invalid, available {self.sourceChoices}")
         if self.inputSize is None:
             raise RuntimeError("Unable to determine the nn input size. Please use --cnnInputSize flag to specify it in WxH format: -nnSize <width>x<height>")
-
+        self.device = device
         self.source = source
         self._fullFov = fullFov
         if self._nnFamily == "mobilenet":
@@ -274,6 +328,51 @@ class NNetManager:
                     print("Received NN packet: <Preview unabailable: {}>".format(ex))
         else:
             raise RuntimeError("Unknown output format: {}".format(self._outputFormat))
+        
+    def calculatePhysicalDimensions(self, detection, frame):
+        """Calculate physical dimensions using official focal length approach"""
+        # Get position in meters
+        xMeters = detection.spatialCoordinates.x / 1000  # Convert mm to meters
+        yMeters = detection.spatialCoordinates.y / 1000
+        zMeters = detection.spatialCoordinates.z / 1000
+
+        # Calculate dimensions in pixels
+        bbox_width_pixels = (detection.xmax - detection.xmin) * 1920  #1920x1080
+        bbox_height_pixels = (detection.ymax - detection.ymin) * 1080  #1920x1080
+        
+        # camera focal lengths
+        fx = 1504.128173828125
+        fy = 1504.2720947265625
+        
+        physical_width = (bbox_width_pixels * zMeters) / fx
+        physical_height = (bbox_height_pixels * zMeters) / fy
+        
+        measurements = {
+            'position': {'x': xMeters, 'y': yMeters, 'z': zMeters},
+            'dimensions': {'width': physical_width, 'height': physical_height},
+            'confidence': detection.confidence
+        }
+
+        print(f"Detection confidence: {detection.confidence}")  # Debug print
+        
+        # Only store measurements if confidence exceeds threshold and buffer isn't full
+        if detection.confidence > self.min_confidence and len(self.measurement_buffer) < self.max_buffer_size:
+            self.measurement_buffer.append(measurements)
+            if len(self.measurement_buffer) > self.max_buffer_size:
+                self.measurement_buffer = self.measurement_buffer[-self.max_buffer_size:]
+            print(f"Added measurement. Buffer size: {len(self.measurement_buffer)}")  # Debug print
+        else:
+            print(f"Measurement not added. Confidence: {detection.confidence}, Buffer size: {len(self.measurement_buffer)}")  # Debug print
+        
+        return measurements
+
+    def get_measurement_buffer(self):
+        """Return the current measurement buffer"""
+        return self.measurement_buffer
+
+    def clear_measurement_buffer(self):
+        """Clear the measurement buffer"""
+        self.measurement_buffer = []
 
     def _drawCount(self, source, decodedData):
         def drawCnt(frame, cnt):
@@ -287,77 +386,132 @@ class NNetManager:
                 drawCnt(frame, len(cntList))
         else:
             drawCnt(source, len(cntList))
+        
+    def set_target_object(self, target):
+        """Set the current target object to track"""
+        try:
+            print(f"Debug: Setting target object to: {target}")
+            
+            # Verify device state
+            if not hasattr(self, 'device') or self.device is None:
+                print("Warning: Device not initialized, attempting to proceed anyway")
+            else:
+                try:
+                    state = self.device.getBootloader()
+                    print(f"Debug: Device state: {state}")
+                except Exception as e:
+                    print(f"Warning: Could not get device state: {e}")
+            
+            # Clear existing buffer
+            if hasattr(self, 'measurement_buffer'):
+                print(f"Debug: Clearing measurement buffer (size: {len(self.measurement_buffer)})")
+                self.measurement_buffer.clear()
+            else:
+                print("Debug: No measurement buffer found")
+                self.measurement_buffer = []
+            
+            # Reset coordinates sent flag
+            self.coordinates_sent = False
+            
+            # Set new target
+            self._target_object = target.lower() if target else None
+            print(f"Debug: Target object set successfully to: {self._target_object}")
+            
+        except Exception as e:
+            print(f"Error in set_target_object: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
+        return True
+
+    def _should_draw_detection(self, detection):
+        """Determine if this detection should be drawn based on current target"""
+        if not hasattr(self, '_target_object') or self._target_object is None:
+            return True  # Draw all detections if no target specified
+        
+        label_text = self.getLabelText(detection.label).lower()
+        return label_text == self._target_object
 
     def draw(self, source, decodedData):
-        """
-        Draws NN results onto the frames. It's responsible to correctly map the results onto each frame requested,
-        including applying crop offset or preparing a correct normalization frame, then draws them with all information
-        provided (confidence, label, spatial location, label count).
+        if not decodedData: 
+            print("No decoded data to draw")
+            return
 
-        Also, it's able to call custom nn handler method :code:`draw` to hand over drawing the results
-
-        Args:
-            source (depthai_sdk.managers.PreviewManager | numpy.ndarray): Draw target.
-                If supplied with a regular frame, it will draw the count on that frame
-
-                If supplied with :class:`depthai_sdk.managers.PreviewManager` instance, it will print the count label
-                on all of the frames that it stores
-
-            decodedData: Detections from neural network node, usually returned from :func:`decode` method
-        """
-        if self._outputFormat == "detection":
-            def drawDetection(frame, detection):
-                bbox = frameNorm(self._normFrame(frame), [detection.xmin, detection.ymin, detection.xmax, detection.ymax])
-                if self.source == Previews.color.name and not self._fullFov:
-                    bbox[::2] += self._cropOffsetX(frame)
-                cv2.rectangle(frame, (bbox[0], bbox[1]), (bbox[2], bbox[3]), self._bboxColors[detection.label], 2)
-                cv2.rectangle(frame, (bbox[0], (bbox[1] - 28)), ((bbox[0] + 110), bbox[1]), self._bboxColors[detection.label], cv2.FILLED)
-                cv2.putText(frame, self.getLabelText(detection.label), (bbox[0] + 5, bbox[1] - 10),
-                            self._textType, 0.5, (0, 0, 0), 1, self._lineType)
-                cv2.putText(frame, f"{int(detection.confidence * 100)}%", (bbox[0] + 62, bbox[1] - 10),
-                            self._textType, 0.5, (0, 0, 0), 1, self._lineType)
-
-                if hasattr(detection, 'spatialCoordinates'):  # Display spatial coordinates as well
-                    xMeters = detection.spatialCoordinates.x / 1000
-                    yMeters = detection.spatialCoordinates.y / 1000
-                    zMeters = detection.spatialCoordinates.z / 1000
-                    cv2.putText(frame, "X: {:.2f} m".format(xMeters), (bbox[0] + 10, bbox[1] + 60),
-                                self._textType, 0.5, self._textBgColor, 4, self._lineType)
-                    cv2.putText(frame, "X: {:.2f} m".format(xMeters), (bbox[0] + 10, bbox[1] + 60),
-                                self._textType, 0.5, self._textColor, 1, self._lineType)
-                    cv2.putText(frame, "Y: {:.2f} m".format(yMeters), (bbox[0] + 10, bbox[1] + 75),
-                                self._textType, 0.5, self._textBgColor, 4, self._lineType)
-                    cv2.putText(frame, "Y: {:.2f} m".format(yMeters), (bbox[0] + 10, bbox[1] + 75),
-                                self._textType, 0.5, self._textColor, 1, self._lineType)
-                    cv2.putText(frame, "Z: {:.2f} m".format(zMeters), (bbox[0] + 10, bbox[1] + 90),
-                                self._textType, 0.5, self._textBgColor, 4, self._lineType)
-                    cv2.putText(frame, "Z: {:.2f} m".format(zMeters), (bbox[0] + 10, bbox[1] + 90),
-                                self._textType, 0.5, self._textColor, 1, self._lineType)
-            if isinstance(source, SyncedPreviewManager):
-                if len(self.buffer) > 0 and source.nnSyncSeq is not None:
-                    data = self.buffer.get(source.nnSyncSeq, self.buffer[max(self.buffer.keys())])
-                    for old_key in list(filter(lambda key: key < source.nnSyncSeq, self.buffer.keys())):
-                        del self.buffer[old_key]
-                    for detection in data:
-                        for name, frame in source.frames.items():
-                            drawDetection(frame, detection)
+        # print(f"Drawing detections. Target object: {getattr(self, '_target_object', 'None')}")
+        # print(f"Number of detections before filtering: {len(decodedData)}")
+        
+        # If we have a target object, filter and find highest confidence detection
+        target_detection = None
+        if hasattr(self, '_target_object') and self._target_object:
+            print(f"Filtering for target: {self._target_object}")
+            target_detections = []
+            for d in decodedData:
+                label = self.getLabelText(d.label).lower()
+                print(f"Checking detection with label: {label}, confidence: {d.confidence}")
+                if label == self._target_object:
+                    target_detections.append(d)
+            
+            if target_detections:
+                target_detection = max(target_detections, key=lambda d: d.confidence)
+                print(f"Selected highest confidence detection: {self.getLabelText(target_detection.label)} "
+                      f"with confidence {target_detection.confidence}")
+                # Use only the highest confidence detection
+                decodedData = [target_detection]
             else:
-                for detection in decodedData:
-                    if isinstance(source, PreviewManager):
-                        for name, frame in source.frames.items():
-                            drawDetection(frame, detection)
-                    else:
-                        drawDetection(source, detection)
+                print(f"No detections found matching target: {self._target_object}")
+                decodedData = []
+        
+        # print(f"Number of detections after filtering: {len(decodedData)}")
 
-            if self._countLabel is not None:
-                self._drawCount(source, decodedData)
+        def drawDetection(frame, detection):
+            # No need to check target filtering here anymore since we filtered decodedData
+            bbox = frameNorm(self._normFrame(frame), [detection.xmin, detection.ymin, detection.xmax, detection.ymax])
+            if self.source == Previews.color.name and not self._fullFov:
+                bbox[::2] += self._cropOffsetX(frame)
+            
+            # Draw bounding box
+            cv2.rectangle(frame, (bbox[0], bbox[1]), (bbox[2], bbox[3]), self._bboxColors[detection.label], 2)
+            cv2.rectangle(frame, (bbox[0], (bbox[1] - 28)), ((bbox[0] + 110), bbox[1]), self._bboxColors[detection.label], cv2.FILLED)
+            cv2.putText(frame, self.getLabelText(detection.label), (bbox[0] + 5, bbox[1] - 10),
+                        self._textType, 0.5, (0, 0, 0), 1, self._lineType)
+            cv2.putText(frame, f"{int(detection.confidence * 100)}%", (bbox[0] + 62, bbox[1] - 10),
+                        self._textType, 0.5, (0, 0, 0), 1, self._lineType)
 
-        elif self._outputFormat == "raw" and self._handler is not None:
-            if isinstance(source, PreviewManager):
-                frames = list(source.frames.items())
-            else:
-                frames = [("host", source)]
-            self._handler.draw(self, decodedData, frames)
+            if hasattr(detection, 'spatialCoordinates'):
+                # Calculate and draw measurements
+                measurements = self.calculatePhysicalDimensions(detection, frame)
+                texts = [
+                    f"X: {measurements['position']['x']:.3f}m",
+                    f"Y: {measurements['position']['y']:.3f}m",
+                    f"Z: {measurements['position']['z']:.3f}m",
+                    f"Width: {measurements['dimensions']['width']:.3f}m",
+                    f"Height: {measurements['dimensions']['height']:.3f}m"
+                ]
+                
+
+                for i, text in enumerate(texts):
+                    cv2.putText(frame, text, (bbox[0] + 10, bbox[1] + 60 + i*15),
+                              self._textType, 0.5, self._textBgColor, 4, self._lineType)
+                    cv2.putText(frame, text, (bbox[0] + 10, bbox[1] + 60 + i*15),
+                              self._textType, 0.5, self._textColor, 1, self._lineType)
+
+        # Handle different source types and draw detections
+        if isinstance(source, SyncedPreviewManager):
+            if len(self.buffer) > 0 and source.nnSyncSeq is not None:
+                data = self.buffer.get(source.nnSyncSeq, self.buffer[max(self.buffer.keys())])
+                for detection in data:
+                    for name, frame in source.frames.items():
+                        drawDetection(frame, detection)
+        else:
+            for detection in decodedData:
+                if isinstance(source, PreviewManager):
+                    for name, frame in source.frames.items():
+                        drawDetection(frame, detection)
+                else:
+                    drawDetection(source, detection)
+
+        if self._countLabel is not None:
+            self._drawCount(source, decodedData)
 
     def createQueues(self, device):
         """
@@ -367,9 +521,14 @@ class NNetManager:
         Args:
             device (depthai.Device): Running device instance
         """
-        if self.source == "host":
-            self.inputQueue = device.getInputQueue("nnIn", maxSize=1, blocking=False)
-        self.outputQueue = device.getOutputQueue("nnOut", maxSize=1, blocking=False)
+        if device is None:
+            raise RuntimeError("Device cannot be None")
+            
+        self.device = device  # Store device reference
+        if self.inputQueue is None and self.source == "host":
+            self.inputQueue = device.getInputQueue("nnInput", maxSize=1, blocking=False)
+        if self.outputQueue is None:
+            self.outputQueue = device.getOutputQueue("nnOut", maxSize=1, blocking=False)
 
     def closeQueues(self):
         """
@@ -421,3 +580,7 @@ class NNetManager:
         """
 
         self._countLabel = label
+
+    
+
+    

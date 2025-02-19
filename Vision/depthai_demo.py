@@ -4,9 +4,11 @@ import platform
 from depthai_sdk.managers import ArgsManager
 from depthai_helpers.supervisor import Supervisor
 import signal
+from utils.error_utils import component_check
 
 args = ArgsManager.parseArgs()
 
+@component_check("depthai_demo")
 def main():
     try:
         if args.noSupervisor:

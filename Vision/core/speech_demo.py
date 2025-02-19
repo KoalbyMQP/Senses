@@ -5,6 +5,10 @@ import subprocess
 import zmq
 import numpy as np
 from core.demo_base import Demo
+from utils.error_utils import component_check
+
+@component_check("speech_demo")
+
 
 class SpeechEnabledDemo(Demo):
     def __init__(self, *args, **kwargs):
