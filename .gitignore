@@ -1,18 +1,81 @@
-# Python cache files
+# Python cache files and bytecode
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
+*$py.class
 
-# Log files
+# Logs
 *.log
 
-# Generated Speech output
-Speech/output.mp3
-
 # Environment files
-*.env
+.env
+.venv
+env/
+venv/
+ENV/
 
-Speech/__pycache__/__init__.cpython-311.pyc
-Speech/__pycache__/pickAndPlaceVoiceDetection.cpython-311.pyc
-Speech/__pycache__/pickAndPlaceVoiceDetection.cpython-311.pyc
-Speech/__pycache__/pickAndPlaceVoiceDetection.cpython-311.pyc
+# Speech output
+Speech/output.mp3
+Speech/__pycache__/
+
+# DepthAI specific
+recordings/
+depthai.calib
+mesh_left.calib
+mesh_right.calib
+intrinsic.json
+intrinsic_calib_m2
+log_system_information.json
+resources/*.json
+*.h264
+*.h265
+*.mkv
+*.mp4
+*.blob*
+*.cmd
+*.mvcmd
+*.prof
+*.calib
+*.csv
+*.img
+.aux_wheels
+*.whl
+*dataset*
+.fw_cache/
+
+# Distribution / packaging
+.Python
+build/
+package/*.tar
+package/*.tar.gz
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+*darwin.so
+MANIFEST
+
+# IDE specific
+.vscode/
+.idea/
+
+# PyPi configuration
+.pypirc
+
+# OS specific
+.DS_Store
+*.orig
+
+# Generated files
+*.so
