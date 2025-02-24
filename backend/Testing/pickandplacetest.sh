@@ -1,5 +1,5 @@
 #!/bin/bash
-export PYTHONPATH="/home/finley/Documents/GitHub/Vision:$PYTHONPATH"
+export PYTHONPATH="/home/finley/Documents/GitHub/RaspberryPi-Code_24-25/backend/Testing:$PYTHONPATH"
 
 
-python3 finlyPickAndPlace.py
+python3 testGrip.py
