@@ -73,7 +73,12 @@ class Demo:
         from depthai_sdk.managers import PipelineManager, EncodingManager
         self._pm = PipelineManager(openvinoVersion=self._openvinoVersion, lowCapabilities=self._conf.lowCapabilities)
         maxUsbSpeed = dai.UsbSpeed.SUPER
-        self._device = dai.Device(self._pm.pipeline.getOpenVINOVersion(), self._deviceInfo, maxUsbSpeed)
+        
+        device_info = self._deviceInfo
+        if isinstance(device_info, tuple) and len(device_info) > 1:
+            device_info = device_info[1]  # Extract the DeviceInfo object from the tuple
+            
+        self._device = dai.Device(self._pm.pipeline, device_info, maxUsbSpeed)
         if not self._device:
             raise RuntimeError("Device initialization failed!")
         try:
