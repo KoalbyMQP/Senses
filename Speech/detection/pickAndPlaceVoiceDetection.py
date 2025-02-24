@@ -7,6 +7,7 @@ import warnings
 import logging
 import requests
 import speech_recognition as sr
+import sounddevice
 from Speech.config import initialize_api_keys
 
 initialize_api_keys()

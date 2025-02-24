@@ -4,6 +4,7 @@ import subprocess
 import os
 import signal
 import socket
+import sounddevice
 
 class HostPi:
     def __init__(self):

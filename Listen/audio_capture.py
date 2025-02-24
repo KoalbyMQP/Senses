@@ -1,5 +1,6 @@
 import speech_recognition as sr
 import time
+import sounddevice
 
 def capture_audio(temp_prefix="temp_audio", listen_timeout=3, phrase_time_limit=3, ambient_duration=0.2):
     """

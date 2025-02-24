@@ -4,6 +4,7 @@ import zmq
 import requests
 import speech_recognition as sr
 import pygame
+import sounddevice
 from Speech.config import initialize_api_keys
 
 initialize_api_keys()
