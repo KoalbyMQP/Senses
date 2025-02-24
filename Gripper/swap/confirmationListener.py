@@ -8,7 +8,10 @@ class ConfirmationListener:
         self.socket.bind(f"tcp://*:5562")
         self.socket.setsockopt_string(zmq.SUBSCRIBE, "")
         
-        print(f"Confirmation listener started on {host_ip}:5562")
+        print(f"\n===== Confirmation Listener =====")
+        print(f"Started on {host_ip}:5562")
+        print(f"Waiting for gripper swap confirmation messages...")
+        print(f"==================================\n")
         
     def start_listening(self):
         while True:

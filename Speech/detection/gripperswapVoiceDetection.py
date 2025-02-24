@@ -36,6 +36,8 @@ class SpeechDetector:
         self.confirm_socket = self.confirm_context.socket(zmq.SUB)
         self.confirm_socket.connect("tcp://localhost:5562")
         self.confirm_socket.setsockopt_string(zmq.SUBSCRIBE, "")
+        print("Connected to confirmation listener at localhost:5562")
+        
         self.audit_prompt = """You are Finley, an elderly care robot with a gripper swapping system. Your task is to interpret user commands and return ONLY the number corresponding to the requested gripper. Here are the valid gripper mappings:
 
             1: default hand / main hand
@@ -65,6 +67,7 @@ class SpeechDetector:
             Input: "8" → Output: 8
 
             Return only a single number between 1 and 10."""
+            
     def parse_command(self, text):
         import re
         normalized = text.lower()
@@ -96,31 +99,38 @@ class SpeechDetector:
             return None
 
         # Attempt transcription using the API, then fall back to Google
+        print("Transcribing speech...")
         text = transcribe_with_api(temp_audio)
         if not text:
+            print("OpenAI transcription failed, trying Google Speech...")
             text = transcribe_with_google(audio)
         if os.path.exists(temp_audio):
             os.remove(temp_audio)
 
         if not text:
-            print("No speech detected")
+            print("No speech detected or couldn't transcribe audio")
             return None
 
+        print(f"Transcribed text: '{text}'")
+        
         gripper_num = self.parse_command(text)
         if gripper_num is None:
+            print("Couldn't directly parse command, using AI audit...")
             audited_text = audit_command(
                 text,
                 self.audit_prompt,
                 lambda x: x.isdigit() and 1 <= int(x) <= 10,
                 "GripperSwapSystem"
             )
-            print(f"Processed text: {text} | Audited: {audited_text}")
+            print(f"Processed text: '{text}' | Audited result: '{audited_text}'")
             if audited_text.isdigit():
                 gripper_num = int(audited_text)
+                print(f"Interpreted as gripper number: {gripper_num}")
             else:
+                print("Command not recognized as a valid gripper number")
                 return None
         else:
-            print(f"Recognized command: {text} mapped to gripper {gripper_num}")
+            print(f"Recognized command: '{text}' mapped to gripper {gripper_num}")
 
         self.speech_handler.send_command(gripper_num)
         play_tts(f"Command received: switching to gripper {gripper_num}")
@@ -139,11 +149,29 @@ def run_gripper_swap_detection():
         pygame.init()
         pygame.mixer.init()
         
+        print("\n===== GRIPPER SWAP VOICE DETECTION SYSTEM =====")
+        print("Valid gripper numbers:")
+        print("1: Default hand / Main hand")
+        print("2: Scoop gripper")
+        print("3: Vitals gripper")
+        print("4: Thermometer gripper")
+        print("5: Board game gripper") 
+        print("6: Main gripper")
+        print("7: Type 2 gripper")
+        print("8: Type 3 gripper")
+        print("9: Type 4 gripper")
+        print("10: Type 5 gripper")
+        print("=========================================\n")
+        
         play_tts("Gripper swap system ready. Say 'swap gripper' followed by a number 1 through 10 or the name of the gripper.")
         
         while True:
             try:
+                print("\nWaiting for voice command...")
                 result = detector.listen_and_process()
+                if result:
+                    print(f"Waiting for confirmation of gripper {result}...")
+                
                 confirmation = None
                 start_time = time.time()
                 while time.time() - start_time < 5:  
@@ -156,6 +184,10 @@ def run_gripper_swap_detection():
                             play_tts(f"Gripper {parts[0]} already active")
                         break
                     time.sleep(0.1)
+                    
+                if not confirmation and result:
+                    print("No confirmation received within 5 seconds")
+                    
             except KeyboardInterrupt:
                 print("\nExiting by user request...")
                 break

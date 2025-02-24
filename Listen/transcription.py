@@ -25,14 +25,19 @@ def transcribe_with_api(audio_path, provider="openai"):
     """
     if provider == "openai":
         try:
-            import openai
+            from openai import OpenAI
             openai_api_key = os.getenv("OPENAI_API_KEY")
             if not openai_api_key:
+                print("OpenAI API key not found in environment variables")
                 return None
-            openai.api_key = openai_api_key
+                
+            client = OpenAI(api_key=openai_api_key)
             with open(audio_path, "rb") as audio_file:
-                transcript = openai.Audio.transcribe("whisper-1", audio_file)
-            return transcript.get("text", "").lower()
+                transcript = client.audio.transcriptions.create(
+                    model="whisper-1",
+                    file=audio_file
+                )
+            return transcript.text.lower()
         except Exception as e:
             print(f"OpenAI API transcription error: {e}")
             return None

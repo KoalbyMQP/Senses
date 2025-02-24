@@ -26,10 +26,15 @@ def play_tts(text):
                 response.stream_to_file(temp_file)
                 pygame.mixer.music.load(temp_file)
                 pygame.mixer.music.play()
+                
+                estimated_duration = len(text) / 15 + 2  
+                max_duration = max(5, estimated_duration)  
+                
+                print(f"Playing TTS: '{text}'")
                 start_time = time.time()
                 while pygame.mixer.music.get_busy():
-                    if time.time() - start_time > 5:
-                        print("Audio playback timeout")
+                    if time.time() - start_time > max_duration:
+                        print(f"Audio playback timeout after {max_duration}s")
                         break
                     pygame.time.Clock().tick(10)
                 return
@@ -41,10 +46,15 @@ def play_tts(text):
         tts.save(temp_file)
         pygame.mixer.music.load(temp_file)
         pygame.mixer.music.play()
+        
+        estimated_duration = len(text) / 10 + 2  
+        max_duration = max(5, estimated_duration)  
+        
+        print(f"Playing TTS: '{text}'")
         start_time = time.time()
         while pygame.mixer.music.get_busy():
-            if time.time() - start_time > 5:
-                print("Audio playback timeout")
+            if time.time() - start_time > max_duration:
+                print(f"Audio playback timeout after {max_duration}s")
                 break
             pygame.time.Clock().tick(10)
     except Exception as e:

@@ -13,7 +13,9 @@ class HostPi:
         self.host_ip = self._get_host_ip()
         print(f"\n=== Host Pi IP: {self.host_ip} ===")
         print("Use this IP when starting the client Pi\n")
-        print(f"\n=== Gripper IDs: ===")
+        
+        print(f"\n===== GRIPPER SWAP SYSTEM =====")
+        print("Available Gripper IDs:")
         print("1: Default hand")
         print("2: Scoop gripper")
         print("3: Vitals gripper")
@@ -24,6 +26,7 @@ class HostPi:
         print("8: Type 3 gripper")
         print("9: Type 4 gripper")
         print("10: Type 5 gripper")
+        print("=============================\n")
 
         self.connected = self._check_internet()
         if not self.connected:
@@ -82,6 +85,7 @@ python3 {os.path.basename(voice_script)} || read -p "Error occurred! Press Enter
 """)
         os.chmod(temp_script, 0o755)
 
+        print("\nStarting voice detection interface...")
         return subprocess.Popen(
             f"lxterminal --geometry=80x24 -e 'bash -c \"{temp_script}; exec bash\"'",
             shell=True,
@@ -104,6 +108,7 @@ python3 {os.path.basename(listener_script)} {self.host_ip} || read -p "Error occ
 """)
         os.chmod(temp_script, 0o755)
 
+        print("\nStarting confirmation listener interface...")
         return subprocess.Popen(
             f"lxterminal --geometry=80x24 -e 'bash -c \"{temp_script}; exec bash\"'",
             shell=True,
@@ -119,7 +124,12 @@ python3 {os.path.basename(listener_script)} {self.host_ip} || read -p "Error occ
             return socket.gethostbyname(socket.gethostname())
 
     def process_commands(self):
-        print("HostPi started. Waiting for commands...")
+        print("\n===== Host Pi started =====")
+        print("The system is now listening for voice commands")
+        print("Say 'swap gripper' followed by a number 1-10 or gripper name")
+        print("For example: 'swap gripper 3' or 'swap to thermometer gripper'")
+        print("============================\n")
+        
         try:
             while True:  
                 try:
