@@ -4,9 +4,7 @@ import cv2
 from pathlib import Path
 from utils.trackbars import noop
 import depthai as dai
-from utils.error_utils import component_check
 
-@component_check("demo_base")
 class Demo:
     DISP_CONF_MIN = int(os.getenv("DISP_CONF_MIN", 0))
     DISP_CONF_MAX = int(os.getenv("DISP_CONF_MAX", 255))

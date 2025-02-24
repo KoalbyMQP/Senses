@@ -5,9 +5,7 @@ from utils.config_helper import prepareConfManager
 from depthai_sdk.managers import ArgsManager
 from core.demo_base import Demo
 from gui.demo_gui import GuiApp
-from utils.error_utils import component_check
 
-@component_check("run_qt")
 def runQt():
     args = ArgsManager.parseArgs()
     confManager = prepareConfManager(args)

@@ -4,9 +4,7 @@ import sys
 from utils.config_helper import prepareConfManager
 from core.speech_demo import SpeechEnabledDemo
 from depthai_sdk.managers import ArgsManager
-from utils.error_utils import component_check
 
-@component_check("run_cv")
 def runOpenCv():
     args = ArgsManager.parseArgs()
     confManager = prepareConfManager(args)
