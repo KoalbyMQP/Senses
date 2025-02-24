@@ -5,7 +5,7 @@ import depthai as dai
 import cv2
 import numpy as np
 
-from .preview_manager import PreviewManager, SyncedPreviewManager
+from depthai_sdk.previews import PreviewManager, SyncedPreviewManager
 from ..previews import Previews
 from ..utils import loadModule, toTensorResult, frameNorm, toPlanar
 
