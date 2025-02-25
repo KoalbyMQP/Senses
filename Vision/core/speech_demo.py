@@ -211,12 +211,12 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
             super().run()
     
     def _run_temperature_demo(self):
-        """Runs the temperature demo by launching demo.py in the depthai_handface_main folder"""
+        """Runs the temperature demo by launching demo.py in the Thermometer folder"""
         print("Starting temperature monitoring demo...")
         try:
             current_dir = os.path.dirname(os.path.abspath(__file__))
             project_root = os.path.dirname(os.path.dirname(current_dir))
-            temp_demo_path = os.path.join(project_root, "Vision", "depthai_handface_main", "demo.py")
+            temp_demo_path = os.path.join(project_root, "Vision", "Thermometer", "demo.py")
             
             if not os.path.exists(temp_demo_path):
                 print(f"Error: Temperature demo script not found at {temp_demo_path}")
