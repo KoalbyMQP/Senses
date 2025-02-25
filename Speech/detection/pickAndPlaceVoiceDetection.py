@@ -33,14 +33,61 @@ class SpeechDetector:
         self.speech_handler = None
         self.current_target = None
         self.openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
-        self.audit_prompt = """Analyze this command for a robotic pick-and-place system. 
-Validate if it contains a request to pick up one of: apple, orange, bottle, cup, remote.
-Respond ONLY with the object name if valid, or 'invalid' otherwise."""
+        
+        # Enhanced auditing prompt with more flexible command recognition
+        self.audit_prompt = """You are Finley, an elderly care robot with a pick and place system. Your task is to interpret user commands and return ONLY the name of the object to pick up.
+
+Valid objects are:
+- apple
+- orange
+- bottle
+- cup
+- remote
+
+Instructions:
+- If the user says "pick up" followed by a valid object name, return only that object name
+- If the user says things like "grab", "take", or "get" followed by a valid object, interpret it as a pick up command
+- If there are typos, misspellings, or extra words, try to interpret the command correctly
+- If the user's request doesn't mention any valid object or doesn't appear to be a pick up command, return "invalid"
+- If the user speaks in other languages, try to understand it and follow the rules above
+- Return ONLY the object name, with no additional text or explanation
+
+For example:
+Input: "pick up apple" → Output: apple
+Input: "grab the orange" → Output: orange
+Input: "take the bottle" → Output: bottle
+Input: "could you please pick up the remote control" → Output: remote
+Input: "get me a cup" → Output: cup
+Input: "pick up the banana" → Output: invalid
+
+Return only a single valid object name or "invalid"."""
+    
+    def parse_command(self, text):
+        """Direct parsing of command without API calls"""
+        normalized = text.lower()
+        valid_objects = ["apple", "orange", "bottle", "cup", "remote"]
+        
+        # Check for pick up/grab/take/get commands with objects
+        pick_up_words = ["pick up", "grab", "take", "get", "fetch", "bring"]
+        
+        for action in pick_up_words:
+            if action in normalized:
+                for obj in valid_objects:
+                    if obj in normalized:
+                        return obj
+                        
+        # Just object name
+        for obj in valid_objects:
+            if obj in normalized and not any(word in normalized for word in ["don't", "do not", "isn't", "is not"]):
+                return obj
+                
+        return None
         
     def listen_and_process(self):
         audio, temp_audio = capture_audio(listen_timeout=1.0, phrase_time_limit=3.0, ambient_duration=0.2)
         if audio is None or temp_audio is None:
             return
+            
         # Attempt transcription: API -> Whisper -> Google
         text = transcribe_with_api(temp_audio)
         if not text:
@@ -53,24 +100,29 @@ Respond ONLY with the object name if valid, or 'invalid' otherwise."""
             print("No speech detected")
             return
         
-        valid_objects = ["apple", "orange", "bottle", "cup", "remote"]
-        audited_text = audit_command(
-            text,
-            self.audit_prompt,
-            lambda x: x.lower() in valid_objects,
-            "PickAndPlaceSystem"
-        )
-        print(f"Processed text: {text} | Audited: {audited_text}")
+        # Try direct parsing first
+        object_name = self.parse_command(text)
         
-        if audited_text.lower() != "invalid":
-            valid_command = f"pick up {audited_text}"
-            self._process_valid_command(valid_command)
-        else:
-            if "pick up" in text.lower() or any(word in text.lower() for word in ["grab", "take", "get"]):
-                self._handle_object_recognition(text)
+        if object_name is None:
+            # Fall back to AI auditing
+            audited_text = audit_command(
+                text,
+                self.audit_prompt,
+                lambda x: x.lower() in ["apple", "orange", "bottle", "cup", "remote", "invalid"],
+                "PickAndPlaceSystem"
+            )
+            print(f"Processed text: {text} | Audited: {audited_text}")
+            
+            if audited_text.lower() != "invalid":
+                object_name = audited_text.lower()
+                self._process_valid_command(f"pick up {object_name}")
             else:
                 print("Command not recognized.")
-                play_tts("Please say pick up followed by an object name.")
+                play_tts("Please say pick up followed by an object name like apple, orange, bottle, cup, or remote.")
+        else:
+            # Directly parsed successfully
+            print(f"Directly parsed: {text} → {object_name}")
+            self._process_valid_command(f"pick up {object_name}")
 
         self.current_state = State.IDLE
 
@@ -81,26 +133,9 @@ Respond ONLY with the object name if valid, or 'invalid' otherwise."""
                 self.speech_handler.process_command(command_text)
             self.current_target = command_text.lower().split("pick up ")[-1].strip()
             print(f"Validated command: {command_text}")
+            play_tts(f"I'll pick up the {self.current_target}")
         except Exception as e:
             print(f"Command processing error: {e}")
-
-    def _handle_object_recognition(self, text):
-        object_map = {
-            "apple": State.APPLE,
-            "orange": State.ORANGE,
-            "bottle": State.BOTTLE,
-            "cup": State.CUP,
-            "remote": State.REMOTE
-        }
-        detected_object = next(
-            (obj for obj in object_map if obj in text.lower()),
-            None
-        )
-        if detected_object:
-            self._process_valid_command(f"pick up {detected_object}")
-        else:
-            print("Valid object not detected")
-            play_tts("Please specify a valid object: apple, orange, bottle, cup, or remote.")
 
 class SpeechHandler:
     def __init__(self):
@@ -167,7 +202,16 @@ def run_speech_detection():
         play_tts("Hi! I'm Finley, your personal assistant.")
         print("Waiting 5 seconds before starting to listen...")
         time.sleep(5)
-        play_tts("I'm now listening. Please speak clearly.")
+        play_tts("I'm now listening. You can ask me to pick up objects like an apple, orange, bottle, cup, or remote.")
+        
+        print("\n===== PICK AND PLACE VOICE DETECTION SYSTEM =====")
+        print("Valid objects:")
+        print("- apple")
+        print("- orange") 
+        print("- bottle")
+        print("- cup")
+        print("- remote")
+        print("=========================================\n")
         
         while True:
             if detector.current_state == State.IDLE:
@@ -187,4 +231,10 @@ def run_speech_detection():
             detector.speech_handler.cleanup()
 
 if __name__ == "__main__":
-    run_speech_detection()
+    try:
+        run_speech_detection()
+    except Exception as e:
+        print(f"\n!!! PICK AND PLACE VOICE DETECTION CRASHED: {str(e)} !!!")
+        import traceback
+        traceback.print_exc()
+        input("Press Enter to close this error window...")
