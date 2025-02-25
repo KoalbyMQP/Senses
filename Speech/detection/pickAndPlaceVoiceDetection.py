@@ -26,6 +26,7 @@ class State:
     BOTTLE = "Bottle"
     CUP = "Cup"
     REMOTE = "Remote"
+    TEMPERATURE = "Temperature"
 
 class SpeechDetector:
     def __init__(self):
@@ -35,7 +36,7 @@ class SpeechDetector:
         self.openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
         
         # Enhanced auditing prompt with more flexible command recognition
-        self.audit_prompt = """You are Finley, an elderly care robot with a pick and place system. Your task is to interpret user commands and return ONLY the name of the object to pick up.
+        self.audit_prompt = """You are Finley, an elderly care robot with a pick and place system. Your task is to interpret user commands and return ONLY the name of the object to pick up or the special command.
 
 Valid objects are:
 - apple
@@ -44,13 +45,17 @@ Valid objects are:
 - cup
 - remote
 
+Special commands:
+- temperature (if the user asks for temperature, body temperature, to check temperature)
+
 Instructions:
 - If the user says "pick up" followed by a valid object name, return only that object name
 - If the user says things like "grab", "take", or "get" followed by a valid object, interpret it as a pick up command
+- If the user asks for temperature (e.g., "get temperature", "check temperature", "body temperature"), return "temperature"
 - If there are typos, misspellings, or extra words, try to interpret the command correctly
-- If the user's request doesn't mention any valid object or doesn't appear to be a pick up command, return "invalid"
+- If the user's request doesn't mention any valid object or doesn't appear to be a valid command, return "invalid"
 - If the user speaks in other languages, try to understand it and follow the rules above
-- Return ONLY the object name, with no additional text or explanation
+- Return ONLY the object name or special command, with no additional text or explanation
 
 For example:
 Input: "pick up apple" → Output: apple
@@ -58,14 +63,22 @@ Input: "grab the orange" → Output: orange
 Input: "take the bottle" → Output: bottle
 Input: "could you please pick up the remote control" → Output: remote
 Input: "get me a cup" → Output: cup
+Input: "get temperature" → Output: temperature
+Input: "check my temperature" → Output: temperature
 Input: "pick up the banana" → Output: invalid
 
-Return only a single valid object name or "invalid"."""
+Return only a single valid object name, "temperature", or "invalid"."""
     
     def parse_command(self, text):
         """Direct parsing of command without API calls"""
         normalized = text.lower()
         valid_objects = ["apple", "orange", "bottle", "cup", "remote"]
+        
+        # Check for temperature requests
+        temperature_phrases = ["temperature", "body temperature", "check temperature", "get temperature"]
+        for phrase in temperature_phrases:
+            if phrase in normalized:
+                return "temperature"
         
         # Check for pick up/grab/take/get commands with objects
         pick_up_words = ["pick up", "grab", "take", "get", "fetch", "bring"]
@@ -108,21 +121,27 @@ Return only a single valid object name or "invalid"."""
             audited_text = audit_command(
                 text,
                 self.audit_prompt,
-                lambda x: x.lower() in ["apple", "orange", "bottle", "cup", "remote", "invalid"],
+                lambda x: x.lower() in ["apple", "orange", "bottle", "cup", "remote", "temperature", "invalid"],
                 "PickAndPlaceSystem"
             )
             print(f"Processed text: {text} | Audited: {audited_text}")
             
             if audited_text.lower() != "invalid":
                 object_name = audited_text.lower()
-                self._process_valid_command(f"pick up {object_name}")
+                if object_name == "temperature":
+                    self._process_valid_command("get temperature")
+                else:
+                    self._process_valid_command(f"pick up {object_name}")
             else:
                 print("Command not recognized.")
-                play_tts("Please say pick up followed by an object name like apple, orange, bottle, cup, or remote.")
+                play_tts("Please say pick up followed by an object name, or ask me to check temperature.")
         else:
             # Directly parsed successfully
             print(f"Directly parsed: {text} → {object_name}")
-            self._process_valid_command(f"pick up {object_name}")
+            if object_name == "temperature":
+                self._process_valid_command("get temperature")
+            else:
+                self._process_valid_command(f"pick up {object_name}")
 
         self.current_state = State.IDLE
 
@@ -131,9 +150,15 @@ Return only a single valid object name or "invalid"."""
             self.current_state = State.KEYWORD_SPOTTING
             if self.speech_handler:
                 self.speech_handler.process_command(command_text)
-            self.current_target = command_text.lower().split("pick up ")[-1].strip()
-            print(f"Validated command: {command_text}")
-            play_tts(f"I'll pick up the {self.current_target}")
+            
+            if "temperature" in command_text.lower():
+                self.current_target = "temperature"
+                print(f"Validated command: {command_text}")
+                play_tts("I'll check your temperature")
+            else:
+                self.current_target = command_text.lower().split("pick up ")[-1].strip()
+                print(f"Validated command: {command_text}")
+                play_tts(f"I'll pick up the {self.current_target}")
         except Exception as e:
             print(f"Command processing error: {e}")
 
@@ -171,8 +196,24 @@ class SpeechHandler:
                 continue
 
     def process_command(self, spoken_text):
-        if "pick up" in spoken_text.lower():
-            target = spoken_text.lower().split("pick up ")[-1].strip()
+        lower_text = spoken_text.lower()
+        
+        # Handle temperature command
+        if "temperature" in lower_text:
+            message = "get temperature"
+            print(f"Attempting to send command: {message}")
+            try:
+                self.socket.send_string(message, zmq.NOBLOCK)
+                print(f"Successfully sent command: {message}")
+            except zmq.error.Again:
+                print("Failed to send message (would block)")
+            except Exception as e:
+                print(f"Error sending message: {e}")
+            return
+            
+        # Handle pick up command
+        if "pick up" in lower_text:
+            target = lower_text.split("pick up ")[-1].strip()
             message = f"pick up {target}"
             print(f"Attempting to send command: {message}")
             try:

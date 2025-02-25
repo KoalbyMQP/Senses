@@ -13,6 +13,7 @@ class SpeechEnabledDemo(Demo):
         super().__init__(*args, **kwargs)
         self.speech_process = None
         self.robot_process = None
+        self.temperature_process = None
         self.current_target = None
         
         # Set up ZMQ for command communication
@@ -168,6 +169,7 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
         print("Starting speech-enabled pipeline...")
         # Start listening for commands before running the main pipeline
         target_object = None
+        run_temperature_demo = False
         
         while target_object is None:
             try:
@@ -190,6 +192,10 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
                         self.measurements_file = open('test_tuple.txt', 'w')
                         print("Created measurements file: test_tuple.txt")
                         break
+                elif command == "get temperature":
+                    print("Temperature command received")
+                    run_temperature_demo = True
+                    break
             except zmq.Again:
                 time.sleep(0.01)
                 pass
@@ -197,8 +203,73 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
                 print(f"Error in ZMQ receive: {e}")
                 time.sleep(0.01)
         
-        # Now run the parent's run method to start the pipeline
-        super().run()
+        # If temperature command received, run the temperature demo instead of the standard pipeline
+        if run_temperature_demo:
+            self._run_temperature_demo()
+        else:
+            # Run the parent's run method to start the pipeline for pick and place
+            super().run()
+    
+    def _run_temperature_demo(self):
+        """Runs the temperature demo by launching demo.py in the depthai_handface_main folder"""
+        print("Starting temperature monitoring demo...")
+        try:
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            project_root = os.path.dirname(os.path.dirname(current_dir))
+            temp_demo_path = os.path.join(project_root, "depthai_handface_main", "demo.py")
+            
+            if not os.path.exists(temp_demo_path):
+                print(f"Error: Temperature demo script not found at {temp_demo_path}")
+                return
+            
+            venv_path = os.environ.get('VIRTUAL_ENV', '')
+            if not venv_path:
+                venv_path = "/home/finley/Documents/GitHub/Senses/myvirtual"  # Default path if not in virtual env
+            
+            # Create a temporary shell script for temperature demo
+            temp_script = "/tmp/temperature_demo.sh"
+            with open(temp_script, "w") as f:
+                f.write(f"""#!/bin/bash
+source "{venv_path}/bin/activate"
+export PYTHONPATH="{project_root}:$PYTHONPATH"
+cd {os.path.dirname(temp_demo_path)}
+python3 {os.path.basename(temp_demo_path)} || echo "Error occurred! Press Enter to close..." && read
+""")
+            os.chmod(temp_script, 0o755)
+            
+            print(f"Created temperature demo script: {temp_script}")
+            
+            # Launch the script in a new terminal
+            self.temperature_process = subprocess.Popen(
+                f"lxterminal --geometry=80x24 -e 'bash -c \"{temp_script}; exec bash\"'",
+                shell=True,
+                preexec_fn=os.setsid
+            )
+            
+            time.sleep(1)
+            if self.temperature_process.poll() is None:
+                print("Temperature demo started successfully in new terminal")
+            else:
+                print("Warning: Temperature demo failed to start")
+                
+            # Wait for the process to complete
+            try:
+                # Add a timeout to prevent indefinite blocking
+                timeout = 60  # seconds
+                start_time = time.time()
+                while time.time() - start_time < timeout:
+                    if self.temperature_process.poll() is not None:
+                        break
+                    time.sleep(0.5)
+                
+                # If still running after timeout, don't wait anymore
+                if self.temperature_process.poll() is None:
+                    print("Temperature demo still running, continuing without waiting")
+            except Exception as e:
+                print(f"Error waiting for temperature demo: {e}")
+            
+        except Exception as e:
+            print(f"Error starting temperature demo: {e}")
 
     def loop(self):
         super().loop()
@@ -207,6 +278,14 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
         try:
             command = self.socket.recv_string(flags=zmq.NOBLOCK)
             print(f"Received command during operation: {command}")
+            
+            if command == "get temperature":
+                print("Temperature command received during operation")
+                # Save current state if needed
+                
+                # Launch temperature demo in a separate process
+                self._run_temperature_demo()
+                return
             
             if command.startswith("pick up"):
                 target_object = command.split("pick up ")[1]
@@ -267,6 +346,13 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
                 os.killpg(os.getpgid(self.robot_process.pid), signal.SIGTERM)
             except Exception as e:
                 print(f"Error terminating robot process: {e}")
+                
+        # Terminate temperature process if running
+        if hasattr(self, 'temperature_process') and self.temperature_process:
+            try:
+                os.killpg(os.getpgid(self.temperature_process.pid), signal.SIGTERM)
+            except Exception as e:
+                print(f"Error terminating temperature process: {e}")
 
         # Clean up ZMQ resources
         if hasattr(self, 'socket'):
