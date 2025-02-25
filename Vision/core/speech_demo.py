@@ -90,7 +90,7 @@ class SpeechEnabledDemo(Demo):
         try:
             current_dir = os.path.dirname(os.path.abspath(__file__))
             project_root = os.path.dirname(os.path.dirname(current_dir))
-            speech_script_path = os.path.join(project_root, "Speech", "pickAndPlaceVoiceDetection.py")
+            speech_script_path = os.path.join(project_root, "Speech", "detection", "pickAndPlaceVoiceDetection.py")
             
             venv_path = os.environ.get('VIRTUAL_ENV', '')
             if venv_path:
