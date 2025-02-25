@@ -838,7 +838,13 @@ class HandFaceTracker:
                 for hand in hands:
                     hand.xyz, hand.xyz_zone = self.spatial_calc.get_xyz(frame_depth, hand.landmarks[0])
             for face in faces:
-                face.xyz, face.xyz_zone = self.spatial_calc.get_xyz(frame_depth, face.landmarks[9,:2])
+                # Moving the spatial calculation point higher on the forehead
+                # Original: face.xyz, face.xyz_zone = self.spatial_calc.get_xyz(frame_depth, face.landmarks[9,:2])
+                # Get the original point (landmark 9) which is between eyebrows
+                forehead_point = face.landmarks[9,:2].copy() 
+                # Move the point up by 30 pixels (adjust this value as needed)
+                forehead_point[1] -= 30  # Subtracting from y moves the point up in image coordinates
+                face.xyz, face.xyz_zone = self.spatial_calc.get_xyz(frame_depth, forehead_point)
 
         if self.double_face and self.input_type != "rgb":
             video_frame, self.prev_video_frame = self.prev_video_frame, video_frame
