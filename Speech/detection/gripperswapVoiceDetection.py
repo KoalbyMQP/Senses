@@ -55,6 +55,8 @@ class SpeechDetector:
             - If the user says "swap gripper" or "swap" followed by a number 1-10, return that number
             - If the user specifies a gripper by name, return its corresponding number
             - If there are typos, misspellings, or extra words, try to interpret the command correctly and return the correct number
+            - If the user says anything, interpret it and try to understand whether or not the user is trying to swap grippers. If you think they are, return the number of the gripper they want to swap to. If you think they are not, return invalid.
+            - If the user says in other languages, try to understand it and follow the rules above.
             - Return ONLY the number, with no additional text or explanation
 
             For example:
@@ -62,12 +64,12 @@ class SpeechDetector:
             Input: "swamp gripper 4" → Output: 4
             Input: "swap thermometer gripper" → Output: 4
             Input: "swap to vitals gripper please" → Output: 3
+            Input: "i want board game cripper" -> Output: 5
             Input: "swap type 2" → Output: 7
             Input: "gripper 8" → Output: 8
             Input: "8" → Output: 8
 
-            Return only a single number between 1 and 10."""
-            
+            Return only a single number between 1 and 10 or invalid."""
     def parse_command(self, text):
         import re
         normalized = text.lower()
