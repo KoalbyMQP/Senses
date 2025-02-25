@@ -30,7 +30,7 @@ resources/*.json
 *.h265
 *.mkv
 *.mp4
-*.blob*
+
 *.cmd
 *.mvcmd
 *.prof
