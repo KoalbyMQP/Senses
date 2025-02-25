@@ -216,7 +216,7 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
         try:
             current_dir = os.path.dirname(os.path.abspath(__file__))
             project_root = os.path.dirname(os.path.dirname(current_dir))
-            temp_demo_path = os.path.join(project_root, "depthai_handface_main", "demo.py")
+            temp_demo_path = os.path.join(project_root, "Vision", "depthai_handface_main", "demo.py")
             
             if not os.path.exists(temp_demo_path):
                 print(f"Error: Temperature demo script not found at {temp_demo_path}")

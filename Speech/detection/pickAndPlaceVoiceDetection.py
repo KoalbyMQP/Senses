@@ -74,7 +74,7 @@ Return only a single valid object name, "temperature", or "invalid"."""
         normalized = text.lower()
         valid_objects = ["apple", "orange", "bottle", "cup", "remote"]
         
-        # Check for temperature requests
+        # Check for temperature requests 
         temperature_phrases = ["temperature", "body temperature", "check temperature", "get temperature"]
         for phrase in temperature_phrases:
             if phrase in normalized:
