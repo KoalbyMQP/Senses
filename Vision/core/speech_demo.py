@@ -323,7 +323,7 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
 source "{venv_path}/bin/activate"
 export PYTHONPATH="{project_root}:$PYTHONPATH"
 cd {os.path.dirname(temp_demo_path)}
-python3 {os.path.basename(temp_demo_path)} || echo "Error occurred! Press Enter to close..." && read
+python3 {os.path.basename(temp_demo_path)} -a -xyz -n 0 || echo "Error occurred! Press Enter to close..." && read
 """)
             os.chmod(temp_script, 0o755)
             
