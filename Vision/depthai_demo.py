@@ -1,37 +1,45 @@
 #!/usr/bin/env python3
+
+"""
+DepthAI Demo Application
+========================
+
+This is the main entry point for the DepthAI demo application.
+It detects the GUI type (Qt or OpenCV) and launches the appropriate demo.
+"""
+
 import sys
+import os
 import platform
 from depthai_sdk.managers import ArgsManager
 from depthai_helpers.supervisor import Supervisor
 import signal
 
-args = ArgsManager.parseArgs()
-
 def main():
-    try:
-        if args.noSupervisor:
-            if args.guiType == "qt":
-                from runners.run_qt import runQt
-                runQt()
-            else:
-                args.guiType = "cv"
-                from runners.run_cv import runOpenCv
-                runOpenCv()
-        else:
-            s = Supervisor()
-            if args.guiType != "cv":
-                available = s.checkQtAvailability()
-                if args.guiType == "qt" and not available:
-                    raise RuntimeError("QT backend is not available, run with --guiType cv")
-                if args.guiType == "auto" and platform.machine() == "aarch64":
-                    args.guiType = "cv"
-                elif available:
-                    args.guiType = "qt"
-                else:
-                    args.guiType = "cv"
-            s.runDemo(args)
-    except KeyboardInterrupt:
-        sys.exit(0)
+    args = ArgsManager.parseArgs()
+    
+    # Determine which GUI type to use
+    gui_type = args.guiType
+    
+    if gui_type == "qt":
+        from runners.run_qt import runQt
+        runQt()
+    else:
+        # Default to OpenCV interface
+        from runners.run_cv import runOpenCv
+        runOpenCv()
 
 if __name__ == "__main__":
+    if sys.version_info[0] < 3:
+        raise Exception("Must be using Python 3")
+    
+    # Make sure modules are in path
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    if current_dir not in sys.path:
+        sys.path.append(current_dir)
+    
+    # Run Jetson-specific setup if needed
+    if platform.machine() == 'aarch64':  # Jetson
+        os.environ['OPENBLAS_CORETYPE'] = "ARMV8"
+    
     main()
