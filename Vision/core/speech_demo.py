@@ -7,6 +7,7 @@ import numpy as np
 from core.demo_base import Demo
 from depthai_sdk.previews import Previews
 
+
 class SpeechEnabledDemo(Demo):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -98,7 +99,10 @@ class SpeechEnabledDemo(Demo):
             else:
                 activate_cmd = ""
             
-            speech_cmd = f"lxterminal -e 'bash -c \"{activate_cmd}python3 {speech_script_path} 2>/dev/null; echo Press Enter to close...; read\"'"
+            # Remove the stderr redirection to see error messages
+            speech_cmd = f"lxterminal -e 'bash -c \"{activate_cmd}python3 {speech_script_path}; echo Press Enter to close...; read\"'"
+            
+            print(f"Running command: {speech_cmd}")
             
             self.speech_process = subprocess.Popen(
                 speech_cmd,
