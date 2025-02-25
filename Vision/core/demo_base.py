@@ -90,7 +90,7 @@ class Demo:
 
         self._nnManager = None
         if self._conf.useNN:
-            from core.nnet_manager import NNetManager
+            from depthai_sdk.managers import NNetManager
             self._blobManager = self._blobManager  # already set above
             self._nnManager = NNetManager(inputSize=self._conf.inputSize, sync=self._conf.args.sync)
             if self._conf.getModelDir() is not None:
