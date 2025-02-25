@@ -94,18 +94,25 @@ class SpeechEnabledDemo(Demo):
             speech_script_path = os.path.join(project_root, "Speech", "detection", "pickAndPlaceVoiceDetection.py")
             
             venv_path = os.environ.get('VIRTUAL_ENV', '')
-            if venv_path:
-                activate_cmd = f"source {venv_path}/bin/activate && "
-            else:
-                activate_cmd = ""
+            if not venv_path:
+                venv_path = "/home/finley/Documents/GitHub/Senses/myvirtual"  # Default path if not in virtual env
             
-            # Remove the stderr redirection to see error messages
-            speech_cmd = f"lxterminal -e 'bash -c \"{activate_cmd}python3 {speech_script_path}; echo Press Enter to close...; read\"'"
+            # Create a temporary shell script for speech detection
+            temp_speech_script = "/tmp/pickAndPlaceVoiceListener.sh"
+            with open(temp_speech_script, "w") as f:
+                f.write(f"""#!/bin/bash
+source "{venv_path}/bin/activate"
+export PYTHONPATH="{project_root}:$PYTHONPATH"
+cd {os.path.dirname(speech_script_path)}
+python3 {os.path.basename(speech_script_path)} || echo "Error occurred! Press Enter to close..." && read
+""")
+            os.chmod(temp_speech_script, 0o755)
             
-            print(f"Running command: {speech_cmd}")
+            print(f"Created speech detection script: {temp_speech_script}")
             
+            # Launch the script in a new terminal
             self.speech_process = subprocess.Popen(
-                speech_cmd,
+                f"lxterminal --geometry=80x24 -e 'bash -c \"{temp_speech_script}; exec bash\"'",
                 shell=True,
                 preexec_fn=os.setsid
             )
@@ -126,15 +133,25 @@ class SpeechEnabledDemo(Demo):
             robot_script_path = os.path.join(project_root, "backend", "Testing", "finlyPickAndPlace.py")
             
             venv_path = os.environ.get('VIRTUAL_ENV', '')
-            if venv_path:
-                activate_cmd = f"source {venv_path}/bin/activate && "
-            else:
-                activate_cmd = ""
+            if not venv_path:
+                venv_path = "/home/finley/Documents/GitHub/Senses/myvirtual"  # Default path if not in virtual env
             
-            robot_cmd = f"lxterminal -e 'bash -c \"export PYTHONPATH=/home/finley/Documents/GitHub/Vision:$PYTHONPATH; {activate_cmd}python3 {robot_script_path}; echo Press Enter to close...; read\"'"
-
+            # Create a temporary shell script for robot control
+            temp_robot_script = "/tmp/robotController.sh"
+            with open(temp_robot_script, "w") as f:
+                f.write(f"""#!/bin/bash
+source "{venv_path}/bin/activate"
+export PYTHONPATH="{project_root}:$PYTHONPATH"
+cd {os.path.dirname(robot_script_path)}
+python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Enter to close..." && read
+""")
+            os.chmod(temp_robot_script, 0o755)
+            
+            print(f"Created robot control script: {temp_robot_script}")
+            
+            # Launch the script in a new terminal
             self.robot_process = subprocess.Popen(
-                robot_cmd,
+                f"lxterminal --geometry=80x24 -e 'bash -c \"{temp_robot_script}; exec bash\"'",
                 shell=True,
                 preexec_fn=os.setsid
             )
