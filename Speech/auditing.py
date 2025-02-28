@@ -42,7 +42,7 @@ def audit_command(text, audit_prompt, valid_check, openrouter_title, max_retries
                             {"role": "system", "content": audit_prompt},
                             {"role": "user", "content": text}
                         ],
-                        "temperature": 0.1
+                        "temperature": 0
                     },
                     timeout=3
                 )
@@ -111,7 +111,7 @@ def audit_command(text, audit_prompt, valid_check, openrouter_title, max_retries
                             {"role": "system", "content": audit_prompt},
                             {"role": "user", "content": text}
                         ],
-                        "temperature": 0.1
+                        "temperature": 0
                     },
                     timeout=3
                 )
