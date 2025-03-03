@@ -31,7 +31,7 @@
   - **.env Check:**  
     - On startup, the module checks for a `.env` file.
     - If not found, it creates one with placeholder keys for `OPENAI_API_KEY` and `OPENROUTER_API_KEY` and prompts the user for confirmation.  
-    - The keys are then loaded using `dotenv`; if keys remain unset, the program proceeds using fallbacks.
+    - The keys are then loaded using `dotenv`; if keys remain unset, the program proceeds as normal but would fail at the steps that require API keys and will go for fallback checks.
 
 - **Audio Capture & Transcription:**
   - Uses Python’s `speech_recognition` to capture audio from a microphone.

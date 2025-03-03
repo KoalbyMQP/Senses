@@ -37,7 +37,7 @@ def audit_command(text, audit_prompt, valid_check, openrouter_title, max_retries
                     url="https://api.openai.com/v1/chat/completions",
                     headers={"Authorization": f"Bearer {openai_key}"},
                     json={
-                        "model": "o3-mini",  
+                        "model": "gpt-4.5-preview-2025-02-27",  
                         "messages": [
                             {"role": "system", "content": audit_prompt},
                             {"role": "user", "content": text}
