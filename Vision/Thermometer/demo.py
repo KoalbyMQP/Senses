@@ -72,8 +72,8 @@ renderer = HandFaceRenderer(
 forehead_coordinates = []
 # We're no longer using this landmark index since we're using face.xyz directly
 # FOREHEAD_LANDMARK_INDEX = 10  # Forehead landmark (approximate, may need adjustment)
-MIN_SAMPLES = 30  # Minimum number of samples before sending coordinates
-MAX_SAMPLES = 100  # Maximum number of samples to collect
+MIN_SAMPLES = 200 # Minimum number of samples before sending coordinates
+MAX_SAMPLES = 1000  # Maximum number of samples to collect
 
 print("Starting face tracking for temperature sensing...")
 print("Position face in front of camera. Press 'q' to exit.")
@@ -155,7 +155,7 @@ while True:
         
         # Apply IQR filtering if we have enough samples
         filtered_coordinates = valid_coordinates
-        if len(valid_coordinates) >= MAX_SAMPLES:
+        if len(valid_coordinates) >= MAX_SAMPLES:           
             # Extract data for IQR filtering
             x_coords = [m['position']['x'] for m in valid_coordinates]
             y_coords = [m['position']['y'] for m in valid_coordinates]
