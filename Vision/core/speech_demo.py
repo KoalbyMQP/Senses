@@ -645,16 +645,21 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
             C = np.dot(A, B)
             print(f"Transformed forehead coordinates: {C}")
             
+            # Extract scalar values from the numpy array for formatting
+            x_coord = float(C[0][0])
+            y_coord = float(C[1][0])
+            z_coord = float(C[2][0])
+            
             # Set up trajectory for moving to forehead
             leftArmTraj = [
                 [[0,0,0], [20,20,20]],
                 [[.49076, -.08197, .76541],
-                 [C[0], C[1], C[2]]],
+                 [x_coord, y_coord, z_coord]],
                 [[0,0,0], [0,0,0]],
                 [[0,0,0], [0,0,0]]
             ]
             
-            print(f"Moving robot arm to forehead coordinates: {C[0]:.4f}, {C[1]:.4f}, {C[2]:.4f}")
+            print(f"Moving robot arm to forehead coordinates: {x_coord:.4f}, {y_coord:.4f}, {z_coord:.4f}")
             
             lArm_tj_joint = TrajPlannerTime(leftArmTraj[0], leftArmTraj[1], leftArmTraj[2], leftArmTraj[3])
             state = 0
