@@ -43,8 +43,8 @@ tracker_args = {a:dargs[a] for a in ['internal_fps', 'internal_frame_height'] if
 context = zmq.Context()
 socket = context.socket(zmq.PUB)
 try:
-    socket.bind("tcp://*:5559")
-    print("ZMQ socket bound to port 5559 for sending forehead coordinates")
+    socket.bind("tcp://*:5560")
+    print("ZMQ socket bound to port 5560 for sending forehead coordinates")
 except zmq.error.ZMQError as e:
     print(f"Failed to bind ZMQ socket: {e}")
     socket.close()

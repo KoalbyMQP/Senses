@@ -342,7 +342,7 @@ python3 {os.path.basename(temp_demo_path)} -a -xyz -n 0 || echo "Error occurred!
                 
                 # Create a socket for receiving coordinates from the temperature demo
                 coord_receiver = self.context.socket(zmq.SUB)
-                coord_receiver.connect("tcp://localhost:5559")
+                coord_receiver.connect("tcp://localhost:5560")
                 coord_receiver.setsockopt_string(zmq.SUBSCRIBE, "")
                 coord_receiver.setsockopt(zmq.RCVTIMEO, 30000)  # 30-second timeout
                 
