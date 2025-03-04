@@ -166,11 +166,9 @@ while True:
             print("Waiting for subscriber connection...")
             time.sleep(1)
             
-            # Send the coordinates multiple times 
-            for i in range(5):
-                socket.send_string(coordinates_str)
-                print(f"Sent coordinates attempt {i+1}: {coordinates_str}")
-                time.sleep(0.5) 
+            # Send the coordinates once
+            socket.send_string(coordinates_str)
+            print(f"Sent coordinates: {coordinates_str}")
             
             print("Coordinates sent successfully!")
             
