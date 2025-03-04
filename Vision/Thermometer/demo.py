@@ -70,7 +70,8 @@ renderer = HandFaceRenderer(
 
 # Store forehead coordinates
 forehead_coordinates = []
-FOREHEAD_LANDMARK_INDEX = 10  # Forehead landmark (approximate, may need adjustment)
+# We're no longer using this landmark index since we're using face.xyz directly
+# FOREHEAD_LANDMARK_INDEX = 10  # Forehead landmark (approximate, may need adjustment)
 MIN_SAMPLES = 30  # Minimum number of samples before sending coordinates
 MAX_SAMPLES = 100  # Maximum number of samples to collect
 
@@ -85,24 +86,31 @@ while True:
     if faces and len(faces) > 0 and tracker.xyz:
         face = faces[0]  # Use the first detected face
         
-        # Check if we have 3D landmarks with depth data
-        if hasattr(face, 'landmarks') and face.landmarks is not None and face.landmarks.shape[1] >= 3:
-            # Extract forehead landmark coordinates (using landmark index 10 as approximation)
-            # The landmark structure is a numpy array with shape (num_landmarks, 3) where each row is [x, y, z]
-            forehead_landmark = face.landmarks[FOREHEAD_LANDMARK_INDEX]
+        # Check if we have xyz coordinates available
+        if hasattr(face, 'xyz') and face.xyz is not None:
+            # Use face.xyz directly - these already contain the optimized forehead coordinates
+            # calculated in HandFaceTracker.py using the adjusted forehead point
+            forehead_x, forehead_y, forehead_z = face.xyz
             
             # Store the coordinates
             forehead_coordinates.append({
                 'position': {
-                    'x': float(forehead_landmark[0]),
-                    'y': float(forehead_landmark[1]),
-                    'z': float(forehead_landmark[2])
+                    'x': float(forehead_x),
+                    'y': float(forehead_y),
+                    'z': float(forehead_z)
                 }
             })
             
             # Display forehead position on frame
-            cv2.circle(frame, (int(forehead_landmark[0]), int(forehead_landmark[1])), 5, (0, 255, 0), -1)
-            cv2.putText(frame, f"Forehead: ({forehead_landmark[0]:.2f}, {forehead_landmark[1]:.2f}, {forehead_landmark[2]:.2f})",
+            # For display, we need to get the 2D coordinates where the forehead point is shown
+            # This is the same calculation as in HandFaceTracker.py
+            forehead_point = face.landmarks[9,:2].copy()
+            forehead_point[1] -= 30  # Move up 30 pixels
+            
+            cv2.circle(frame, (int(forehead_point[0]), int(forehead_point[1])), 5, (0, 255, 0), -1)
+            
+            # Display the 3D coordinates - divided by 10 to show in cm like in the renderer
+            cv2.putText(frame, f"Forehead: ({forehead_x/10:.2f}, {forehead_y/10:.2f}, {forehead_z/10:.2f}) cm",
                         (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
             
             # Show number of samples collected
