@@ -34,11 +34,11 @@ else:
     socket = context.socket(zmq.SUB)
     socket.connect("tcp://localhost:5560")
     socket.setsockopt_string(zmq.SUBSCRIBE, "")
-    socket.setsockopt(zmq.RCVTIMEO, 30000)  # 30-second timeout
+    socket.setsockopt(zmq.RCVTIMEO, 120000)  # 120-second timeout 
     print("ZMQ connection established to port 5560 for forehead coordinates")
 
     # Try to receive coordinates from the temperature demo
-    print("Waiting for forehead coordinates from thermometer demo (timeout: 30s)...")
+    print("Waiting for forehead coordinates from thermometer demo (timeout: 120s)...")
     try:
         message = socket.recv_string()
         print(f"Raw message received: {message}")
