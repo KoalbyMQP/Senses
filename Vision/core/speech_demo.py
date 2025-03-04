@@ -339,6 +339,65 @@ python3 {os.path.basename(temp_demo_path)} -a -xyz -n 0 || echo "Error occurred!
             time.sleep(1)
             if self.temperature_process.poll() is None:
                 print("Temperature demo started successfully in new terminal")
+                
+                # Create a socket for receiving coordinates from the temperature demo
+                coord_receiver = self.context.socket(zmq.SUB)
+                coord_receiver.connect("tcp://localhost:5559")
+                coord_receiver.setsockopt_string(zmq.SUBSCRIBE, "")
+                coord_receiver.setsockopt(zmq.RCVTIMEO, 30000)  # 30-second timeout
+                
+                print("Waiting for forehead coordinates from temperature demo...")
+                try:
+                    # Wait for coordinates from the demo
+                    coordinates_str = coord_receiver.recv_string()
+                    print(f"Received coordinates: {coordinates_str}")
+                    
+                    # Forward coordinates to the robot control script
+                    try:
+                        self.coord_socket.send_string(coordinates_str, zmq.NOBLOCK)
+                        print(f"Forwarded coordinates to robot control: {coordinates_str}")
+                        
+                        # After temperature demo completes, launch the temperature check robot movement
+                        try:
+                            current_dir = os.path.dirname(os.path.abspath(__file__))
+                            project_root = os.path.dirname(os.path.dirname(current_dir))
+                            temp_robot_path = os.path.join(project_root, "backend", "Testing", "finlyTemperatureCheck.py")
+                            
+                            if os.path.exists(temp_robot_path):
+                                print("Starting robot temperature check movement...")
+                                
+                                # Create a temporary script to run the robot movement
+                                robot_temp_script = "/tmp/temperature_robot.sh"
+                                with open(robot_temp_script, "w") as f:
+                                    f.write(f"""#!/bin/bash
+source "{venv_path}/bin/activate"
+export PYTHONPATH="{project_root}:$PYTHONPATH"
+cd {project_root}
+python3 {temp_robot_path} || echo "Error occurred! Press Enter to close..." && read
+""")
+                                os.chmod(robot_temp_script, 0o755)
+                                
+                                # Launch the robot movement in a new terminal
+                                self.robot_process = subprocess.Popen(
+                                    f"lxterminal --geometry=80x24 -e 'bash -c \"{robot_temp_script}; exec bash\"'",
+                                    shell=True,
+                                    preexec_fn=os.setsid
+                                )
+                                
+                                print("Robot temperature check movement started")
+                            else:
+                                print(f"Error: Robot temperature movement script not found at {temp_robot_path}")
+                        except Exception as e:
+                            print(f"Error starting robot temperature movement: {e}")
+                    except zmq.error.Again:
+                        print("Failed to forward coordinates (would block)")
+                    
+                except zmq.error.Again:
+                    print("Timeout waiting for coordinates from temperature demo")
+                except Exception as e:
+                    print(f"Error receiving coordinates: {e}")
+                finally:
+                    coord_receiver.close()
             else:
                 print("Warning: Temperature demo failed to start")
                 
@@ -459,34 +518,36 @@ python3 {os.path.basename(temp_demo_path)} -a -xyz -n 0 || echo "Error occurred!
         # Terminate speech process if running
         if self.speech_process:
             try:
+                print("Terminating speech process...")
                 os.killpg(os.getpgid(self.speech_process.pid), signal.SIGTERM)
             except Exception as e:
                 print(f"Error terminating speech process: {e}")
-
-        # Terminate robot process if running
-        if self.robot_process:
-            try:
-                os.killpg(os.getpgid(self.robot_process.pid), signal.SIGTERM)
-            except Exception as e:
-                print(f"Error terminating robot process: {e}")
-                
+        
         # Terminate temperature process if running
-        if hasattr(self, 'temperature_process') and self.temperature_process:
+        if self.temperature_process:
             try:
+                print("Terminating temperature process...")
                 os.killpg(os.getpgid(self.temperature_process.pid), signal.SIGTERM)
             except Exception as e:
                 print(f"Error terminating temperature process: {e}")
-
-        # Clean up ZMQ resources
-        if hasattr(self, 'socket'):
+                
+        # Terminate robot process if running
+        if self.robot_process:
+            try:
+                print("Terminating robot process...")
+                os.killpg(os.getpgid(self.robot_process.pid), signal.SIGTERM)
+            except Exception as e:
+                print(f"Error terminating robot process: {e}")
+        
+        # Close ZMQ sockets
+        try:
             self.socket.close()
-        if hasattr(self, 'context'):
-            self.context.term()
-        if hasattr(self, 'coord_socket'):
             self.coord_socket.close()
-        if hasattr(self, 'coord_context'):
+            self.context.term()
             self.coord_context.term()
-
+        except Exception as e:
+            print(f"Error closing ZMQ sockets: {e}")
+            
         # Close measurement file if open
         if hasattr(self, 'measurements_file'):
             self.measurements_file.close()
