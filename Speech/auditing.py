@@ -33,7 +33,7 @@ def audit_command(text, audit_prompt, valid_check, openrouter_title, max_retries
                 client = OpenAI(api_key=openai_key)
                 
                 completion = client.chat.completions.create(
-                    model="o3-mini-2025-01-31",  # Using more widely available model
+                    model="gpt-4.5-preview-2025-02-27", 
                     messages=[
                         {"role": "system", "content": audit_prompt},
                         {"role": "user", "content": text}
@@ -74,7 +74,7 @@ def audit_command(text, audit_prompt, valid_check, openrouter_title, max_retries
                         "HTTP-Referer": "http://localhost/",
                         "X-Title": openrouter_title,
                     },
-                    model= "google/gemini-2.0-flash-exp:free",  # Using specified model
+                    model= "google/gemini-2.0-flash-exp:free",  
                     messages=[
                         {"role": "system", "content": audit_prompt},
                         {"role": "user", "content": text}
