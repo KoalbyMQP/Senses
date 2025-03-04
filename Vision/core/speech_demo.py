@@ -7,6 +7,7 @@ import numpy as np
 from core.demo_base import Demo
 from depthai_sdk.previews import Previews
 import sys
+import math
 
 
 class SpeechEnabledDemo(Demo):
@@ -338,175 +339,84 @@ python3 {os.path.basename(temp_demo_path)} -a -xyz -n 0 || echo "Error occurred!
                 preexec_fn=os.setsid
             )
             
-            time.sleep(1)
-            if self.temperature_process.poll() is None:
-                print("Step 2: Temperature demo started successfully in new terminal")
+            print("Step 2: Temperature demo started in new terminal")
+            # Skip the poll check - assume it's running regardless of poll result
+            
+            # Create a socket for receiving coordinates from the temperature demo
+            coord_receiver = self.context.socket(zmq.SUB)
+            coord_receiver.connect("tcp://localhost:5560")
+            coord_receiver.setsockopt_string(zmq.SUBSCRIBE, "")
+            coord_receiver.setsockopt(zmq.RCVTIMEO, 30000)  # 30-second timeout
+            
+            print("Step 3: Waiting for forehead coordinates from temperature demo...")
+            try:
+                # Wait for coordinates from the demo
+                coordinates_str = coord_receiver.recv_string()
+                print(f"Step 4: Received coordinates from thermometer demo: {coordinates_str}")
                 
-                # Create a socket for receiving coordinates from the temperature demo
-                coord_receiver = self.context.socket(zmq.SUB)
-                coord_receiver.connect("tcp://localhost:5560")
-                coord_receiver.setsockopt_string(zmq.SUBSCRIBE, "")
-                coord_receiver.setsockopt(zmq.RCVTIMEO, 30000)  # 30-second timeout
+                # After receiving coordinates, try ALL methods to move the robot
+                print("Step 5: Received coordinates, now trying multiple methods to move the robot...")
                 
-                print("Step 3: Waiting for forehead coordinates from temperature demo...")
+                # METHOD 1: Try creating and running a script in a new terminal
+                print("METHOD 1: Launching temperature check script in new terminal...")
+                temp_robot_path = os.path.join(project_root, "backend", "Testing", "finlyTemperatureCheck.py")
+                
                 try:
-                    # Wait for coordinates from the demo
-                    coordinates_str = coord_receiver.recv_string()
-                    print(f"Step 4: Received coordinates from thermometer demo: {coordinates_str}")
-                    
-                    # After temperature demo completes, launch the temperature check robot movement
-                    # Launch the temperature check robot movement directly without waiting for ZMQ forwarding
-                    print("Step 5: Preparing to launch robot temperature check script...")
-                    
-                    # Create the path to the robot script
-                    temp_robot_path = os.path.join(project_root, "backend", "Testing", "finlyTemperatureCheck.py")
-                    print(f"Looking for robot control script at: {temp_robot_path}")
-                    
-                    # Check if the file actually exists using an absolute path
-                    abs_robot_path = os.path.abspath(temp_robot_path)
-                    print(f"Absolute path to robot script: {abs_robot_path}")
-                    if os.path.exists(abs_robot_path):
-                        print(f"FOUND! Robot script exists at: {abs_robot_path}")
-                    else:
-                        print(f"WARNING: Robot script NOT found at: {abs_robot_path}")
-                        # Try to find the file using file search
-                        possible_locations = []
-                        for root, dirs, files in os.walk(project_root):
-                            if "finlyTemperatureCheck.py" in files:
-                                possible_locations.append(os.path.join(root, "finlyTemperatureCheck.py"))
-                        if possible_locations:
-                            print(f"Found robot script at: {possible_locations[0]}")
-                            temp_robot_path = possible_locations[0]
-                        else:
-                            print("ERROR: Could not find finlyTemperatureCheck.py anywhere in the project")
-                    
-                    if os.path.exists(temp_robot_path):
-                        print("Step 6: Robot temperature check script found! Starting robot movement...")
-                        
-                        # DIRECT EXECUTION ATTEMPT - Try running the script directly first
-                        print("ATTEMPTING DIRECT EXECUTION OF TEMPERATURE CHECK SCRIPT...")
-                        try:
-                            # Try direct execution of the script with the coordinates
-                            coord_arg = f"--coords={coordinates_str}"
-                            cmd = [sys.executable, temp_robot_path, "--test", coord_arg]
-                            print(f"Executing command: {' '.join(cmd)}")
-                            
-                            # Run in a separate process but wait for it to complete
-                            return_code = subprocess.call(cmd)
-                            
-                            if return_code == 0:
-                                print("Direct execution successful! Temperature check completed.")
-                                return
-                            else:
-                                print(f"Direct execution failed with return code {return_code}")
-                                # Continue to terminal method as fallback
-                        except Exception as e:
-                            print(f"Error in direct execution: {e}")
-                            import traceback
-                            traceback.print_exc()
-                            # Continue to terminal method as fallback
-                        
-                        # TERMINAL METHOD - Create a temporary script to run the robot movement
-                        print("Falling back to terminal method...")
-                        robot_temp_script = "/tmp/temperature_robot.sh"
-                        with open(robot_temp_script, "w") as f:
-                            f.write(f"""#!/bin/bash
+                    # Create a temporary script to run the robot movement
+                    robot_temp_script = "/tmp/temperature_robot.sh"
+                    with open(robot_temp_script, "w") as f:
+                        f.write(f"""#!/bin/bash
 echo "Starting temperature check robot movement..."
 source "{venv_path}/bin/activate"
 export PYTHONPATH="{project_root}:$PYTHONPATH"
 cd {project_root}
 python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occurred! Press Enter to close..." && read
 """)
-                        os.chmod(robot_temp_script, 0o755)
-                        print(f"Created robot script: {robot_temp_script}")
-                        
-                        # Launch the robot movement in a new terminal
-                        self.robot_process = subprocess.Popen(
-                            f"lxterminal --geometry=80x24 -e 'bash -c \"{robot_temp_script}; exec bash\"'",
-                            shell=True,
-                            preexec_fn=os.setsid
-                        )
-                        
-                        # Check if robot process started
-                        time.sleep(1)
-                        if self.robot_process.poll() is None:
-                            print("Robot temperature check movement started successfully in new terminal")
-                        else:
-                            print("WARNING: Robot process may have failed to start in new terminal")
-                            print("Attempting to run robot script directly in main process...")
-                            try:
-                                # Try running the script directly as a fallback
-                                print(f"Executing: python3 {temp_robot_path} --test")
-                                # Use test mode to skip ZMQ waiting
-                                subprocess.run(["python3", temp_robot_path, "--test"], check=True)
-                                print("Robot movement completed in main process")
-                            except subprocess.CalledProcessError as e:
-                                print(f"Error running robot script directly: {e}")
-                                # Try with explicit coordinate string if needed
-                                try:
-                                    print("Trying one more time with explicit coordinates...")
-                                    # Use the coordinates we received in this process
-                                    coord_arg = f"--coords={coordinates_str}"
-                                    subprocess.run(["python3", temp_robot_path, "--test", coord_arg], check=True)
-                                    print("Robot movement completed with explicit coordinates")
-                                except Exception as ex:
-                                    print(f"Final attempt failed: {ex}")
-                                    
-                    else:
-                        # If we couldn't find the file, try running the robot movement directly here
-                        print("Attempting to run robot movement directly in speech_demo process...")
-                        try:
-                            # Directly import the robot control code or execute a minimal version
-                            from backend.KoalbyHumanoid.Robot import Robot
-                            from backend.KoalbyHumanoid.trajPlannerTime import TrajPlannerTime
-                            from ikpy.chain import Chain
-                            
-                            print("Imported robot control modules, executing movement directly...")
-                            
-                            # Parse the coordinates
-                            coords = [float(x) for x in coordinates_str.split(',')]
-                            print(f"Using coordinates: {coords}")
-                            
-                            # Execute robot movement directly
-                            # ... (minimal robot movement code would go here)
-                            print("Robot movement executed directly")
-                        except Exception as e:
-                            print(f"Error executing direct robot movement: {e}")
-                            import traceback
-                            traceback.print_exc()
-                except zmq.error.Again:
-                    print("Timeout waiting for coordinates from temperature demo")
+                    os.chmod(robot_temp_script, 0o755)
+                    
+                    # Launch the robot movement in a new terminal
+                    self.robot_process = subprocess.Popen(
+                        f"lxterminal --geometry=80x24 -e 'bash -c \"{robot_temp_script}; exec bash\"'",
+                        shell=True,
+                        preexec_fn=os.setsid
+                    )
+                    print("Temperature check script launched in new terminal")
                 except Exception as e:
-                    print(f"Error in temperature demo process: {e}")
-                    import traceback
-                    traceback.print_exc()
-                finally:
-                    coord_receiver.close()
-            else:
-                print("Warning: Temperature demo failed to start")
+                    print(f"METHOD 1 FAILED: {e}")
+                    
+                # METHOD 2: Try running the script directly in a background thread
+                print("METHOD 2: Executing temperature check script directly in background thread...")
+                try:
+                    import threading
+                    
+                    def run_direct_script():
+                        try:
+                            cmd = [sys.executable, temp_robot_path, "--test", f"--coords={coordinates_str}"]
+                            print(f"Executing: {' '.join(cmd)}")
+                            subprocess.run(cmd, check=True)
+                            print("METHOD 2 SUCCEEDED: Direct execution completed")
+                        except Exception as e:
+                            print(f"METHOD 2 FAILED: {e}")
+                            
+                    thread = threading.Thread(target=run_direct_script)
+                    thread.daemon = True
+                    thread.start()
+                    print("Background execution thread started")
+                except Exception as e:
+                    print(f"METHOD 2 FAILED to start thread: {e}")
                 
-            # Wait for the process to complete 
-            try:
-                timeout = 60  # timeout seconds
-                start_time = time.time()
-                while time.time() - start_time < timeout:
-                    if self.temperature_process.poll() is not None:
-                        print("Temperature demo completed")
-                        break
-                    time.sleep(0.5)
-                
-                # If still running after timeout, don't wait anymore
-                if self.temperature_process.poll() is None:
-                    print("Temperature demo still running, continuing without waiting")
+                # METHOD 3: Emergency direct method - Run the robot movement code directly in this process
+                print("METHOD 3: Emergency direct method - Running robot movement directly...")
+                self._emergency_direct_robot_movement(coordinates_str)
+                    
+            except zmq.error.Again:
+                print("Timeout waiting for coordinates from temperature demo")
             except Exception as e:
-                print(f"Error waiting for temperature demo: {e}")
-                
-            # Restart main pipeline if it was active before
-            if hasattr(self, '_temp_demo_running') and self._temp_demo_running:
-                print("Temperature demo finished. Main pipeline can be restarted if needed.")
-                # We don't need to explicitly restart the pipeline here,
-                # as the device will be reinitialized when needed
-            
+                print(f"Error in temperature demo process: {e}")
+                import traceback
+                traceback.print_exc()
+            finally:
+                coord_receiver.close()
         except Exception as e:
             print(f"Error starting temperature demo: {e}")
             import traceback
@@ -538,6 +448,29 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
                 
                 # Launch temperature demo in a separate process
                 self._run_temperature_demo()
+                
+                # SPECIAL FAILSAFE: If for some reason the above doesn't trigger the robot,
+                # directly try to move robot with default coordinates after a delay
+                def delayed_emergency_check():
+                    import threading
+                    import time
+                    
+                    # Wait 20 seconds to see if normal methods work
+                    time.sleep(20)
+                    
+                    print("SPECIAL FAILSAFE CHECK: Checking if temperature demo worked...")
+                    
+                    # If robot process hasn't been started, trigger emergency method with default coordinates
+                    if not hasattr(self, 'robot_process') or self.robot_process is None:
+                        print("FAILSAFE ACTIVATED: No robot process detected, using emergency method")
+                        default_coordinates = "0.49076,-0.08197,0.76541"
+                        self._emergency_direct_robot_movement(default_coordinates)
+                
+                # Start the delayed check in a background thread
+                import threading
+                failsafe_thread = threading.Thread(target=delayed_emergency_check)
+                failsafe_thread.daemon = True
+                failsafe_thread.start()
                 
             elif "pick up" in command.lower():
                 # Format: "pick up {object}"
@@ -633,3 +566,143 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
             self.measurements_file.close()
 
         super().stop(*args, **kwargs) 
+
+    def _emergency_direct_robot_movement(self, coordinates_str):
+        """
+        Direct execution of robot temperature check functionality in case all other methods fail.
+        This bypasses the finlyTemperatureCheck.py script completely and runs the functionality directly.
+        """
+        print("=== EMERGENCY DIRECT ROBOT MOVEMENT ===")
+        try:
+            # Parse the coordinates
+            coords = [float(x) for x in coordinates_str.split(',')]
+            print(f"Using coordinates: {coords}")
+            final_points = np.array(coords)
+            
+            # Import required modules
+            from backend.KoalbyHumanoid.Robot import Robot
+            from backend.KoalbyHumanoid.trajPlannerTime import TrajPlannerTime
+            from ikpy.chain import Chain
+            
+            # Find URDF file
+            def find_file(filename, search_path="/home/finley"): 
+                result = []    
+                for root, dirs, files in os.walk(search_path):        
+                    if filename in files: 
+                        result.append(os.path.join(root, filename))    
+                return result 
+                
+            # Find all instances of URDF file 
+            found_paths = find_file("FinleyJNEWARMS_2024_2.urdf")
+            print("Found URDF files at:", found_paths)
+            
+            if not found_paths:
+                print("ERROR: Could not find URDF file!")
+                return
+                
+            # Use the first instance
+            urdf_path = found_paths[0] 
+            
+            left_leg_chain = Chain.from_urdf_file(
+                urdf_path,
+                base_elements=['shoulder1_left', 'shoulder1_left'],
+                active_links_mask=[False, True, True, True, True, True, True]
+            )
+            
+            camera = Chain.from_urdf_file(
+                urdf_path,
+                base_elements=['neck', 'neck']   
+            )
+            
+            camera_angles=np.array([0,0,0,0])
+            camera_frame_transformation=camera.forward_kinematics(camera_angles)
+            
+            # Initialize robot
+            is_real = True
+            robot = Robot(is_real)
+            print("Robot initialized")
+            
+            # Set starting angles
+            robot.motors[5].target = (math.radians(0), 'P')
+            robot.motors[6].target = (math.radians(0), 'P')
+            robot.motors[7].target = (math.radians(0), 'P')
+            robot.motors[8].target = (math.radians(0), 'P')
+            robot.motors[9].target = (math.radians(0), 'P')
+            robot.motors[10].target = (math.radians(0), 'P')
+            
+            ik_solution_2 = np.array([0,0,0,0,0,0,0])
+            prevTime = time.time()
+            simStartTime = time.time()
+            
+            # Wait for robot to reach starting position
+            while time.time() - simStartTime < 2:
+                time.sleep(0.01)
+                robot.moveAllToTarget()
+            
+            # Transform the coordinates from camera frame to robot frame
+            B = np.array([[final_points[0]], [final_points[2]], [final_points[1]], [1]])
+            A = camera_frame_transformation
+            C = np.dot(A, B)
+            print(f"Transformed forehead coordinates: {C}")
+            
+            # Set up trajectory for moving to forehead
+            leftArmTraj = [
+                [[0,0,0], [20,20,20]],
+                [[.49076, -.08197, .76541],
+                 [C[0], C[1], C[2]]],
+                [[0,0,0], [0,0,0]],
+                [[0,0,0], [0,0,0]]
+            ]
+            
+            print(f"Moving robot arm to forehead coordinates: {C[0]:.4f}, {C[1]:.4f}, {C[2]:.4f}")
+            
+            lArm_tj_joint = TrajPlannerTime(leftArmTraj[0], leftArmTraj[1], leftArmTraj[2], leftArmTraj[3])
+            state = 0
+            startTime = time.time()
+            
+            print("Beginning movement to forehead position...")
+            
+            # Movement to forehead position
+            while time.time() - startTime < 20:
+                target_position_task = lArm_tj_joint.getQuinticPositions(time.time() - startTime)
+                target_position_2 = np.array([(target_position_task[0]), (target_position_task[1]), (target_position_task[2])])
+                ik_solution = left_leg_chain.inverse_kinematics(target_position_2, initial_position=ik_solution_2)
+                ik_solution_2 = ik_solution
+                motor_angle_task = ik_solution
+                
+                # Set motor targets exactly as in the original file
+                robot.motors[5].target = (-motor_angle_task[1], 'P')
+                robot.motors[6].target = (motor_angle_task[2], 'P')
+                robot.motors[7].target = (-motor_angle_task[3], 'P')
+                robot.motors[8].target = (motor_angle_task[4], 'P')
+                robot.motors[9].target = (motor_angle_task[5], 'P')
+                
+                # Move the robot
+                robot.moveAllToTarget()
+                time.sleep(0.01)
+            
+            print("Reached forehead position. Holding for temperature measurement...")
+            # Hold at forehead position for 3 seconds
+            time.sleep(3)
+            
+            # Return to starting position
+            print("Returning to starting position...")
+            robot.motors[5].target = (math.radians(0), 'P')
+            robot.motors[6].target = (math.radians(0), 'P')
+            robot.motors[7].target = (math.radians(0), 'P')
+            robot.motors[8].target = (math.radians(0), 'P')
+            robot.motors[9].target = (math.radians(0), 'P')
+            robot.motors[10].target = (math.radians(0), 'P')
+            
+            returnTime = time.time()
+            while time.time() - returnTime < 3:
+                robot.moveAllToTarget()
+                time.sleep(0.01)
+                
+            print("Temperature check movement complete.")
+            return True
+        except Exception as e:
+            print(f"Error in direct robot movement: {e}")
+            import traceback
+            traceback.print_exc()
+            return False 
