@@ -152,9 +152,15 @@ while True:
         avg_y = np.mean([m['position']['y'] for m in filtered_coordinates])
         avg_z = np.mean([m['position']['z'] for m in filtered_coordinates])
         
-        # Send the coordinates
-        print(f"Sending average forehead coordinates: ({avg_x:.4f}, {avg_y:.4f}, {avg_z:.4f})")
-        coordinates_str = f"{avg_x:.6f},{avg_y:.6f},{avg_z:.6f}"
+        # Convert from millimeters to meters for the robot system
+        avg_x_meters = avg_x / 1000.0
+        avg_y_meters = avg_y / 1000.0
+        avg_z_meters = avg_z / 1000.0
+        
+        # Send the coordinates (in meters)
+        print(f"Sending average forehead coordinates (mm): ({avg_x:.4f}, {avg_y:.4f}, {avg_z:.4f})")
+        print(f"Sending average forehead coordinates (m): ({avg_x_meters:.6f}, {avg_y_meters:.6f}, {avg_z_meters:.6f})")
+        coordinates_str = f"{avg_x_meters:.6f},{avg_y_meters:.6f},{avg_z_meters:.6f}"
         try:
             # Sleep briefly to ensure the subscriber has time to connect
             print("Waiting for subscriber connection...")
