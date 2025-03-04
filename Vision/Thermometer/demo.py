@@ -171,9 +171,9 @@ while True:
             # Keep the window open briefly to show success message
             cv2.putText(frame, "Coordinates sent successfully!", 
                         (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
-            renderer.show("Thermometer", frame)
-            time.sleep(2)  
-            break  
+            cv2.imshow("Thermometer", frame)
+            cv2.waitKey(2000)  # Wait for 2 seconds
+            break  # Exit after sending coordinates
         except Exception as e:
             print(f"Error sending coordinates: {e}")
             import traceback

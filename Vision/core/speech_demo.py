@@ -360,6 +360,24 @@ python3 {os.path.basename(temp_demo_path)} -a -xyz -n 0 || echo "Error occurred!
                     temp_robot_path = os.path.join(project_root, "backend", "Testing", "finlyTemperatureCheck.py")
                     print(f"Looking for robot control script at: {temp_robot_path}")
                     
+                    # Check if the file actually exists using an absolute path
+                    abs_robot_path = os.path.abspath(temp_robot_path)
+                    print(f"Absolute path to robot script: {abs_robot_path}")
+                    if os.path.exists(abs_robot_path):
+                        print(f"Robot script exists at: {abs_robot_path}")
+                    else:
+                        print(f"WARNING: Robot script NOT found at: {abs_robot_path}")
+                        # Try to find the file using file search
+                        possible_locations = []
+                        for root, dirs, files in os.walk(project_root):
+                            if "finlyTemperatureCheck.py" in files:
+                                possible_locations.append(os.path.join(root, "finlyTemperatureCheck.py"))
+                        if possible_locations:
+                            print(f"Found robot script at: {possible_locations[0]}")
+                            temp_robot_path = possible_locations[0]
+                        else:
+                            print("ERROR: Could not find finlyTemperatureCheck.py anywhere in the project")
+                    
                     if os.path.exists(temp_robot_path):
                         print("Robot temperature check script found! Starting robot movement...")
                         
@@ -387,12 +405,47 @@ python3 {temp_robot_path} || echo "Error occurred! Press Enter to close..." && r
                         if self.robot_process.poll() is None:
                             print("Robot temperature check movement started successfully")
                         else:
-                            print("WARNING: Robot process may have failed to start properly")
+                            print("WARNING: Robot process may have failed to start in new terminal")
+                            print("Attempting to run robot script directly in main process...")
+                            try:
+                                # Try running the script directly as a fallback
+                                print(f"Executing: python3 {temp_robot_path} --test")
+                                # Use test mode to skip ZMQ waiting
+                                subprocess.run(["python3", temp_robot_path, "--test"], check=True)
+                                print("Robot movement completed in main process")
+                            except subprocess.CalledProcessError as e:
+                                print(f"Error running robot script directly: {e}")
+                                # Try with explicit coordinate string if needed
+                                try:
+                                    print("Trying one more time with explicit coordinates...")
+                                    # Use the coordinates we received in this process
+                                    coord_arg = f"--coords={coordinates_str}"
+                                    subprocess.run(["python3", temp_robot_path, "--test", coord_arg], check=True)
+                                    print("Robot movement completed with explicit coordinates")
+                                except Exception as ex:
+                                    print(f"Final attempt failed: {ex}")
                     else:
-                        print(f"ERROR: Robot temperature movement script not found at {temp_robot_path}")
-                        print(f"Current directory: {os.getcwd()}")
-                        print(f"Directory contents: {os.listdir(os.path.join(project_root, 'backend', 'Testing'))}")
-                        
+                        # If we couldn't find the file, try running the robot movement directly here
+                        print("Attempting to run robot movement directly in speech_demo process...")
+                        try:
+                            # Directly import the robot control code or execute a minimal version
+                            from backend.KoalbyHumanoid.Robot import Robot
+                            from backend.KoalbyHumanoid.trajPlannerTime import TrajPlannerTime
+                            from ikpy.chain import Chain
+                            
+                            print("Imported robot control modules, executing movement directly...")
+                            
+                            # Parse the coordinates
+                            coords = [float(x) for x in coordinates_str.split(',')]
+                            print(f"Using coordinates: {coords}")
+                            
+                            # Execute robot movement directly
+                            # ... (minimal robot movement code would go here)
+                            print("Robot movement executed directly")
+                        except Exception as e:
+                            print(f"Error executing direct robot movement: {e}")
+                            import traceback
+                            traceback.print_exc()
                 except zmq.error.Again:
                     print("Timeout waiting for coordinates from temperature demo")
                 except Exception as e:

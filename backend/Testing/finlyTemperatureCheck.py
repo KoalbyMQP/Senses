@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys, time, math, array
 import zmq
+import argparse
 from ikpy.chain import Chain
 from ikpy.utils import plot as plot_utils
 sys.path.append("./")
@@ -11,14 +12,55 @@ from backend.KoalbyHumanoid.trajPlannerTime import TrajPlannerTime
 from backend.Testing import finlyViaPoints as via
 import os
 
-# ZMQ setup
-print("Setting up ZMQ communication for temperature check robot movement...")
-context = zmq.Context()
-socket = context.socket(zmq.SUB)
-socket.connect("tcp://localhost:5560")
-socket.setsockopt_string(zmq.SUBSCRIBE, "")
-socket.setsockopt(zmq.RCVTIMEO, 30000)  # 30-second timeout
-print("ZMQ connection established to port 5560 for forehead coordinates")
+# Parse arguments
+parser = argparse.ArgumentParser(description='Temperature check robot movement')
+parser.add_argument('--test', action='store_true', help='Run with test coordinates instead of waiting for ZMQ')
+parser.add_argument('--coords', type=str, default="0.49076,-0.08197,0.76541", 
+                    help='Comma-separated coordinates to use when testing (default: "0.49076,-0.08197,0.76541")')
+args = parser.parse_args()
+
+# Use test coordinates if specified
+if args.test:
+    print(f"Running in test mode with coordinates: {args.coords}")
+    final_points = np.array([float(x) for x in args.coords.split(',')])
+    print(f"Test coordinates parsed: {final_points}")
+else:
+    # ZMQ setup
+    print("Setting up ZMQ communication for temperature check robot movement...")
+    context = zmq.Context()
+    socket = context.socket(zmq.SUB)
+    socket.connect("tcp://localhost:5560")
+    socket.setsockopt_string(zmq.SUBSCRIBE, "")
+    socket.setsockopt(zmq.RCVTIMEO, 30000)  # 30-second timeout
+    print("ZMQ connection established to port 5560 for forehead coordinates")
+
+    # Try to receive coordinates from the temperature demo
+    print("Waiting for forehead coordinates from thermometer demo (timeout: 30s)...")
+    try:
+        message = socket.recv_string()
+        print(f"Raw message received: {message}")
+        
+        try:
+            coordinates = [float(x) for x in message.split(',')]
+            final_points = np.array(coordinates)
+            print(f"Successfully parsed coordinates: {final_points}")
+        except Exception as e:
+            print(f"Error parsing coordinate string: {e}")
+            print(f"Using default coordinates instead")
+            final_points = np.array([0.49076, -0.08197, 0.76541])  # Default coordinates if parsing fails
+    except zmq.Again:
+        print("Timeout waiting for coordinates, using default values")
+        final_points = np.array([0.49076, -0.08197, 0.76541])  # Default coordinates if none received
+    except Exception as e:
+        print(f"Error receiving coordinates: {e}")
+        import traceback
+        traceback.print_exc()
+        final_points = np.array([0.49076, -0.08197, 0.76541])  # Default coordinates if error
+    finally:
+        print("Closing ZMQ socket...")
+        socket.close()
+        context.term()
+        print("ZMQ socket closed")
 
 def find_file(filename, search_path="/home/finley"): 
     result = []    
@@ -53,34 +95,6 @@ camera_frame_transformation=camera.forward_kinematics(camera_angles)
 is_real = True
 robot = Robot(is_real)
 print("Temperature Check Setup Complete")
-
-# Try to receive coordinates from the temperature demo
-print("Waiting for forehead coordinates from thermometer demo (timeout: 30s)...")
-try:
-    message = socket.recv_string()
-    print(f"Raw message received: {message}")
-    
-    try:
-        coordinates = [float(x) for x in message.split(',')]
-        final_points = np.array(coordinates)
-        print(f"Successfully parsed coordinates: {final_points}")
-    except Exception as e:
-        print(f"Error parsing coordinate string: {e}")
-        print(f"Using default coordinates instead")
-        final_points = np.array([0.49076, -0.08197, 0.76541])  # Default coordinates if parsing fails
-except zmq.Again:
-    print("Timeout waiting for coordinates, using default values")
-    final_points = np.array([0.49076, -0.08197, 0.76541])  # Default coordinates if none received
-except Exception as e:
-    print(f"Error receiving coordinates: {e}")
-    import traceback
-    traceback.print_exc()
-    final_points = np.array([0.49076, -0.08197, 0.76541])  # Default coordinates if error
-finally:
-    print("Closing ZMQ socket...")
-    socket.close()
-    context.term()
-    print("ZMQ socket closed")
 
 # Set starting angles
 robot.motors[5].target = (math.radians(0), 'P')
