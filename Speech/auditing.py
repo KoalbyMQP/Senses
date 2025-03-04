@@ -33,7 +33,7 @@ def audit_command(text, audit_prompt, valid_check, openrouter_title, max_retries
                 client = OpenAI(api_key=openai_key)
                 
                 completion = client.chat.completions.create(
-                    model="o3-mini-2025-01-31", 
+                    model="gpt-4o-realtime-preview-2024-12-17", 
                     messages=[
                         {"role": "system", "content": audit_prompt},
                         {"role": "user", "content": text}
