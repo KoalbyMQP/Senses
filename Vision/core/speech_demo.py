@@ -350,52 +350,55 @@ python3 {os.path.basename(temp_demo_path)} -a -xyz -n 0 || echo "Error occurred!
                 try:
                     # Wait for coordinates from the demo
                     coordinates_str = coord_receiver.recv_string()
-                    print(f"Received coordinates: {coordinates_str}")
+                    print(f"Received coordinates from thermometer demo: {coordinates_str}")
                     
-                    # Forward coordinates to the robot control script
-                    try:
-                        self.coord_socket.send_string(coordinates_str, zmq.NOBLOCK)
-                        print(f"Forwarded coordinates to robot control: {coordinates_str}")
+                    # After temperature demo completes, launch the temperature check robot movement
+                    # Launch the temperature check robot movement directly without waiting for ZMQ forwarding
+                    print("Preparing to launch robot temperature check script...")
+                    
+                    # Create the path to the robot script
+                    temp_robot_path = os.path.join(project_root, "backend", "Testing", "finlyTemperatureCheck.py")
+                    print(f"Looking for robot control script at: {temp_robot_path}")
+                    
+                    if os.path.exists(temp_robot_path):
+                        print("Robot temperature check script found! Starting robot movement...")
                         
-                        # After temperature demo completes, launch the temperature check robot movement
-                        try:
-                            current_dir = os.path.dirname(os.path.abspath(__file__))
-                            project_root = os.path.dirname(os.path.dirname(current_dir))
-                            temp_robot_path = os.path.join(project_root, "backend", "Testing", "finlyTemperatureCheck.py")
-                            
-                            if os.path.exists(temp_robot_path):
-                                print("Starting robot temperature check movement...")
-                                
-                                # Create a temporary script to run the robot movement
-                                robot_temp_script = "/tmp/temperature_robot.sh"
-                                with open(robot_temp_script, "w") as f:
-                                    f.write(f"""#!/bin/bash
+                        # Create a temporary script to run the robot movement
+                        robot_temp_script = "/tmp/temperature_robot.sh"
+                        with open(robot_temp_script, "w") as f:
+                            f.write(f"""#!/bin/bash
 source "{venv_path}/bin/activate"
 export PYTHONPATH="{project_root}:$PYTHONPATH"
 cd {project_root}
 python3 {temp_robot_path} || echo "Error occurred! Press Enter to close..." && read
 """)
-                                os.chmod(robot_temp_script, 0o755)
-                                
-                                # Launch the robot movement in a new terminal
-                                self.robot_process = subprocess.Popen(
-                                    f"lxterminal --geometry=80x24 -e 'bash -c \"{robot_temp_script}; exec bash\"'",
-                                    shell=True,
-                                    preexec_fn=os.setsid
-                                )
-                                
-                                print("Robot temperature check movement started")
-                            else:
-                                print(f"Error: Robot temperature movement script not found at {temp_robot_path}")
-                        except Exception as e:
-                            print(f"Error starting robot temperature movement: {e}")
-                    except zmq.error.Again:
-                        print("Failed to forward coordinates (would block)")
-                    
+                        os.chmod(robot_temp_script, 0o755)
+                        print(f"Created robot script: {robot_temp_script}")
+                        
+                        # Launch the robot movement in a new terminal
+                        self.robot_process = subprocess.Popen(
+                            f"lxterminal --geometry=80x24 -e 'bash -c \"{robot_temp_script}; exec bash\"'",
+                            shell=True,
+                            preexec_fn=os.setsid
+                        )
+                        
+                        # Check if robot process started
+                        time.sleep(1)
+                        if self.robot_process.poll() is None:
+                            print("Robot temperature check movement started successfully")
+                        else:
+                            print("WARNING: Robot process may have failed to start properly")
+                    else:
+                        print(f"ERROR: Robot temperature movement script not found at {temp_robot_path}")
+                        print(f"Current directory: {os.getcwd()}")
+                        print(f"Directory contents: {os.listdir(os.path.join(project_root, 'backend', 'Testing'))}")
+                        
                 except zmq.error.Again:
                     print("Timeout waiting for coordinates from temperature demo")
                 except Exception as e:
-                    print(f"Error receiving coordinates: {e}")
+                    print(f"Error in temperature demo process: {e}")
+                    import traceback
+                    traceback.print_exc()
                 finally:
                     coord_receiver.close()
             else:
@@ -425,6 +428,8 @@ python3 {temp_robot_path} || echo "Error occurred! Press Enter to close..." && r
             
         except Exception as e:
             print(f"Error starting temperature demo: {e}")
+            import traceback
+            traceback.print_exc()
         finally:
             # In case we need to restart the pipeline
             if hasattr(self, '_temp_demo_running'):

@@ -12,11 +12,13 @@ from backend.Testing import finlyViaPoints as via
 import os
 
 # ZMQ setup
+print("Setting up ZMQ communication for temperature check robot movement...")
 context = zmq.Context()
 socket = context.socket(zmq.SUB)
 socket.connect("tcp://localhost:5560")
 socket.setsockopt_string(zmq.SUBSCRIBE, "")
 socket.setsockopt(zmq.RCVTIMEO, 30000)  # 30-second timeout
+print("ZMQ connection established to port 5560 for forehead coordinates")
 
 def find_file(filename, search_path="/home/finley"): 
     result = []    
@@ -53,21 +55,32 @@ robot = Robot(is_real)
 print("Temperature Check Setup Complete")
 
 # Try to receive coordinates from the temperature demo
+print("Waiting for forehead coordinates from thermometer demo (timeout: 30s)...")
 try:
-    print("Waiting for forehead coordinates from temperature demo...")
     message = socket.recv_string()
-    coordinates = [float(x) for x in message.split(',')]
-    final_points = np.array(coordinates)
-    print(f"Received forehead coordinates: {final_points}")
+    print(f"Raw message received: {message}")
+    
+    try:
+        coordinates = [float(x) for x in message.split(',')]
+        final_points = np.array(coordinates)
+        print(f"Successfully parsed coordinates: {final_points}")
+    except Exception as e:
+        print(f"Error parsing coordinate string: {e}")
+        print(f"Using default coordinates instead")
+        final_points = np.array([0.49076, -0.08197, 0.76541])  # Default coordinates if parsing fails
 except zmq.Again:
     print("Timeout waiting for coordinates, using default values")
     final_points = np.array([0.49076, -0.08197, 0.76541])  # Default coordinates if none received
 except Exception as e:
     print(f"Error receiving coordinates: {e}")
+    import traceback
+    traceback.print_exc()
     final_points = np.array([0.49076, -0.08197, 0.76541])  # Default coordinates if error
 finally:
+    print("Closing ZMQ socket...")
     socket.close()
     context.term()
+    print("ZMQ socket closed")
 
 # Set starting angles
 robot.motors[5].target = (math.radians(0), 'P')

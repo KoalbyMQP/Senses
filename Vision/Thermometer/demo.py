@@ -40,6 +40,7 @@ dargs = vars(args)
 tracker_args = {a:dargs[a] for a in ['internal_fps', 'internal_frame_height'] if dargs[a] is not None}
 
 # Set up ZMQ for sending coordinates
+print("Setting up ZMQ for sending forehead coordinates on port 5560...")
 context = zmq.Context()
 socket = context.socket(zmq.PUB)
 try:
@@ -155,11 +156,28 @@ while True:
         print(f"Sending average forehead coordinates: ({avg_x:.4f}, {avg_y:.4f}, {avg_z:.4f})")
         coordinates_str = f"{avg_x:.6f},{avg_y:.6f},{avg_z:.6f}"
         try:
-            socket.send_string(coordinates_str)
-            print("Coordinates sent successfully")
-            break  # Exit after sending coordinates
+            # Sleep briefly to ensure the subscriber has time to connect
+            print("Waiting for subscriber connection...")
+            time.sleep(1)
+            
+            # Send the coordinates multiple times 
+            for i in range(5):
+                socket.send_string(coordinates_str)
+                print(f"Sent coordinates attempt {i+1}: {coordinates_str}")
+                time.sleep(0.5) 
+            
+            print("Coordinates sent successfully!")
+            
+            # Keep the window open briefly to show success message
+            cv2.putText(frame, "Coordinates sent successfully!", 
+                        (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+            renderer.show("Thermometer", frame)
+            time.sleep(2)  
+            break  
         except Exception as e:
             print(f"Error sending coordinates: {e}")
+            import traceback
+            traceback.print_exc()
         
 renderer.exit()
 tracker.exit()
