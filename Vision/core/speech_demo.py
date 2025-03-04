@@ -6,6 +6,7 @@ import zmq
 import numpy as np
 from core.demo_base import Demo
 from depthai_sdk.previews import Previews
+import sys
 
 
 class SpeechEnabledDemo(Demo):
@@ -281,7 +282,8 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
 
     def _run_temperature_demo(self):
         """Runs the temperature demo by launching demo.py in the Thermometer folder"""
-        print("Starting temperature monitoring demo...")
+        print("========== STARTING TEMPERATURE MEASUREMENT SEQUENCE ==========")
+        print("Step 1: Starting temperature monitoring demo...")
         
         # First, check if we need to close any existing device connections
         if hasattr(self, '_device') and not self._device.isClosed():
@@ -338,7 +340,7 @@ python3 {os.path.basename(temp_demo_path)} -a -xyz -n 0 || echo "Error occurred!
             
             time.sleep(1)
             if self.temperature_process.poll() is None:
-                print("Temperature demo started successfully in new terminal")
+                print("Step 2: Temperature demo started successfully in new terminal")
                 
                 # Create a socket for receiving coordinates from the temperature demo
                 coord_receiver = self.context.socket(zmq.SUB)
@@ -346,15 +348,15 @@ python3 {os.path.basename(temp_demo_path)} -a -xyz -n 0 || echo "Error occurred!
                 coord_receiver.setsockopt_string(zmq.SUBSCRIBE, "")
                 coord_receiver.setsockopt(zmq.RCVTIMEO, 30000)  # 30-second timeout
                 
-                print("Waiting for forehead coordinates from temperature demo...")
+                print("Step 3: Waiting for forehead coordinates from temperature demo...")
                 try:
                     # Wait for coordinates from the demo
                     coordinates_str = coord_receiver.recv_string()
-                    print(f"Received coordinates from thermometer demo: {coordinates_str}")
+                    print(f"Step 4: Received coordinates from thermometer demo: {coordinates_str}")
                     
                     # After temperature demo completes, launch the temperature check robot movement
                     # Launch the temperature check robot movement directly without waiting for ZMQ forwarding
-                    print("Preparing to launch robot temperature check script...")
+                    print("Step 5: Preparing to launch robot temperature check script...")
                     
                     # Create the path to the robot script
                     temp_robot_path = os.path.join(project_root, "backend", "Testing", "finlyTemperatureCheck.py")
@@ -364,7 +366,7 @@ python3 {os.path.basename(temp_demo_path)} -a -xyz -n 0 || echo "Error occurred!
                     abs_robot_path = os.path.abspath(temp_robot_path)
                     print(f"Absolute path to robot script: {abs_robot_path}")
                     if os.path.exists(abs_robot_path):
-                        print(f"Robot script exists at: {abs_robot_path}")
+                        print(f"FOUND! Robot script exists at: {abs_robot_path}")
                     else:
                         print(f"WARNING: Robot script NOT found at: {abs_robot_path}")
                         # Try to find the file using file search
@@ -379,16 +381,41 @@ python3 {os.path.basename(temp_demo_path)} -a -xyz -n 0 || echo "Error occurred!
                             print("ERROR: Could not find finlyTemperatureCheck.py anywhere in the project")
                     
                     if os.path.exists(temp_robot_path):
-                        print("Robot temperature check script found! Starting robot movement...")
+                        print("Step 6: Robot temperature check script found! Starting robot movement...")
                         
-                        # Create a temporary script to run the robot movement
+                        # DIRECT EXECUTION ATTEMPT - Try running the script directly first
+                        print("ATTEMPTING DIRECT EXECUTION OF TEMPERATURE CHECK SCRIPT...")
+                        try:
+                            # Try direct execution of the script with the coordinates
+                            coord_arg = f"--coords={coordinates_str}"
+                            cmd = [sys.executable, temp_robot_path, "--test", coord_arg]
+                            print(f"Executing command: {' '.join(cmd)}")
+                            
+                            # Run in a separate process but wait for it to complete
+                            return_code = subprocess.call(cmd)
+                            
+                            if return_code == 0:
+                                print("Direct execution successful! Temperature check completed.")
+                                return
+                            else:
+                                print(f"Direct execution failed with return code {return_code}")
+                                # Continue to terminal method as fallback
+                        except Exception as e:
+                            print(f"Error in direct execution: {e}")
+                            import traceback
+                            traceback.print_exc()
+                            # Continue to terminal method as fallback
+                        
+                        # TERMINAL METHOD - Create a temporary script to run the robot movement
+                        print("Falling back to terminal method...")
                         robot_temp_script = "/tmp/temperature_robot.sh"
                         with open(robot_temp_script, "w") as f:
                             f.write(f"""#!/bin/bash
+echo "Starting temperature check robot movement..."
 source "{venv_path}/bin/activate"
 export PYTHONPATH="{project_root}:$PYTHONPATH"
 cd {project_root}
-python3 {temp_robot_path} || echo "Error occurred! Press Enter to close..." && read
+python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occurred! Press Enter to close..." && read
 """)
                         os.chmod(robot_temp_script, 0o755)
                         print(f"Created robot script: {robot_temp_script}")
@@ -403,7 +430,7 @@ python3 {temp_robot_path} || echo "Error occurred! Press Enter to close..." && r
                         # Check if robot process started
                         time.sleep(1)
                         if self.robot_process.poll() is None:
-                            print("Robot temperature check movement started successfully")
+                            print("Robot temperature check movement started successfully in new terminal")
                         else:
                             print("WARNING: Robot process may have failed to start in new terminal")
                             print("Attempting to run robot script directly in main process...")
@@ -424,6 +451,7 @@ python3 {temp_robot_path} || echo "Error occurred! Press Enter to close..." && r
                                     print("Robot movement completed with explicit coordinates")
                                 except Exception as ex:
                                     print(f"Final attempt failed: {ex}")
+                                    
                     else:
                         # If we couldn't find the file, try running the robot movement directly here
                         print("Attempting to run robot movement directly in speech_demo process...")
@@ -487,6 +515,7 @@ python3 {temp_robot_path} || echo "Error occurred! Press Enter to close..." && r
             # In case we need to restart the pipeline
             if hasattr(self, '_temp_demo_running'):
                 self._temp_demo_running = False
+            print("========== TEMPERATURE MEASUREMENT SEQUENCE COMPLETE ==========")
 
     def loop(self):
         super().loop()
@@ -496,8 +525,11 @@ python3 {temp_robot_path} || echo "Error occurred! Press Enter to close..." && r
             command = self.socket.recv_string(flags=zmq.NOBLOCK)
             print(f"Received command during operation: {command}")
             
-            if command == "get temperature":
-                print("Temperature command received during operation")
+            # Log command for debugging
+            print(f"DEBUG: Command received: '{command}' - Type: {type(command)}")
+            
+            if command.lower() == "get temperature":
+                print("TEMPERATURE COMMAND DETECTED! Starting temperature measurement process...")
                 
                 # Make sure we're not already in a temperature demo
                 if hasattr(self, '_temp_demo_running') and self._temp_demo_running:
@@ -505,43 +537,33 @@ python3 {temp_robot_path} || echo "Error occurred! Press Enter to close..." && r
                     return
                 
                 # Launch temperature demo in a separate process
-                if hasattr(self, '_device') and not self._device.isClosed():
-                    # We need to properly stop the current operation
-                    print("Stopping current operation to run temperature demo...")
-                    # Signal that we want to exit the main loop gracefully
-                    self.error = StopIteration()
-                    
-                    # Set flag to run temperature demo after main pipeline stops
-                    self._pending_temperature_demo = True
-                    return
-                else:
-                    # Device is not running, we can directly start the temperature demo
-                    self._run_temperature_demo()
-                    return
-            
-            if command.startswith("pick up"):
-                target_object = command.split("pick up ")[1]
-                self.current_target = target_object
-                print(f"New target received: {target_object}")
-                if hasattr(self, '_nnManager'):
-                    print("Setting target object in NNetManager")
-                    # When the NNetManager is expected to have a "set_target_object" method
-                    if hasattr(self._nnManager, 'set_target_object'):
-                        if self._nnManager.set_target_object(target_object):
-                            print(f"Target object set to: {self._nnManager._target_object}")
-                        else:
-                            print("Failed to set target object")
-                    else:
-                        print("NNetManager does not have set_target_object method")
-                    
-                    if hasattr(self._nnManager, 'measurement_buffer'):
-                        self._nnManager.measurement_buffer = []
-                        self._nnManager.coordinates_sent = False
-                    
-        except zmq.Again:
+                self._run_temperature_demo()
+                
+            elif "pick up" in command.lower():
+                # Format: "pick up {object}"
+                target = command.lower().split("pick up ")[-1].strip()
+                print(f"PICK UP COMMAND DETECTED! Target object: {target}")
+                
+                # Set the current target for tracking purposes
+                self.current_target = target
+                
+                # Execute the robot movement by sending to robotController
+                if self.current_target:
+                    try:
+                        self.coord_socket.send_string(command, zmq.NOBLOCK)
+                        print(f"Sent pick command: {command}")
+                    except zmq.error.Again:
+                        print("Failed to send message (would block)")
+                    except Exception as e:
+                        print(f"Error sending message: {e}")
+            else:
+                print(f"Unknown command format: {command}")
+                
+        except zmq.error.Again:
+            # No message available, normal operation
             pass
         except Exception as e:
-            print(f"Error in ZMQ receive during loop: {e}")
+            print(f"Error processing command: {e}")
         
         # Check if we need to run the temperature demo after stopping the main pipeline
         if hasattr(self, '_pending_temperature_demo') and self._pending_temperature_demo and self._device.isClosed():

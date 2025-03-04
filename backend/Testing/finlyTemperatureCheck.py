@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+
+print("===== FINLY TEMPERATURE CHECK SCRIPT STARTED =====")
+
 import numpy as np
 import matplotlib.pyplot as plt
 import sys, time, math, array

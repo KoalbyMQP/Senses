@@ -71,8 +71,8 @@ renderer = HandFaceRenderer(
 # Store forehead coordinates
 forehead_coordinates = []
 FOREHEAD_LANDMARK_INDEX = 10  # Forehead landmark (approximate, may need adjustment)
-MIN_SAMPLES = 300  # Minimum number of samples before sending coordinates
-MAX_SAMPLES = 600  # Maximum number of samples to collect
+MIN_SAMPLES = 30  # Minimum number of samples before sending coordinates
+MAX_SAMPLES = 100  # Maximum number of samples to collect
 
 print("Starting face tracking for temperature sensing...")
 print("Position face in front of camera. Press 'q' to exit.")
