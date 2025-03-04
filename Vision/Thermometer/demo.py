@@ -57,7 +57,7 @@ tracker = HandFaceTracker(
         double_face=args.double_face,
         use_face_pose=args.use_face_pose,
         use_gesture=args.gesture,
-        xyz=args.xyz,
+        xyz=True,
         with_attention=args.with_attention,
         nb_hands=args.nb_hands,
         trace=args.trace,
@@ -92,30 +92,45 @@ while True:
             # calculated in HandFaceTracker.py using the adjusted forehead point
             forehead_x, forehead_y, forehead_z = face.xyz
             
-            # Store the coordinates
-            forehead_coordinates.append({
-                'position': {
-                    'x': float(forehead_x),
-                    'y': float(forehead_y),
-                    'z': float(forehead_z)
-                }
-            })
-            
-            # Display forehead position on frame
-            # For display, we need to get the 2D coordinates where the forehead point is shown
-            # This is the same calculation as in HandFaceTracker.py
-            forehead_point = face.landmarks[9,:2].copy()
-            forehead_point[1] -= 30  # Move up 30 pixels
-            
-            cv2.circle(frame, (int(forehead_point[0]), int(forehead_point[1])), 5, (0, 255, 0), -1)
-            
-            # Display the 3D coordinates - divided by 10 to show in cm like in the renderer
-            cv2.putText(frame, f"Forehead: ({forehead_x/10:.2f}, {forehead_y/10:.2f}, {forehead_z/10:.2f}) cm",
-                        (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
-            
-            # Show number of samples collected
-            cv2.putText(frame, f"Samples: {len(forehead_coordinates)}/{MIN_SAMPLES}",
-                        (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+            # Check for NaN values which can occur if depth calculation fails
+            if np.isnan(forehead_x) or np.isnan(forehead_y) or np.isnan(forehead_z):
+                # Get the 2D forehead point for display
+                forehead_point = face.landmarks[9,:2].copy()
+                forehead_point[1] -= 30  # Move up 30 pixels
+                
+                # Display warning about NaN values
+                cv2.putText(frame, "Depth data unavailable - move closer to camera",
+                           (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+                cv2.circle(frame, (int(forehead_point[0]), int(forehead_point[1])), 5, (0, 0, 255), -1)
+                
+                # Show number of samples (will not increase with NaN values)
+                cv2.putText(frame, f"Samples: {len(forehead_coordinates)}/{MIN_SAMPLES}",
+                           (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+            else:
+                # Store the coordinates
+                forehead_coordinates.append({
+                    'position': {
+                        'x': float(forehead_x),
+                        'y': float(forehead_y),
+                        'z': float(forehead_z)
+                    }
+                })
+                
+                # Display forehead position on frame
+                # For display, we need to get the 2D coordinates where the forehead point is shown
+                # This is the same calculation as in HandFaceTracker.py
+                forehead_point = face.landmarks[9,:2].copy()
+                forehead_point[1] -= 30  # Move up 30 pixels
+                
+                cv2.circle(frame, (int(forehead_point[0]), int(forehead_point[1])), 5, (0, 255, 0), -1)
+                
+                # Display the 3D coordinates - divided by 10 to show in cm like in the renderer
+                cv2.putText(frame, f"Forehead: ({forehead_x/10:.2f}, {forehead_y/10:.2f}, {forehead_z/10:.2f}) cm",
+                            (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+                
+                # Show number of samples collected
+                cv2.putText(frame, f"Samples: {len(forehead_coordinates)}/{MIN_SAMPLES}",
+                            (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
             
     # Draw face and hands
     frame = renderer.draw(frame, faces, hands)
@@ -125,13 +140,26 @@ while True:
     
     # If we have collected enough samples, calculate average and send to robot
     if len(forehead_coordinates) >= MIN_SAMPLES:
+        # First, ensure there are no NaN values in the collected coordinates
+        valid_coordinates = []
+        for coord in forehead_coordinates:
+            x, y, z = coord['position']['x'], coord['position']['y'], coord['position']['z']
+            if not (np.isnan(x) or np.isnan(y) or np.isnan(z)):
+                valid_coordinates.append(coord)
+        
+        # If we don't have enough valid coordinates, continue collecting
+        if len(valid_coordinates) < MIN_SAMPLES:
+            cv2.putText(frame, f"Need more valid samples: {len(valid_coordinates)}/{MIN_SAMPLES}",
+                       (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+            continue
+        
         # Apply IQR filtering if we have enough samples
-        filtered_coordinates = forehead_coordinates
-        if len(forehead_coordinates) >= MAX_SAMPLES:
+        filtered_coordinates = valid_coordinates
+        if len(valid_coordinates) >= MAX_SAMPLES:
             # Extract data for IQR filtering
-            x_coords = [m['position']['x'] for m in forehead_coordinates]
-            y_coords = [m['position']['y'] for m in forehead_coordinates]
-            z_coords = [m['position']['z'] for m in forehead_coordinates]
+            x_coords = [m['position']['x'] for m in valid_coordinates]
+            y_coords = [m['position']['y'] for m in valid_coordinates]
+            z_coords = [m['position']['z'] for m in valid_coordinates]
             
             # Calculate IQR bounds
             Q1_x, Q3_x = np.percentile(x_coords, [25, 75])
@@ -148,7 +176,7 @@ while True:
             
             # Filter outliers
             filtered_coordinates = []
-            for coord in forehead_coordinates:
+            for coord in valid_coordinates:
                 x, y, z = coord['position']['x'], coord['position']['y'], coord['position']['z']
                 if (x_lower <= x <= x_upper and 
                     y_lower <= y <= y_upper and 
