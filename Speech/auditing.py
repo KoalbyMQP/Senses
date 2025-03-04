@@ -101,4 +101,5 @@ def audit_command(text, audit_prompt, valid_check, openrouter_title):
     
     # If all else fails, return the original text
     logger.warning("All API attempts failed, returning original text")
+
     return text
