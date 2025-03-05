@@ -1,0 +1,1845 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="FullAssemFIN_straight_2025_5">
+  <link
+    name="chest">
+    <inertial>
+      <origin
+        xyz="-0.0202638179458287 -0.0129139590090204 0.284958773030035"
+        rpy="0 0 0" />
+      <mass
+        value="0.786711405511895" />
+      <inertia
+        ixx="0.000573531193893458"
+        ixy="-7.55703611062035E-07"
+        ixz="-4.31810822559803E-06"
+        iyy="0.000829158924865465"
+        iyz="2.08678712234044E-05"
+        izz="0.000996599566852093" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/chest.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 0.501960784313725 0.501960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/chest.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="neck">
+    <inertial>
+      <origin
+        xyz="-0.0103514467502364 -0.000383883120440487 -0.00127933442635734"
+        rpy="0 0 0" />
+      <mass
+        value="0.00649329301930082" />
+      <inertia
+        ixx="2.02635190148395E-06"
+        ixy="-2.52969494383621E-08"
+        ixz="-8.43049787164719E-08"
+        iyy="2.17364124955234E-06"
+        iyz="-4.08867017787649E-07"
+        izz="9.33731691688554E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/neck.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 0.501960784313725 0.501960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/neck.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="neck"
+    type="revolute">
+    <origin
+      xyz="-0.020694 -0.018154 0.32857"
+      rpy="1.5708 1.5358 1.2814" />
+    <parent
+      link="chest" />
+    <child
+      link="neck" />
+    <axis
+      xyz="-1 0 0" />
+    <!-- <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" /> -->
+  </joint>
+  <link
+    name="head">
+    <inertial>
+      <origin
+        xyz="-0.000773628146729852 0.0101518449322615 0.0369792240007824"
+        rpy="0 0 0" />
+      <mass
+        value="0.59457932770776" />
+      <inertia
+        ixx="0.000979548833949908"
+        ixy="1.52017672154521E-08"
+        ixz="1.35810012182671E-06"
+        iyy="0.00124413685042709"
+        iyz="0.000296290658062352"
+        izz="0.00103924672282058" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/head.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.529411764705882 0.549019607843137 0.549019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/head.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="head"
+    type="revolute">
+    <origin
+      xyz="-0.0205 0 0"
+      rpy="-0.033532 -1.2793 1.5708" />
+    <parent
+      link="neck" />
+    <child
+      link="head" />
+    <axis
+      xyz="1 0 0" />
+    <!-- <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" /> -->
+  </joint>
+  <link
+    name="camera">
+    <inertial>
+      <origin
+        xyz="-0.00769742432272737 -0.282313490603971 -0.0340707949837554"
+        rpy="0 0 0" />
+      <mass
+        value="3.91869023943691" />
+      <inertia
+        ixx="0.197180179256845"
+        ixy="0.00327105172511107"
+        ixz="0.00205489244979965"
+        iyy="0.171296448746144"
+        iyz="-0.0815366110673219"
+        izz="0.268011857956215" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/camera.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/camera.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="camera"
+    type="revolute">
+    <origin
+      xyz="-0.00098396 0.049804 0.11774"
+      rpy="2.5845 -0.0039577 3.1352" />
+    <parent
+      link="head" />
+    <child
+      link="camera" />
+    <axis
+      xyz="0 0 1" />
+    <!-- <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" /> -->
+  </joint>
+  <link
+    name="shoulder1_left">
+    <inertial>
+      <origin
+        xyz="0.0205024040347398 -0.000174781564324156 0.00521038087334141"
+        rpy="0 0 0" />
+      <mass
+        value="0.0282053679175128" />
+      <inertia
+        ixx="2.39675606090732E-05"
+        ixy="9.83296908932021E-08"
+        ixz="-2.93128843394919E-06"
+        iyy="3.21911195724521E-05"
+        iyz="6.85783400194588E-07"
+        izz="1.17703606476543E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/shoulder1_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 0.501960784313725 0.501960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/shoulder1_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="shoulder1_left"
+    type="revolute">
+    <origin
+      xyz="0.073449 -0.03446 0.27833"
+      rpy="1.5708 -0.01006 0.0019922" />
+    <parent
+      link="chest" />
+    <child
+      link="shoulder1_left" />
+    <axis
+      xyz="-1 0 0" />
+    <!-- <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" /> -->
+  </joint>
+  <link
+    name="shoulder2_left">
+    <inertial>
+      <origin
+        xyz="0.000126711470773429 0.000414717720152058 -0.0593850115964059"
+        rpy="0 0 0" />
+      <mass
+        value="0.292831940139093" />
+      <inertia
+        ixx="0.00011876639098477"
+        ixy="9.97533269847882E-09"
+        ixz="-1.0038421459972E-06"
+        iyy="0.000118304853401557"
+        iyz="-8.27978445004251E-07"
+        izz="9.27597724051513E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/shoulder2_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.149019607843137 0.149019607843137 0.149019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/shoulder2_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="shoulder2_left"
+    type="revolute">
+    <origin
+      xyz="0.0245 0.00033358 -0.0099444"
+      rpy="1.5607 -1.5373 -1.5708" />
+    <parent
+      link="shoulder1_left" />
+    <child
+      link="shoulder2_left" />
+    <axis
+      xyz="-1 0 0" />
+    <!-- <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" /> -->
+  </joint>
+  <link
+    name="elbow_left">
+    <inertial>
+      <origin
+        xyz="-0.000475865832476885 0.0171416242691438 0.0571899242753569"
+        rpy="0 0 0" />
+      <mass
+        value="0.27547424272515" />
+      <inertia
+        ixx="7.22487885136648E-05"
+        ixy="1.40861209266414E-09"
+        ixz="4.45224550470935E-09"
+        iyy="5.10895450343074E-05"
+        iyz="3.66435946573523E-06"
+        izz="6.50343824889228E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/elbow_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 0.501960784313725 0.501960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/elbow_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="elbow_left"
+    type="revolute">
+    <origin
+      xyz="0 -0.0013097 -0.11827"
+      rpy="-2.8501 0.010065 -1.5708" />
+    <parent
+      link="shoulder2_left" />
+    <child
+      link="elbow_left" />
+    <axis
+      xyz="-1 0 0" />
+    <!-- <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" /> -->
+  </joint>
+  <link
+    name="forearm_left">
+    <inertial>
+      <origin
+        xyz="-0.0299529911967497 0.00190722663319198 -6.24905156587016E-05"
+        rpy="0 0 0" />
+      <mass
+        value="0.262462081345433" />
+      <inertia
+        ixx="3.4950625680192E-05"
+        ixy="1.0707800628537E-06"
+        ixz="-3.51765955177136E-08"
+        iyy="5.92048803875684E-05"
+        iyz="2.11689633455612E-07"
+        izz="6.56734500232517E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/forearm_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 0.501960784313725 0.501960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/forearm_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="forearm_left"
+    type="revolute">
+    <origin
+      xyz="-0.00049856 0.034879 0.071701"
+      rpy="-3.1081 1.2793 -1.5708" />
+    <parent
+      link="elbow_left" />
+    <child
+      link="forearm_left" />
+    <axis
+      xyz="-1 0 0" />
+    <!-- <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" /> -->
+  </joint>
+  <link
+    name="wrist_left">
+    <inertial>
+      <origin
+        xyz="-0.00227753188879343 0.0295809620404386 0.0888884527631644"
+        rpy="0 0 0" />
+      <mass
+        value="0.308908459328663" />
+      <inertia
+        ixx="0.000111675294964955"
+        ixy="6.71142047256174E-07"
+        ixz="2.31115470108653E-06"
+        iyy="0.000117133191577814"
+        iyz="-2.11095970152516E-05"
+        izz="4.71870447044167E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/wrist_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 0.501960784313725 0.501960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/wrist_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="wrist_left"
+    type="revolute">
+    <origin
+      xyz="-0.042798 0.0019183 -6.4331E-05"
+      rpy="1.8597 -0.033508 -1.5707" />
+    <parent
+      link="forearm_left" />
+    <child
+      link="wrist_left" />
+    <axis
+      xyz="1 0 0" />
+    <!-- <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" /> -->
+  </joint>
+  <link
+    name="hand_left">
+    <inertial>
+      <origin
+        xyz="-0.0209377720382662 -0.00101980223789949 0.0390482514986171"
+        rpy="0 0 0" />
+      <mass
+        value="0.0166113155249944" />
+      <inertia
+        ixx="8.72814673990524E-06"
+        ixy="3.52615349529447E-08"
+        ixz="-3.20550750575317E-07"
+        iyy="7.53945211429571E-06"
+        iyz="-2.55712847127687E-08"
+        izz="6.45411287363187E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/hand_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/hand_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="hand_left"
+    type="revolute">
+    <origin
+      xyz="-0.0016539 0.033214 0.10278"
+      rpy="-0.027602 0.29984 1.5358" />
+    <parent
+      link="wrist_left" />
+    <child
+      link="hand_left" />
+    <axis
+      xyz="0.033389 -0.99944 0" />
+    <!-- <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" /> -->
+  </joint>
+  <link
+    name="hand_left_h">
+    <inertial>
+      <origin
+        xyz="-0.00274732119092806 -0.130438246232879 -0.523832325990649"
+        rpy="0 0 0" />
+      <mass
+        value="3.91869023943691" />
+      <inertia
+        ixx="0.314153307650138"
+        ixy="0.00745526051058722"
+        ixz="0.00100378782624991"
+        iyy="0.125372288499059"
+        iyz="-0.00552569776068719"
+        izz="0.196962889810012" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/hand_left_h.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/hand_left_h.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="hand_left_h"
+    type="revolute">
+    <origin
+      xyz="0.0010735 -6.0738E-05 0.0602"
+      rpy="0 0 0" />
+    <parent
+      link="hand_left" />
+    <child
+      link="hand_left_h" />
+    <axis
+      xyz="0 0 -1" />
+    <!-- <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" /> -->
+  </joint>
+  <link
+    name="shoulder1_right">
+    <inertial>
+      <origin
+        xyz="0.0178422545124166 -0.0138830733370498 -1.74595491253537E-06"
+        rpy="0 0 0" />
+      <mass
+        value="0.133882145951707" />
+      <inertia
+        ixx="3.77560393609244E-05"
+        ixy="-1.19093471916067E-06"
+        ixz="1.10445008515547E-09"
+        iyy="4.40497250246042E-05"
+        iyz="1.06004539521635E-10"
+        izz="5.86071352817368E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/shoulder1_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.149019607843137 0.149019607843137 0.149019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/shoulder1_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="shoulder1_right"
+    type="revolute">
+    <origin
+      xyz="-0.16761 -0.03873 0.27618"
+      rpy="3.0812 -0.0084604 0.0018954" />
+    <parent
+      link="chest" />
+    <child
+      link="shoulder1_right" />
+    <axis
+      xyz="0 0 0" />
+    <!-- <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" /> -->
+  </joint>
+  <link
+    name="shoulder2_right">
+    <inertial>
+      <origin
+        xyz="-0.0123434054461642 -0.0183967069895281 -0.000407293038537537"
+        rpy="0 0 0" />
+      <mass
+        value="0.283499621102926" />
+      <inertia
+        ixx="6.27570222968576E-05"
+        ixy="-2.43117853702282E-06"
+        ixz="-9.0110464765606E-07"
+        iyy="7.32837872528232E-05"
+        iyz="-7.29576197925057E-08"
+        izz="9.14790665699662E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/shoulder2_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 0.501960784313725 0.501960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/shoulder2_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="shoulder2_right"
+    type="revolute">
+    <origin
+      xyz="-0.017521 -0.0144 0"
+      rpy="-3.1416 0 1.5708" />
+    <parent
+      link="shoulder1_right" />
+    <child
+      link="shoulder2_right" />
+    <axis
+      xyz="0 0 0" />
+    <!-- <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" /> -->
+  </joint>
+  <link
+    name="elbow_right">
+    <inertial>
+      <origin
+        xyz="0.0155992062669025 -0.0137656380158473 -9.00579644885768E-09"
+        rpy="0 0 0" />
+      <mass
+        value="0.1233831657007" />
+      <inertia
+        ixx="3.15626293814504E-05"
+        ixy="-1.08491427794101E-06"
+        ixz="3.48210187250521E-12"
+        iyy="4.19460424557379E-05"
+        iyz="-6.36675222032528E-11"
+        izz="5.17253048665667E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/elbow_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.149019607843137 0.149019607843137 0.149019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/elbow_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="elbow_right"
+    type="revolute">
+    <origin
+      xyz="-0.013388 -0.078496 0.013769"
+      rpy="1.6036 0 -1.5708" />
+    <parent
+      link="shoulder2_right" />
+    <child
+      link="elbow_right" />
+    <axis
+      xyz="0 0 0" />
+    <!-- <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" /> -->
+  </joint>
+  <link
+    name="forearm_right">
+    <inertial>
+      <origin
+        xyz="0.0138356030536185 -0.1080055729632 0.00175806047572447"
+        rpy="0 0 0" />
+      <mass
+        value="0.265833333989939" />
+      <inertia
+        ixx="8.11344200407582E-05"
+        ixy="-2.5082226265592E-08"
+        ixz="-3.59889568074747E-08"
+        iyy="5.98722205710143E-05"
+        iyz="9.03562006342863E-07"
+        izz="5.49785455234758E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/forearm_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 0.501960784313725 0.501960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/forearm_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="forearm_right"
+    type="revolute">
+    <origin
+      xyz="0.030379 0 0"
+      rpy="-3.131 0 -1.5708" />
+    <parent
+      link="elbow_right" />
+    <child
+      link="forearm_right" />
+    <axis
+      xyz="1 0 0" />
+    <!-- <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" /> -->
+  </joint>
+  <link
+    name="wrist_right">
+    <inertial>
+      <origin
+        xyz="-0.0363560541754391 0.000249679597630968 0.102745463314497"
+        rpy="0 0 0" />
+      <mass
+        value="0.304833573521094" />
+      <inertia
+        ixx="0.000124360941676186"
+        ixy="-2.47604410943666E-07"
+        ixz="9.65828100130931E-06"
+        iyy="9.40041100916993E-05"
+        iyz="8.06616858019095E-07"
+        izz="6.40820096734684E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/wrist_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/wrist_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="wrist_right"
+    type="revolute">
+    <origin
+      xyz="-0.004714 -0.23831 0.0043279"
+      rpy="1.5702 -0.0041657 -2.9929" />
+    <parent
+      link="forearm_right" />
+    <child
+      link="wrist_right" />
+    <axis
+      xyz="0 0 0" />
+    <!-- <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" /> -->
+  </joint>
+  <link
+    name="hand_right">
+    <inertial>
+      <origin
+        xyz="-3.06386590542829E-08 0.0148521895264476 -0.0411603767931779"
+        rpy="0 0 0" />
+      <mass
+        value="0.00592304018471756" />
+      <inertia
+        ixx="4.30212406736482E-06"
+        ixy="-8.84423106301784E-13"
+        ixz="3.03780099345916E-12"
+        iyy="4.18718806221887E-06"
+        iyz="1.55166081571461E-08"
+        izz="9.07267090441124E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/hand_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/hand_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="hand_right"
+    type="revolute">
+    <origin
+      xyz="0 -0.0045 -0.00025472"
+      rpy="0 0 0" />
+    <parent
+      link="wrist_right" />
+    <child
+      link="hand_right" />
+    <axis
+      xyz="0 0 0" />
+    <!-- <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" /> -->
+  </joint>
+  <link
+    name="back">
+    <inertial>
+      <origin
+        xyz="-1.52143596440432E-06 0.0152807124517679 7.40506062161528E-05"
+        rpy="0 0 0" />
+      <mass
+        value="0.248711578239757" />
+      <inertia
+        ixx="5.88287717989445E-05"
+        ixy="5.37846748838508E-09"
+        ixz="-7.16803120341763E-10"
+        iyy="5.14012275812822E-05"
+        iyz="8.40580848531947E-07"
+        izz="3.05620252612058E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/back.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.529411764705882 0.549019607843137 0.549019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/back.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="back"
+    type="revolute">
+    <origin
+      xyz="-0.019744 0.0041222 0.21846"
+      rpy="0.033537 -0.018903 0.0016955" />
+    <parent
+      link="chest" />
+    <child
+      link="back" />
+    <axis
+      xyz="0 0 0" />
+    <!-- <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" /> -->
+  </joint>
+  <link
+    name="middle">
+    <inertial>
+      <origin
+        xyz="0.000560500090420621 0.015405408798863 -0.00372106619310769"
+        rpy="0 0 0" />
+      <mass
+        value="0.264698964925595" />
+      <inertia
+        ixx="7.48868745223157E-05"
+        ixy="5.25542853902196E-09"
+        ixz="9.94112240388824E-07"
+        iyy="6.32838806736758E-05"
+        iyz="8.79096334472573E-07"
+        izz="4.07391595207208E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/middle.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.529411764705882 0.549019607843137 0.549019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/middle.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="middle"
+    type="revolute">
+    <origin
+      xyz="0.014 -0.0213 0"
+      rpy="0 0 1.5708" />
+    <parent
+      link="back" />
+    <child
+      link="middle" />
+    <axis
+      xyz="0 0 0" />
+    <!-- <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" /> -->
+  </joint>
+  <link
+    name="stomach">
+    <inertial>
+      <origin
+        xyz="5.71350114761567E-06 0.0205274944103767 0.00214804536223144"
+        rpy="0 0 0" />
+      <mass
+        value="0.297021522194379" />
+      <inertia
+        ixx="0.00014107008365042"
+        ixy="4.13319028610687E-09"
+        ixz="-8.90562196792389E-08"
+        iyy="0.000133970875705451"
+        iyz="1.1610472400619E-07"
+        izz="6.03945932103345E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/stomach.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.529411764705882 0.549019607843137 0.549019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/stomach.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="stomach"
+    type="revolute">
+    <origin
+      xyz="0.012467 0.0129 -0.052741"
+      rpy="-1.6044 0 -1.5708" />
+    <parent
+      link="middle" />
+    <child
+      link="stomach" />
+    <axis
+      xyz="0 0 0" />
+    <!-- <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" /> -->
+  </joint>
+  <link
+    name="back_pelvic">
+    <inertial>
+      <origin
+        xyz="0.0154896651068036 -0.0145430436345362 -1.25882191233384E-08"
+        rpy="0 0 0" />
+      <mass
+        value="0.127534330370919" />
+      <inertia
+        ixx="3.31939186082329E-05"
+        ixy="-1.08642354889134E-06"
+        ixz="1.1347612291613E-11"
+        iyy="4.49529966113182E-05"
+        iyz="-6.33216396673971E-11"
+        izz="5.31790636323387E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/back_pelvic.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.149019607843137 0.149019607843137 0.149019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/back_pelvic.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="back_pelvic"
+    type="revolute">
+    <origin
+      xyz="0.00067812 0.060214 0.048499"
+      rpy="1.5725 -3.2042E-05 1.5897" />
+    <parent
+      link="stomach" />
+    <child
+      link="back_pelvic" />
+    <axis
+      xyz="0 0 0" />
+    <!-- <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" /> -->
+  </joint>
+  <link
+    name="front_pelvic">
+    <inertial>
+      <origin
+        xyz="0.0222119432354238 -0.013986947910165 -0.00266969548748355"
+        rpy="0 0 0" />
+      <mass
+        value="0.147883656233175" />
+      <inertia
+        ixx="4.62024278761668E-05"
+        ixy="-1.08453094979405E-06"
+        ixz="1.41120569241741E-06"
+        iyy="5.0533080020926E-05"
+        iyz="-6.28394392184438E-10"
+        izz="6.84231295590116E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/front_pelvic.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.149019607843137 0.149019607843137 0.149019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/front_pelvic.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="front_pelvic"
+    type="revolute">
+    <origin
+      xyz="0 -0.0575 0.0142"
+      rpy="1.5708 0 0" />
+    <parent
+      link="back_pelvic" />
+    <child
+      link="front_pelvic" />
+    <axis
+      xyz="0 0 0" />
+    <!-- <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" /> -->
+  </joint>
+  <link
+    name="hip_in_right">
+    <inertial>
+      <origin
+        xyz="-0.000946233981735142 0.0154752002819355 -0.00118103488937677"
+        rpy="0 0 0" />
+      <mass
+        value="0.255325056524352" />
+      <inertia
+        ixx="6.42532903135767E-05"
+        ixy="-1.81345586589176E-08"
+        ixz="-1.07344190155063E-06"
+        iyy="5.37049571663589E-05"
+        iyz="9.08138275398371E-07"
+        izz="3.61850194737787E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/hip_in_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.529411764705882 0.549019607843137 0.549019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/hip_in_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="hip_in_right"
+    type="revolute">
+    <origin
+      xyz="0.10468 -0.0331 -0.031"
+      rpy="1.5708 0 1.5708" />
+    <parent
+      link="front_pelvic" />
+    <child
+      link="hip_in_right" />
+    <axis
+      xyz="0 0 0" />
+    <!-- <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" /> -->
+  </joint>
+  <link
+    name="hip_out_right">
+    <inertial>
+      <origin
+        xyz="-2.37861197104061E-06 0.0161338203448436 -7.97465949599566E-05"
+        rpy="0 0 0" />
+      <mass
+        value="0.250598308846552" />
+      <inertia
+        ixx="5.85686161895885E-05"
+        ixy="5.38267638294666E-09"
+        ixz="-2.87575635167027E-09"
+        iyy="5.16590538641582E-05"
+        iyz="8.68528047719158E-07"
+        izz="3.09675121346263E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/hip_out_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.529411764705882 0.549019607843137 0.549019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/hip_out_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="hip_out_right"
+    type="revolute">
+    <origin
+      xyz="-0.048999 0.0079 -0.0491"
+      rpy="1.5708 0 0" />
+    <parent
+      link="hip_in_right" />
+    <child
+      link="hip_out_right" />
+    <axis
+      xyz="0 0 0" />
+    <!-- <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" /> -->
+  </joint>
+  <link
+    name="hip_right">
+    <inertial>
+      <origin
+        xyz="0.0216855098657178 -0.0170026737009339 0.0215563964748288"
+        rpy="0 0 0" />
+      <mass
+        value="0.167723237629228" />
+      <inertia
+        ixx="0.000186073406580581"
+        ixy="1.46706804343073E-06"
+        ixz="-1.57077337039913E-05"
+        iyy="0.000190840186367232"
+        iyz="2.1657015937147E-05"
+        izz="9.53300778278581E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/hip_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.149019607843137 0.149019607843137 0.149019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/hip_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="hip_right"
+    type="revolute">
+    <origin
+      xyz="-0.014347 0.0546 0.021017"
+      rpy="-1.5708 1.5665 0" />
+    <parent
+      link="hip_out_right" />
+    <child
+      link="hip_right" />
+    <axis
+      xyz="0 1 0" />
+    <!-- <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" /> -->
+  </joint>
+  <link
+    name="knee_right">
+    <inertial>
+      <origin
+        xyz="0.000621482052222495 0.0148388886596761 -0.0332100460700829"
+        rpy="0 0 0" />
+      <mass
+        value="0.335243116905617" />
+      <inertia
+        ixx="0.000493191077015571"
+        ixy="7.24198108862904E-08"
+        ixz="5.14109168757241E-05"
+        iyy="0.000506223889967465"
+        iyz="7.09445446184272E-07"
+        izz="9.32983372264119E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/knee_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.529411764705882 0.549019607843137 0.549019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/knee_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="knee_right"
+    type="revolute">
+    <origin
+      xyz="0.041636 -0.053237 0.17073"
+      rpy="3.1416 -0.06584 3.1416" />
+    <parent
+      link="hip_right" />
+    <child
+      link="knee_right" />
+    <axis
+      xyz="0 0 0" />
+    <!-- <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" /> -->
+  </joint>
+  <link
+    name="foot_right">
+    <inertial>
+      <origin
+        xyz="-0.0121225463891824 0.0065499073991514 0.00331749453631222"
+        rpy="0 0 0" />
+      <mass
+        value="0.293881054465828" />
+      <inertia
+        ixx="0.000131981765893893"
+        ixy="7.16429657309113E-07"
+        ixz="2.42392489234286E-06"
+        iyy="0.000121211049444726"
+        iyz="6.61234925925404E-06"
+        izz="7.97152336374758E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/foot_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 0.501960784313725 0.501960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/foot_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="foot_right"
+    type="revolute">
+    <origin
+      xyz="0.015415 0 -0.24384"
+      rpy="1.6374 0 -1.5708" />
+    <parent
+      link="knee_right" />
+    <child
+      link="foot_right" />
+    <axis
+      xyz="1 0 0" />
+    <!-- <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" /> -->
+  </joint>
+  <link
+    name="hip_in_left">
+    <inertial>
+      <origin
+        xyz="0.000943270199825563 0.0154751972875073 -0.00118103512571611"
+        rpy="0 0 0" />
+      <mass
+        value="0.255325055007331" />
+      <inertia
+        ixx="6.42532919653291E-05"
+        ixy="2.88955333127189E-08"
+        ixz="1.07200679057235E-06"
+        iyy="5.37049602297781E-05"
+        iyz="9.08130010613131E-07"
+        izz="3.61850205470108E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/hip_in_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.529411764705882 0.549019607843137 0.549019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/hip_in_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="hip_in_left"
+    type="revolute">
+    <origin
+      xyz="0.10468 0.0029 -0.031"
+      rpy="1.5708 0 1.5708" />
+    <parent
+      link="front_pelvic" />
+    <child
+      link="hip_in_left" />
+    <axis
+      xyz="0 0 0" />
+    <!-- <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" /> -->
+  </joint>
+  <link
+    name="hip_out_left">
+    <inertial>
+      <origin
+        xyz="4.94382271509775E-08 0.0161338200331302 -7.97506020892673E-05"
+        rpy="0 0 0" />
+      <mass
+        value="0.250598304151983" />
+      <inertia
+        ixx="5.85686290789601E-05"
+        ixy="5.26031160409553E-09"
+        ixz="2.55323693937462E-09"
+        iyy="5.16590526083049E-05"
+        iyz="8.68528687246983E-07"
+        izz="3.09674981203773E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/hip_out_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.529411764705882 0.549019607843137 0.549019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/hip_out_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="hip_out_left"
+    type="revolute">
+    <origin
+      xyz="0.048999 0.0079 -0.0491"
+      rpy="1.5708 0 0" />
+    <parent
+      link="hip_in_left" />
+    <child
+      link="hip_out_left" />
+    <axis
+      xyz="0 0 0" />
+    <!-- <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" /> -->
+  </joint>
+  <link
+    name="hip_left">
+    <inertial>
+      <origin
+        xyz="0.0208201840739736 -0.0167208581057926 -0.0191765448665117"
+        rpy="0 0 0" />
+      <mass
+        value="0.162495582911545" />
+      <inertia
+        ixx="0.000173080205146766"
+        ixy="-8.10464027190376E-07"
+        ixz="1.0074950024505E-05"
+        iyy="0.000176637265062155"
+        iyz="-1.72655504215418E-05"
+        izz="8.93836670826605E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/hip_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.149019607843137 0.149019607843137 0.149019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/hip_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="hip_left"
+    type="revolute">
+    <origin
+      xyz="0.014453 0.0546 0.020972"
+      rpy="-1.5708 1.5633 3.1416" />
+    <parent
+      link="hip_out_left" />
+    <child
+      link="hip_left" />
+    <axis
+      xyz="0 0 0" />
+    <!-- <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" /> -->
+  </joint>
+  <link
+    name="knee_left">
+    <inertial>
+      <origin
+        xyz="-0.000754914875832315 -0.0204051355558441 -0.0264038387352053"
+        rpy="0 0 0" />
+      <mass
+        value="0.335242694238721" />
+      <inertia
+        ixx="0.000498250478944344"
+        ixy="2.44481709773146E-05"
+        ixz="-3.92476388194279E-09"
+        iyy="8.82327773250063E-05"
+        iyz="1.04984493247325E-06"
+        izz="0.000506218268684433" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/knee_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/knee_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="knee_left"
+    type="revolute">
+    <origin
+      xyz="0.042335 -0.011871 -0.18351"
+      rpy="1.5708 0.00043082 -3.1416" />
+    <parent
+      link="hip_left" />
+    <child
+      link="knee_left" />
+    <axis
+      xyz="0 0 1" />
+    <!-- <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" /> -->
+  </joint>
+  <link
+    name="foot_left">
+    <inertial>
+      <origin
+        xyz="-0.0291141555452533 0.00654625162217953 0.00332645315346826"
+        rpy="0 0 0" />
+      <mass
+        value="0.293911578215976" />
+      <inertia
+        ixx="0.000131961933762179"
+        ixy="-7.17931087839307E-07"
+        ixz="-2.41465041739627E-06"
+        iyy="0.000121197524751732"
+        iyz="6.61426874918629E-06"
+        izz="7.97136292237882E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/foot_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 0.501960784313725 0.501960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_straight_2025_5/meshes/foot_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="foot_left"
+    type="revolute">
+    <origin
+      xyz="0 -0.23155 0"
+      rpy="-3.104 -1.5708 3.104" />
+    <parent
+      link="knee_left" />
+    <child
+      link="foot_left" />
+    <axis
+      xyz="1 0 0" />
+    <!-- <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" /> -->
+  </joint>
+</robot>
