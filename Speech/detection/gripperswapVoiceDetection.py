@@ -58,6 +58,7 @@ class SpeechDetector:
             - If the user says anything, interpret it and try to understand whether or not the user is trying to swap grippers. If you think they are, return the number of the gripper they want to swap to. If you think they are not, return invalid.
             - If the user specifies a gripper that is NOT in the list above, first try to interpret it and see if it can potentially match with a valid gripper command. Your interpretation should be as close as possible based on phonetics first and then meaning. The context should always be something that can be a gripper type. 
             - If you cannot interpret the command, return invalid.
+            - It is ok to interpret a command as invalid, it is better to have to repeat what is said then to give the robot the wrong gripper
             - If the user says in other languages, try to understand it and follow the rules above.
             - Return ONLY the number, with no additional text or explanation
 
