@@ -14,6 +14,7 @@ from backend.KoalbyHumanoid.Robot import Robot
 from backend.KoalbyHumanoid.trajPlannerTime import TrajPlannerTime
 from backend.Testing import finlyViaPoints as via
 import os
+from Gripper.thermometer.getTemp_MLX90614 import MLX90614
 
 # Parse arguments
 parser = argparse.ArgumentParser(description='Temperature check robot movement')
@@ -167,18 +168,28 @@ print("Reached forehead position. Holding for temperature measurement...")
 # Hold at forehead position for 3 seconds
 time.sleep(3)
 
-# Return to starting position
-print("Returning to starting position...")
-robot.motors[5].target = (math.radians(0), 'P')
-robot.motors[6].target = (math.radians(0), 'P')
-robot.motors[7].target = (math.radians(0), 'P')
-robot.motors[8].target = (math.radians(0), 'P')
-robot.motors[9].target = (math.radians(0), 'P')
-robot.motors[10].target = (math.radians(0), 'P')
+# Get temperature
+sensor = MLX90614()  # Initialize the temperature sensor
+ambient_temp = sensor.get_amb_temp()  # Get ambient temperature
+object_temp = sensor.get_obj_temp()  # Get object temperature
 
-returnTime = time.time()
-while time.time() - returnTime < 3:
-    robot.moveAllToTarget()
-    time.sleep(0.01)
+# Save temperature to file
+with open("Gripper/thermometer/temperature.txt", "w") as temp_file:
+    temp_file.write(f"Ambient Temperature: {ambient_temp:.2f} °C\n")
+    temp_file.write(f"Object Temperature: {object_temp:.2f} °C\n")
 
 print("Temperature check movement complete.") 
+
+# # Return to starting position
+# print("Returning to starting position...")
+# robot.motors[5].target = (math.radians(0), 'P')
+# robot.motors[6].target = (math.radians(0), 'P')
+# robot.motors[7].target = (math.radians(0), 'P')
+# robot.motors[8].target = (math.radians(0), 'P')
+# robot.motors[9].target = (math.radians(0), 'P')
+# robot.motors[10].target = (math.radians(0), 'P')
+
+# returnTime = time.time()
+# while time.time() - returnTime < 3:
+#     robot.moveAllToTarget()
+#     time.sleep(0.01)
