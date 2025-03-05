@@ -520,8 +520,16 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
                     mean_x = np.mean([m['position']['x'] for m in filtered_measurements])
                     mean_y = np.mean([m['position']['y'] for m in filtered_measurements])
                     mean_z = np.mean([m['position']['z'] for m in filtered_measurements])
-                    print(f"Publishing final mean coordinates: {mean_x:.5f}, {mean_y:.5f}, {mean_z:.5f}")
-                    coord_str = f"{mean_x:.5f},{mean_y:.5f},{mean_z:.5f}"
+                    width_values = [m['dimensions']['width'] for m in filtered_measurements if 'dimensions' in m and 'width' in m['dimensions']]
+                    
+                    if width_values:
+                        mean_width = np.mean(width_values)
+                        print(f"Publishing final mean coordinates with width: {mean_x:.5f}, {mean_y:.5f}, {mean_z:.5f}, width: {mean_width:.5f}")
+                        coord_str = f"{mean_x:.5f},{mean_y:.5f},{mean_z:.5f},{mean_width:.5f}"
+                    else:
+                        print(f"Publishing final mean coordinates (no width available): {mean_x:.5f}, {mean_y:.5f}, {mean_z:.5f}")
+                        coord_str = f"{mean_x:.5f},{mean_y:.5f},{mean_z:.5f}"
+                        
                     self.coord_socket.send_string(coord_str)
                     print("Coordinates sent to robot")
                     self._nnManager.coordinates_sent = True
