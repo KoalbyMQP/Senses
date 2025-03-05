@@ -3,6 +3,7 @@ import json
 import logging
 import time
 from openai import OpenAI
+
 from Speech.config import initialize_api_keys
 
 # Set up logging
