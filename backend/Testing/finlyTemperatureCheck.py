@@ -131,7 +131,7 @@ print(f"Transformed forehead coordinates: {C}")
 x_coord = float(C[0][0])
 y_coord = float(C[1][0])
 z_coord = float(C[2][0])
-    
+
 # Set up trajectory for moving to forehead
 leftArmTraj = [
     [[0,0,0], [20,20,20]],
@@ -158,9 +158,9 @@ while time.time() - startTime < 20:
     motor_angle_task = ik_solution
     
     # Set motor targets exactly as in the original file
-    robot.motors[5].target = (motor_angle_task[1], 'P')
+    robot.motors[5].target = (-motor_angle_task[1], 'P')
     robot.motors[6].target = (motor_angle_task[2], 'P')
-    robot.motors[7].target = (motor_angle_task[3], 'P')
+    robot.motors[7].target = (-motor_angle_task[3], 'P')
     robot.motors[8].target = (motor_angle_task[4], 'P')
     robot.motors[9].target = (motor_angle_task[5], 'P')
     
