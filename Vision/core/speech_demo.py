@@ -370,7 +370,7 @@ echo "Starting temperature check robot movement..."
 source "{venv_path}/bin/activate"
 export PYTHONPATH="{project_root}:$PYTHONPATH"
 cd {project_root}
-python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occurred! Press Enter to close..." && read
+python3 {temp_robot_path} || echo "Error occurred! Press Enter to close..." && read
 """)
                     os.chmod(robot_temp_script, 0o755)
                     
