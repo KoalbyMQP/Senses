@@ -93,8 +93,9 @@ while time.time() - simStartTime < 2:
 # Transform coordinates from camera frame to robot frame
 # Note the coordinate system as described: Positive X is left, Z through robot, positive Y is up
 # So: X→X, Y→Z, Z→Y ?
-B = np.array([[final_points[0]], [final_points[2]], [final_points[1]], [1]])
+B = np.array([[final_points[0]], -[final_points[2]], -[final_points[1]], [1]])
 A = camera_frame_transformation
+print(A)
 C = np.dot(A, B)
 print("Target position in robot frame:", C)
 
