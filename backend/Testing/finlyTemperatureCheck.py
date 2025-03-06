@@ -108,7 +108,7 @@ robot.motors[8].target = (math.radians(0), 'P')
 robot.motors[9].target = (math.radians(0), 'P')
 robot.motors[10].target = (math.radians(0), 'P')
 
-ik_solution_2 = np.array([0,0,0,0,0,0,0])
+ik_solution_2=np.array([0,0,0,0,0,0,0,0])
 prevTime = time.time()
 simStartTime = time.time()
 

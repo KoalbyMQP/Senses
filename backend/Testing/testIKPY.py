@@ -11,7 +11,7 @@ left_leg_chain = Chain.from_urdf_file(
 target_positions = np.array([0.1, -0.01, -0.45])
 
 ik_solution = left_leg_chain.inverse_kinematics(target_positions)
-ik_solution_2=np.array([0,0,0,0,0,0,0])
+ik_solution_2=np.array([0,0,0,0,0,0,0,0])
 print("Joint angles:", ik_solution)
 
 real_frame = left_leg_chain.forward_kinematics(ik_solution)

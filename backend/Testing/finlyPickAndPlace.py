@@ -80,7 +80,7 @@ robot.motors[10].target = (math.radians(0), 'P')
 # Initialize gripper position - make sure it's open to start
 robot.motors[27].target = (math.radians(60), 'P')  # Set gripper to open position
 
-ik_solution_2 = np.array([0,0,0,0,0,0,0])
+ik_solution_2=np.array([0,0,0,0,0,0,0,0])
 prevTime = time.time()
 simStartTime = time.time()
 
