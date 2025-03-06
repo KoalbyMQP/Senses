@@ -174,9 +174,19 @@ temp_script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../
 temp_script_path = os.path.normpath(temp_script_path)
 print(f"Temperature script path: {temp_script_path}")
 
+# Create a temporary shell script
+temp_shell_script = "/tmp/temperature_measure.sh"
+with open(temp_shell_script, "w") as f:
+    f.write(f"""#!/bin/bash
+echo "Starting temperature measurement..."
+cd {os.path.dirname(temp_script_path)}
+python3 {os.path.basename(temp_script_path)} --cli
+""")
+os.chmod(temp_shell_script, 0o755)
+
 try:
-    # Run the temperature script and capture its output
-    result = subprocess.run(["python3", temp_script_path, "--cli"], capture_output=True, text=True, check=True)
+    # Run the shell script and capture its output
+    result = subprocess.run([temp_shell_script], capture_output=True, text=True, check=True)
     print(f"Temperature script output: {result.stdout}")
     
     # Save temperature to file
