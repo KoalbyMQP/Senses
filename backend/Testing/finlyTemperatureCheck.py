@@ -38,6 +38,10 @@ else:
     socket.setsockopt(zmq.RCVTIMEO, 120000)  # 120-second timeout 
     print("ZMQ connection established to port 5560 for forehead coordinates")
 
+    # Give some time for the connection to establish
+    print("Waiting for connection to establish...")
+    time.sleep(2)
+
     # Try to receive coordinates from the temperature demo
     print("Waiting for forehead coordinates from thermometer demo (timeout: 120s)...")
     try:

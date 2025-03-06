@@ -198,13 +198,15 @@ while True:
         print(f"Sending average forehead coordinates (m): ({avg_x_meters:.6f}, {avg_y_meters:.6f}, {avg_z_meters:.6f})")
         coordinates_str = f"{avg_x_meters:.6f},{avg_y_meters:.6f},{avg_z_meters:.6f}"
         try:
-            # Sleep briefly to ensure the subscriber has time to connect
+            # Wait to ensure subscriber has time to connect
             print("Waiting for subscriber connection...")
-            time.sleep(1)
+            time.sleep(3)
             
-            # Send the coordinates once
-            socket.send_string(coordinates_str)
-            print(f"Sent coordinates: {coordinates_str}")
+            # Send the coordinates multiple times to ensure reception
+            for i in range(10):
+                socket.send_string(coordinates_str)
+                print(f"Sent coordinates ({i+1}/10): {coordinates_str}")
+                time.sleep(0.5)
             
             print("Coordinates sent successfully!")
             
