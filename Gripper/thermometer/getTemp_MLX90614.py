@@ -2,6 +2,7 @@ import smbus
 import time
 import tkinter as tk
 from tkinter import StringVar
+import sys
 
 class MLX90614():
     MLX90614_RAWIR1 = 0x04
@@ -56,6 +57,20 @@ def update_temp():
     root.after(200, update_temp)  # Update temperature every 200ms
 
 if __name__ == "__main__":
+    # Check if --cli argument is provided
+    # This allows running in CLI mode without GUI for subprocess calls
+    if "--cli" in sys.argv:
+        try:
+            sensor = MLX90614()
+            ambient_temp = sensor.get_amb_temp()
+            object_temp = sensor.get_obj_temp()
+            print(f"Ambient Temperature: {ambient_temp:.2f} °C")
+            print(f"Object Temperature: {object_temp:.2f} °C")
+        except Exception as e:
+            print(f"Error: {e}")
+        sys.exit(0)
+    
+    # If no --cli argument, run with GUI
     sensor = MLX90614()
 
     # Create the Tkinter window

@@ -14,7 +14,7 @@ from backend.KoalbyHumanoid.Robot import Robot
 from backend.KoalbyHumanoid.trajPlannerTime import TrajPlannerTime
 from backend.Testing import finlyViaPoints as via
 import os
-from Gripper.thermometer.getTemp_MLX90614 import MLX90614
+import subprocess
 
 # Parse arguments
 parser = argparse.ArgumentParser(description='Temperature check robot movement')
@@ -168,15 +168,25 @@ print("Reached forehead position. Holding for temperature measurement...")
 # Hold at forehead position for 3 seconds
 time.sleep(3)
 
-# Get temperature
-sensor = MLX90614()  # Initialize the temperature sensor
-ambient_temp = sensor.get_amb_temp()  # Get ambient temperature
-object_temp = sensor.get_obj_temp()  # Get object temperature
+# Run temperature script as a subprocess outside of virtual environment
+print("Running temperature measurement script...")
+temp_script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../Gripper/thermometer/getTemp_MLX90614.py")
+temp_script_path = os.path.normpath(temp_script_path)
+print(f"Temperature script path: {temp_script_path}")
 
-# Save temperature to file
-with open("Gripper/thermometer/temperature.txt", "w") as temp_file:
-    temp_file.write(f"Ambient Temperature: {ambient_temp:.2f} °C\n")
-    temp_file.write(f"Object Temperature: {object_temp:.2f} °C\n")
+try:
+    # Run the temperature script and capture its output
+    result = subprocess.run(["python3", temp_script_path, "--cli"], capture_output=True, text=True, check=True)
+    print(f"Temperature script output: {result.stdout}")
+    
+    # Save temperature to file
+    with open("Gripper/thermometer/temperature.txt", "w") as temp_file:
+        temp_file.write(result.stdout)
+    
+    print("Temperature data saved to temperature.txt")
+except subprocess.CalledProcessError as e:
+    print(f"Error running temperature script: {e}")
+    print(f"Error output: {e.stderr}")
 
 print("Temperature check movement complete.") 
 
