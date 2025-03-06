@@ -102,8 +102,8 @@ print("Target position in robot frame:", C)
 # Define trajectory from current position to target position
 leftArmTraj = [
     [[0,0,0], [20,20,20]],
-    [[.50575,  -.006620, .28607],
-    [C[0],  C[1], C[2]] ],
+    [[.49076, -.08197, .76541],  # Starting position
+     [C[0], C[1], C[2]]],        # Target position (from camera)
     [[0,0,0], [0,0,0]],
     [[0,0,0], [0,0,0]]
 ]

@@ -135,8 +135,8 @@ z_coord = float(C[2][0])
 # Set up trajectory for moving to forehead
 leftArmTraj = [
     [[0,0,0], [20,20,20]],
-    [[.50575,  -.006620, .28607],
-   [x_coord, y_coord, z_coord] ],
+    [[.49076, -.08197, .76541],  # Starting position
+     [x_coord, y_coord, z_coord]],        # Target position (from camera)
     [[0,0,0], [0,0,0]],
     [[0,0,0], [0,0,0]]
 ]
