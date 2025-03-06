@@ -404,10 +404,6 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
                     print("Background execution thread started")
                 except Exception as e:
                     print(f"METHOD 2 FAILED to start thread: {e}")
-                
-                # METHOD 3: Emergency direct method - Run the robot movement code directly in this process
-                print("METHOD 3: Emergency direct method - Running robot movement directly...")
-                self._emergency_direct_robot_movement(coordinates_str)
                     
             except zmq.error.Again:
                 print("Timeout waiting for coordinates from temperature demo")
@@ -459,12 +455,6 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
                     time.sleep(20)
                     
                     print("SPECIAL FAILSAFE CHECK: Checking if temperature demo worked...")
-                    
-                    # If robot process hasn't been started, trigger emergency method with default coordinates
-                    if not hasattr(self, 'robot_process') or self.robot_process is None:
-                        print("FAILSAFE ACTIVATED: No robot process detected, using emergency method")
-                        default_coordinates = "0.49076,-0.08197,0.76541"
-                        self._emergency_direct_robot_movement(default_coordinates)
                 
                 # Start the delayed check in a background thread
                 import threading
@@ -537,185 +527,27 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
 
     def stop(self, *args, **kwargs):
         # Terminate speech process if running
-        if self.speech_process:
+        if hasattr(self, 'speech_process') and self.speech_process is not None:
             try:
-                print("Terminating speech process...")
                 os.killpg(os.getpgid(self.speech_process.pid), signal.SIGTERM)
+                print("Speech process terminated")
             except Exception as e:
                 print(f"Error terminating speech process: {e}")
-        
-        # Terminate temperature process if running
-        if self.temperature_process:
-            try:
-                print("Terminating temperature process...")
-                os.killpg(os.getpgid(self.temperature_process.pid), signal.SIGTERM)
-            except Exception as e:
-                print(f"Error terminating temperature process: {e}")
                 
         # Terminate robot process if running
-        if self.robot_process:
+        if hasattr(self, 'robot_process') and self.robot_process is not None:
             try:
-                print("Terminating robot process...")
                 os.killpg(os.getpgid(self.robot_process.pid), signal.SIGTERM)
+                print("Robot process terminated")
             except Exception as e:
                 print(f"Error terminating robot process: {e}")
-        
-        # Close ZMQ sockets
-        try:
-            self.socket.close()
-            self.coord_socket.close()
-            self.context.term()
-            self.coord_context.term()
-        except Exception as e:
-            print(f"Error closing ZMQ sockets: {e}")
-            
-        # Close measurement file if open
-        if hasattr(self, 'measurements_file'):
-            self.measurements_file.close()
+                
+        # Terminate temperature process if running
+        if hasattr(self, 'temperature_process') and self.temperature_process is not None:
+            try:
+                os.killpg(os.getpgid(self.temperature_process.pid), signal.SIGTERM)
+                print("Temperature process terminated")
+            except Exception as e:
+                print(f"Error terminating temperature process: {e}")
 
         super().stop(*args, **kwargs) 
-
-    def _emergency_direct_robot_movement(self, coordinates_str):
-        """
-        Direct execution of robot temperature check functionality in case all other methods fail.
-        This bypasses the finlyTemperatureCheck.py script completely and runs the functionality directly.
-        """
-        print("=== EMERGENCY DIRECT ROBOT MOVEMENT ===")
-        try:
-            # Parse the coordinates
-            coords = [float(x) for x in coordinates_str.split(',')]
-            print(f"Using coordinates: {coords}")
-            final_points = np.array(coords)
-            
-            # Import required modules
-            from backend.KoalbyHumanoid.Robot import Robot
-            from backend.KoalbyHumanoid.trajPlannerTime import TrajPlannerTime
-            from ikpy.chain import Chain
-            
-            # Find URDF file
-            def find_file(filename, search_path="/home/finley"): 
-                result = []    
-                for root, dirs, files in os.walk(search_path):        
-                    if filename in files: 
-                        result.append(os.path.join(root, filename))    
-                return result 
-                
-            # Find all instances of URDF file 
-            found_paths = find_file("FinleyJNEWARMS_2024_2.urdf")
-            print("Found URDF files at:", found_paths)
-            
-            if not found_paths:
-                print("ERROR: Could not find URDF file!")
-                return
-                
-            # Use the first instance
-            urdf_path = found_paths[0] 
-            
-            left_leg_chain = Chain.from_urdf_file(
-                urdf_path,
-                base_elements=['shoulder1_left', 'shoulder1_left'],
-                active_links_mask=[False, True, True, True, True, True, True]
-            )
-            
-            camera = Chain.from_urdf_file(
-                urdf_path,
-                base_elements=['neck', 'neck']   
-            )
-            
-            camera_angles=np.array([0,0,0,0])
-            camera_frame_transformation=camera.forward_kinematics(camera_angles)
-            
-            # Initialize robot
-            is_real = True
-            robot = Robot(is_real)
-            print("Robot initialized")
-            
-            # Set starting angles
-            robot.motors[5].target = (math.radians(0), 'P')
-            robot.motors[6].target = (math.radians(0), 'P')
-            robot.motors[7].target = (math.radians(0), 'P')
-            robot.motors[8].target = (math.radians(0), 'P')
-            robot.motors[9].target = (math.radians(0), 'P')
-            robot.motors[10].target = (math.radians(0), 'P')
-            
-            ik_solution_2 = np.array([0,0,0,0,0,0,0])
-            prevTime = time.time()
-            simStartTime = time.time()
-            
-            # Wait for robot to reach starting position
-            while time.time() - simStartTime < 2:
-                time.sleep(0.01)
-                robot.moveAllToTarget()
-            
-            # Transform the coordinates from camera frame to robot frame
-            B = np.array([[final_points[0]], [final_points[2]], [final_points[1]], [1]])
-            A = camera_frame_transformation
-            C = np.dot(A, B)
-            print(f"Transformed forehead coordinates: {C}")
-            
-            # Extract scalar values from the numpy array for formatting
-            x_coord = float(C[0][0])
-            y_coord = float(C[1][0])
-            z_coord = float(C[2][0])
-            
-            # Set up trajectory for moving to forehead
-            leftArmTraj = [
-                [[0,0,0], [20,20,20]],
-                [[.49076, -.08197, .76541],
-                 [x_coord, y_coord, z_coord]],
-                [[0,0,0], [0,0,0]],
-                [[0,0,0], [0,0,0]]
-            ]
-            
-            print(f"Moving robot arm to forehead coordinates: {x_coord:.4f}, {y_coord:.4f}, {z_coord:.4f}")
-            
-            lArm_tj_joint = TrajPlannerTime(leftArmTraj[0], leftArmTraj[1], leftArmTraj[2], leftArmTraj[3])
-            state = 0
-            startTime = time.time()
-            
-            print("Beginning movement to forehead position...")
-            
-            # Movement to forehead position
-            while time.time() - startTime < 20:
-                target_position_task = lArm_tj_joint.getQuinticPositions(time.time() - startTime)
-                target_position_2 = np.array([(target_position_task[0]), (target_position_task[1]), (target_position_task[2])])
-                ik_solution = left_leg_chain.inverse_kinematics(target_position_2, initial_position=ik_solution_2)
-                ik_solution_2 = ik_solution
-                motor_angle_task = ik_solution
-                
-                # Set motor targets exactly as in the original file
-                robot.motors[5].target = (-motor_angle_task[1], 'P')
-                robot.motors[6].target = (motor_angle_task[2], 'P')
-                robot.motors[7].target = (-motor_angle_task[3], 'P')
-                robot.motors[8].target = (motor_angle_task[4], 'P')
-                robot.motors[9].target = (motor_angle_task[5], 'P')
-                
-                # Move the robot
-                robot.moveAllToTarget()
-                time.sleep(0.01)
-            
-            print("Reached forehead position. Holding for temperature measurement...")
-            # Hold at forehead position for 3 seconds
-            time.sleep(3)
-            
-            # Return to starting position
-            print("Returning to starting position...")
-            robot.motors[5].target = (math.radians(0), 'P')
-            robot.motors[6].target = (math.radians(0), 'P')
-            robot.motors[7].target = (math.radians(0), 'P')
-            robot.motors[8].target = (math.radians(0), 'P')
-            robot.motors[9].target = (math.radians(0), 'P')
-            robot.motors[10].target = (math.radians(0), 'P')
-            
-            returnTime = time.time()
-            while time.time() - returnTime < 3:
-                robot.moveAllToTarget()
-                time.sleep(0.01)
-                
-            print("Temperature check movement complete.")
-            return True
-        except Exception as e:
-            print(f"Error in direct robot movement: {e}")
-            import traceback
-            traceback.print_exc()
-            return False 
