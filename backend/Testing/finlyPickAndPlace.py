@@ -36,7 +36,7 @@ if found_paths:
     left_arm_chain = Chain.from_urdf_file(
         urdf_path,
         base_elements=['shoulder1_left', 'shoulder1_left'],
-        active_links_mask=[False, True, True, True, True, True, True]
+        active_links_mask=[False, True, True, True, True, True, True, True]
     )
 
     camera = Chain.from_urdf_file(
