@@ -62,10 +62,14 @@ if __name__ == "__main__":
     if "--cli" in sys.argv:
         try:
             sensor = MLX90614()
-            ambient_temp = sensor.get_amb_temp()
-            object_temp = sensor.get_obj_temp()
-            print(f"Ambient Temperature: {ambient_temp:.2f} °C")
-            print(f"Object Temperature: {object_temp:.2f} °C")
+            ambient_temp_c = sensor.get_amb_temp()
+            object_temp_c = sensor.get_obj_temp()
+            ambient_temp_f = (ambient_temp_c * 9/5) + 32
+            object_temp_f = (object_temp_c * 9/5) + 32
+            
+            print(f"Ambient Temperature: {ambient_temp_c:.2f} °C ({ambient_temp_f:.2f} °F)")
+            print(f"Object Temperature: {object_temp_c:.2f} °C ({object_temp_f:.2f} °F)")
+            print(f"Temperature reading successful!")
         except Exception as e:
             print(f"Error: {e}")
         sys.exit(0)

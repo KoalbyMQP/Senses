@@ -154,9 +154,9 @@ while time.time() - startTime < 20:
     motor_angle_task = ik_solution
     
     # Set motor targets exactly as in the original file
-    robot.motors[5].target = (-motor_angle_task[1], 'P')
+    robot.motors[5].target = (motor_angle_task[1], 'P')
     robot.motors[6].target = (motor_angle_task[2], 'P')
-    robot.motors[7].target = (-motor_angle_task[3], 'P')
+    robot.motors[7].target = (motor_angle_task[3], 'P')
     robot.motors[8].target = (motor_angle_task[4], 'P')
     robot.motors[9].target = (motor_angle_task[5], 'P')
     
@@ -172,6 +172,7 @@ time.sleep(3)
 print("Running temperature measurement script...")
 temp_script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../Gripper/thermometer/getTemp_MLX90614.py")
 temp_script_path = os.path.normpath(temp_script_path)
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 print(f"Temperature script path: {temp_script_path}")
 
 # Create a temporary shell script
@@ -179,24 +180,47 @@ temp_shell_script = "/tmp/temperature_measure.sh"
 with open(temp_shell_script, "w") as f:
     f.write(f"""#!/bin/bash
 echo "Starting temperature measurement..."
+export PYTHONPATH="{project_root}:$PYTHONPATH"
 cd {os.path.dirname(temp_script_path)}
-python3 {os.path.basename(temp_script_path)} --cli
+python3 {os.path.basename(temp_script_path)} --cli > /tmp/temperature_output.txt
+echo $? > /tmp/temperature_exit_code.txt
 """)
 os.chmod(temp_shell_script, 0o755)
 
 try:
-    # Run the shell script and capture its output
-    result = subprocess.run([temp_shell_script], capture_output=True, text=True, check=True)
-    print(f"Temperature script output: {result.stdout}")
+    # Launch in a new terminal window
+    temp_process = subprocess.Popen(
+        f"lxterminal --geometry=80x24 -e 'bash -c \"{temp_shell_script}; exec bash\"'",
+        shell=True,
+        preexec_fn=os.setsid
+    )
     
-    # Save temperature to file
-    with open("Gripper/thermometer/temperature.txt", "w") as temp_file:
-        temp_file.write(result.stdout)
+    # Give it some time to run
+    print("Waiting for temperature measurement to complete...")
+    time.sleep(5)
     
-    print("Temperature data saved to temperature.txt")
-except subprocess.CalledProcessError as e:
+    # Check if output file exists and read it
+    if os.path.exists("/tmp/temperature_output.txt"):
+        with open("/tmp/temperature_output.txt", "r") as output_file:
+            temperature_output = output_file.read()
+            print(f"Temperature script output: {temperature_output}")
+        
+        # Save temperature to file
+        with open("Gripper/thermometer/temperature.txt", "w") as temp_file:
+            temp_file.write(temperature_output)
+        
+        print("Temperature data saved to temperature.txt")
+    else:
+        print("Temperature output file not found")
+        
+    # Check exit code
+    if os.path.exists("/tmp/temperature_exit_code.txt"):
+        with open("/tmp/temperature_exit_code.txt", "r") as code_file:
+            exit_code = code_file.read().strip()
+            print(f"Temperature script exit code: {exit_code}")
+            
+except Exception as e:
     print(f"Error running temperature script: {e}")
-    print(f"Error output: {e.stderr}")
 
 print("Temperature check movement complete.") 
 
