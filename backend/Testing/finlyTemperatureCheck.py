@@ -46,7 +46,7 @@ else:
     print("Waiting for forehead coordinates from thermometer demo (timeout: 120s)...")
     try:
         message = socket.recv_string()
-        print(f"Raw message received: {message}")
+        print(f"Raw message received: {message}")   
         
         try:
             coordinates = [float(x) for x in message.split(',')]
