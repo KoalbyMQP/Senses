@@ -149,7 +149,7 @@ while time.time() - startTime < 20:
 target_position_2 = target_position_2
 turnPosition = target_position_2
 turnAngles = motor_angle_task
-
+"""""
 # Phase 2: Orient the gripper for grasping
 print("Phase 2: Orienting gripper")
 
@@ -203,3 +203,4 @@ while time.time() - startTime < 5:  # 5 seconds to close
     time.sleep(0.01)
 
 print("Pick and place operation complete")
+"""
