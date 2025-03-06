@@ -122,7 +122,7 @@ while time.time() - simStartTime < 2:
     robot.moveAllToTarget()
 
 # Transform the coordinates from camera frame to robot frame
-B = np.array([[final_points[0]], [final_points[2]], [final_points[1]], [1]])
+B = np.array([[final_points[0]], [final_points[1]], [final_points[2]], [1]])
 A = camera_frame_transformation
 C = np.dot(A, B)
 print(f"Transformed forehead coordinates: {C}")
@@ -131,7 +131,7 @@ print(f"Transformed forehead coordinates: {C}")
 x_coord = float(C[0][0])
 y_coord = float(C[1][0])
 z_coord = float(C[2][0])
-
+    
 # Set up trajectory for moving to forehead
 leftArmTraj = [
     [[0,0,0], [20,20,20]],
