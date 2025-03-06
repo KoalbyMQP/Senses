@@ -74,7 +74,7 @@ coord_sub.connect("tcp://localhost:5559")
 print("Waiting for coordinates from ZMQ...")
 while True:
     poller = zmq.Poller()
-    poller.register(coord_sub, zmq.POLLIN)
+    poller.register(coord_sub, zmq.POLLIN)                      
     socks = dict(poller.poll(1000))  # wait 1000 ms for a message
     if coord_sub in socks and socks[coord_sub] == zmq.POLLIN:
         coord_str = coord_sub.recv_string(zmq.NOBLOCK)
