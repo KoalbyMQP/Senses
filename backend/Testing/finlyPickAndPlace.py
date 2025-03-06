@@ -69,23 +69,28 @@ context_zmq = zmq.Context()
 coord_sub = context_zmq.socket(zmq.SUB)
 coord_sub.setsockopt_string(zmq.SUBSCRIBE, "")
 coord_sub.connect("tcp://localhost:5559")
-poller = zmq.Poller()
-poller.register(coord_sub, zmq.POLLIN)
-socks = dict(poller.poll(200))  # wait 200 ms for a message
-if coord_sub in socks and socks[coord_sub] == zmq.POLLIN:
-    coord_str = coord_sub.recv_string(zmq.NOBLOCK)
-    try:
-        coord_vals = [float(val) for val in coord_str.split(",")]
-        if len(coord_vals) < 3:
-            raise ValueError("Not enough coordinate values received!")
-        final_points = np.array(coord_vals[:3])
-        print("Received coordinates from speech demo:", final_points)
-    except Exception as e:
-        print("Error parsing coordinates from speech demo, using default coordinates. Error:", e)
-        final_points = np.array([0, 0, -0.3])
-else:
-    print("Warning: No coordinates received from speech demo, using default coordinates.")
-    final_points = np.array([0, 0, -0.3])
+
+# Loop until we get the coordinates from ZMQ
+print("Waiting for coordinates from ZMQ...")
+while True:
+    poller = zmq.Poller()
+    poller.register(coord_sub, zmq.POLLIN)
+    socks = dict(poller.poll(1000))  # wait 1000 ms for a message
+    if coord_sub in socks and socks[coord_sub] == zmq.POLLIN:
+        coord_str = coord_sub.recv_string(zmq.NOBLOCK)
+        try:
+            coord_vals = [float(val) for val in coord_str.split(",")]
+            if len(coord_vals) < 3:
+                print("Not enough coordinate values received, waiting for valid coordinates...")
+                continue
+            final_points = np.array(coord_vals[:3])
+            print("Received coordinates from speech demo:", final_points)
+            break
+        except Exception as e:
+            print("Error parsing coordinates from speech demo:", e)
+            print("Waiting for valid coordinates...")
+    else:
+        print("No coordinates received yet, continuing to wait...")
 
 # Apply camera frame transformation to final_points
 B = np.array([[final_points[0]], [final_points[1]], [final_points[2]], [1]])
