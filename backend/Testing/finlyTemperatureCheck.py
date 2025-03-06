@@ -96,7 +96,7 @@ camera_angles=np.array([0,0,0,0])
 camera_frame_transformation=camera.forward_kinematics(camera_angles)
 
 # sim or real robot
-is_real = True
+is_real = False
 robot = Robot(is_real)
 print("Temperature Check Setup Complete")
 
