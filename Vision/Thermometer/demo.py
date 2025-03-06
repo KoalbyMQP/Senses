@@ -203,12 +203,8 @@ while True:
             time.sleep(3)
             
             # Send the coordinates multiple times to ensure reception
-            for i in range(10):
-                socket.send_string(coordinates_str)
-                print(f"Sent coordinates ({i+1}/10): {coordinates_str}")
-                time.sleep(0.5)
-            
-            print("Coordinates sent successfully!")
+            socket.send_string(coordinates_str)
+            print(f"Sent coordinates: {coordinates_str}")
             
             # Keep the window open briefly to show success message
             cv2.putText(frame, "Coordinates sent successfully!", 
