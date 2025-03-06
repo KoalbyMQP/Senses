@@ -93,8 +93,9 @@ while time.time() - simStartTime < 2:
 # Transform coordinates from camera frame to robot frame
 # Note the coordinate system as described: Positive X is left, Z through robot, positive Y is up
 # So: X→X, Y→Z, Z→Y ?
-B = np.array([[final_points[0]], [final_points[2]], [final_points[1]], [1]])
+B = np.array([[final_points[0]], [-final_points[2]], [-final_points[1]], [1]])
 A = camera_frame_transformation
+print(A)
 C = np.dot(A, B)
 print("Target position in robot frame:", C)
 
@@ -148,7 +149,7 @@ while time.time() - startTime < 20:
 target_position_2 = target_position_2
 turnPosition = target_position_2
 turnAngles = motor_angle_task
-
+"""""
 # Phase 2: Orient the gripper for grasping
 print("Phase 2: Orienting gripper")
 
@@ -202,3 +203,4 @@ while time.time() - startTime < 5:  # 5 seconds to close
     time.sleep(0.01)
 
 print("Pick and place operation complete")
+"""
