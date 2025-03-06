@@ -131,8 +131,8 @@ z_coord = float(C[2][0])
 # Set up trajectory for moving to forehead
 leftArmTraj = [
     [[0,0,0], [20,20,20]],
-    [[.49076, -.08197, .76541],
-     [x_coord, y_coord, z_coord]],
+    [[.50575,  -.006620, .28607],
+   [x_coord, y_coord, z_coord] ],
     [[0,0,0], [0,0,0]],
     [[0,0,0], [0,0,0]]
 ]
