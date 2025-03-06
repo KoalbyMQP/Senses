@@ -4,7 +4,8 @@ import matplotlib.pyplot as plt
 from ikpy.chain import Chain
 from ikpy.utils import plot as plot_utils
 import sys, time, math, array
-import numpy as np
+import zmq
+import subprocess
 
 sys.path.append("./")
 
@@ -63,11 +64,35 @@ while time.time() - simStartTime < 2:
     #robot.IMUBalance(0,0)
     robot.moveAllToTarget()
     
-# conversion of final points from camera coordinate systm to rorbot coordinate system
-final_points=np.array([0, 0, -.3])
-B=np.array([[final_points[0]],[final_points[1]],[final_points[2]],[1]])
-A= camera_frame_transformation
-C = np.dot(A, B)
+# Attempt to receive coordinates from thermometer demo via ZMQ
+print("Attempting to receive coordinates from thermometer demo...")
+context_zmq = zmq.Context()
+coord_sub = context_zmq.socket(zmq.SUB)
+coord_sub.setsockopt_string(zmq.SUBSCRIBE, "")
+coord_sub.connect("tcp://localhost:5560")  # Connect to the port where demo.py is sending coordinates
+poller = zmq.Poller()
+poller.register(coord_sub, zmq.POLLIN)
+print("Waiting for coordinates (timeout in 10 seconds)...")
+socks = dict(poller.poll(10000))  # wait 10 seconds for a message
+
+if coord_sub in socks and socks[coord_sub] == zmq.POLLIN:
+    coord_str = coord_sub.recv_string(zmq.NOBLOCK)
+    try:
+        coord_vals = [float(val) for val in coord_str.split(",")]
+        if len(coord_vals) < 3:
+            raise ValueError("Not enough coordinate values received!")
+        final_points = np.array(coord_vals[:3])
+        print("Received coordinates from thermometer demo:", final_points)
+    except Exception as e:
+        print("Error parsing coordinates from thermometer demo, using default coordinates. Error:", e)
+        final_points = np.array([0, 0, -0.3])
+else:
+    print("Warning: No coordinates received from thermometer demo, using default coordinates.")
+    final_points = np.array([0, 0, -0.3])
+
+# Apply camera frame transformation to final_points
+B = np.array([[final_points[0]], [final_points[1]], [final_points[2]], [1]])
+C = np.dot(camera_frame_transformation, B)
 
 leftArmTraj = [
     [[0,0,0], [20,20,20]],
@@ -80,24 +105,14 @@ leftArmTraj = [
 lArm_tj_joint = TrajPlannerTime(leftArmTraj[0], leftArmTraj[1], leftArmTraj[2], leftArmTraj[3])
 startTime = time.time()
 target_orientation_z=[1, 0, 0]
-Angle =0
-lastAngle=0
 
-# open gripper
+print("Moving arm to temperature check position...")
 
-while time.time() - startTime < 4:
-        Angle=Angle+.1
-        robot.motors[27].target = (math.radians(Angle), 'P')
-        #robot.IMUBalance(0, 0)
-        robot.moveAllToTarget()
-        lastAngle=Angle
-startTime = time.time()
-
-# move gripper
+# Move arm to target position
 while time.time() - startTime < 20:
         target_position_task = lArm_tj_joint.getQuinticPositions(time.time() - startTime)
         target_position_2 = np.array([(target_position_task[0]), (target_position_task[1]), (target_position_task[2])])
-        ik_solution = left_arm_chain.inverse_kinematics(target_position_2, initial_position=ik_solution_2 )
+        ik_solution = left_arm_chain.inverse_kinematics(target_position_2, initial_position=ik_solution_2)
         ik_solution_2=ik_solution
         motor_angle_task=ik_solution
         robot.motors[5].target = (motor_angle_task[1], 'P')
@@ -105,19 +120,18 @@ while time.time() - startTime < 20:
         robot.motors[7].target = (motor_angle_task[3], 'P')
         robot.motors[8].target = (motor_angle_task[4], 'P')
         robot.motors[9].target = (motor_angle_task[5], 'P')
-        print(motor_angle_task)
         turnPosition=target_position_2
         turnAngles=motor_angle_task
         #robot.IMUBalance(0, 0)
         robot.moveAllToTarget()
 
-# attempt to orientate
+# Orient the arm for temperature checking
 target_position_2=turnPosition
-ik_solution = left_arm_chain.inverse_kinematics(target_position_2, target_orientation=target_orientation_z, orientation_mode="Z", initial_position=ik_solution_2 )
+ik_solution = left_arm_chain.inverse_kinematics(target_position_2, target_orientation=target_orientation_z, orientation_mode="Z", initial_position=ik_solution_2)
 leftArmTraj = [
     [[0,0,0,0,0], [20,20,20,20,20]],
-    [[motor_angle_task[1],motor_angle_task[2],motor_angle_task[3],motor_angle_task[4],motor_angle_task[5] ],
-   [ik_solution[1], ik_solution[2], ik_solution[3],ik_solution[4],ik_solution[5]]] ,
+    [[motor_angle_task[1],motor_angle_task[2],motor_angle_task[3],motor_angle_task[4],motor_angle_task[5]],
+   [ik_solution[1], ik_solution[2], ik_solution[3],ik_solution[4],ik_solution[5]]],
     [[0,0,0,0,0], [0,0,0,0,0]],
     [[0,0,0,0,0], [0,0,0,0,0]]
 ]
@@ -132,11 +146,95 @@ while time.time() - startTime < 10:
         robot.motors[9].target = (target_position_joint[4], 'P')
        # robot.IMUBalance(0, 0)
         robot.moveAllToTarget()
-startTime = time.time()
 
-# close gripper
-while time.time() - startTime < 8:
-        lastAngle=lastAngle-.1
-        robot.motors[27].target = (math.radians(lastAngle), 'P')
-        #robot.IMUBalance(0, 0)
-        robot.moveAllToTarget()
+# Print message that target has been reached
+print("==============================================")
+print("TARGET DESTINATION REACHED!")
+print(f"Position at: X={C[0][0]:.4f}, Y={C[1][0]:.4f}, Z={C[2][0]:.4f}")
+print("==============================================")
+print("Temperature check can be performed now.")
+print("==============================================")
+
+# Run temperature script as a subprocess outside of virtual environment
+print("Running temperature measurement script...")
+temp_script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../Gripper/thermometer/getTemp_MLX90614.py")
+temp_script_path = os.path.normpath(temp_script_path)
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+print(f"Temperature script path: {temp_script_path}")
+
+# Create a temporary shell script
+temp_shell_script = "/tmp/temperature_measure.sh"
+with open(temp_shell_script, "w") as f:
+    f.write(f"""#!/bin/bash
+echo "Starting temperature measurement..."
+export PYTHONPATH="{project_root}:$PYTHONPATH"
+cd {os.path.dirname(temp_script_path)}
+python3 {os.path.basename(temp_script_path)} --cli
+python3 {os.path.basename(temp_script_path)} --cli > /tmp/temperature_output.txt
+echo $? > /tmp/temperature_exit_code.txt
+""")
+os.chmod(temp_shell_script, 0o755)
+
+try:
+    # Run the shell script and capture its output
+    result = subprocess.run([temp_shell_script], capture_output=True, text=True, check=True)
+    print(f"Temperature script output: {result.stdout}")
+    # Launch in a new terminal window
+    temp_process = subprocess.Popen(
+        f"lxterminal --geometry=80x24 -e 'bash -c \"{temp_shell_script}; exec bash\"'",
+        shell=True,
+        preexec_fn=os.setsid
+    )
+
+    # Save temperature to file
+    with open("Gripper/thermometer/temperature.txt", "w") as temp_file:
+        temp_file.write(result.stdout)
+    print("Waiting for temperature measurement to complete...")
+    time.sleep(5)
+
+    print("Temperature data saved to temperature.txt")
+except subprocess.CalledProcessError as e:
+    # Check if output file exists and read it
+    if os.path.exists("/tmp/temperature_output.txt"):
+        with open("/tmp/temperature_output.txt", "r") as output_file:
+            temperature_output = output_file.read()
+            print(f"Temperature script output: {temperature_output}")
+        
+        # Save temperature to file
+        with open("Gripper/thermometer/temperature.txt", "w") as temp_file:
+            temp_file.write(temperature_output)
+        
+        print("Temperature data saved to temperature.txt")
+    else:
+        print("Temperature output file not found")
+        
+    # Check exit code
+    if os.path.exists("/tmp/temperature_exit_code.txt"):
+        with open("/tmp/temperature_exit_code.txt", "r") as code_file:
+            exit_code = code_file.read().strip()
+            print(f"Temperature script exit code: {exit_code}")
+            
+except Exception as e:
+    print(f"Error running temperature script: {e}")
+    print(f"Error output: {e.stderr}")
+
+print("Temperature check movement complete.") 
+
+# Hold position for 30 seconds
+startTime = time.time()
+print(f"Holding position for 30 seconds...")
+while time.time() - startTime < 30:
+    time.sleep(0.01)
+    robot.moveAllToTarget()
+    # Display remaining time every 5 seconds
+    elapsed = time.time() - startTime
+    if int(elapsed) % 5 == 0 and int(elapsed) > 0 and elapsed - int(elapsed) < 0.02:
+        print(f"Remaining hold time: {30 - int(elapsed)} seconds")
+
+print("Temperature check complete. Returning to home position.")
+
+
+
+# Clean up ZMQ resources
+coord_sub.close()
+context_zmq.term()

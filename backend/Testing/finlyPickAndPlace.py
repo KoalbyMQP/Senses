@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from ikpy.chain import Chain
 from ikpy.utils import plot as plot_utils
 import sys, time, math, array
-import numpy as np
+import zmq
 
 sys.path.append("./")
 
@@ -64,11 +64,32 @@ while time.time() - simStartTime < 2:
     #robot.IMUBalance(0,0)
     robot.moveAllToTarget()
     
-# conversion of final points from camera coordinate systm to rorbot coordinate system
-final_points=np.array([0, 0, -.3])
-B=np.array([[final_points[0]],[final_points[1]],[final_points[2]],[1]])
-A= camera_frame_transformation
-C = np.dot(A, B)
+# Attempt to receive coordinates from speech demo for hand movement
+context_zmq = zmq.Context()
+coord_sub = context_zmq.socket(zmq.SUB)
+coord_sub.setsockopt_string(zmq.SUBSCRIBE, "")
+coord_sub.connect("tcp://localhost:5559")
+poller = zmq.Poller()
+poller.register(coord_sub, zmq.POLLIN)
+socks = dict(poller.poll(200))  # wait 200 ms for a message
+if coord_sub in socks and socks[coord_sub] == zmq.POLLIN:
+    coord_str = coord_sub.recv_string(zmq.NOBLOCK)
+    try:
+        coord_vals = [float(val) for val in coord_str.split(",")]
+        if len(coord_vals) < 3:
+            raise ValueError("Not enough coordinate values received!")
+        final_points = np.array(coord_vals[:3])
+        print("Received coordinates from speech demo:", final_points)
+    except Exception as e:
+        print("Error parsing coordinates from speech demo, using default coordinates. Error:", e)
+        final_points = np.array([0, 0, -0.3])
+else:
+    print("Warning: No coordinates received from speech demo, using default coordinates.")
+    final_points = np.array([0, 0, -0.3])
+
+# Apply camera frame transformation to final_points
+B = np.array([[final_points[0]], [final_points[1]], [final_points[2]], [1]])
+C = np.dot(camera_frame_transformation, B)
 
 leftArmTraj = [
     [[0,0,0], [20,20,20]],
@@ -134,7 +155,6 @@ while time.time() - startTime < 10:
        # robot.IMUBalance(0, 0)
         robot.moveAllToTarget()
 startTime = time.time()
-
 # close gripper
 while time.time() - startTime < 8:
         lastAngle=lastAngle-.1
