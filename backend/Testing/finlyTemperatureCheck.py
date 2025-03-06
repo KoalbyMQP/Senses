@@ -182,8 +182,7 @@ with open(temp_shell_script, "w") as f:
 echo "Starting temperature measurement..."
 export PYTHONPATH="{project_root}:$PYTHONPATH"
 cd {os.path.dirname(temp_script_path)}
-python3 {os.path.basename(temp_script_path)} --cli > /tmp/temperature_output.txt
-echo $? > /tmp/temperature_exit_code.txt
+python3 {os.path.basename(temp_script_path)}
 """)
 os.chmod(temp_shell_script, 0o755)
 
