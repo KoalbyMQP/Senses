@@ -93,6 +93,7 @@ else:
     final_points = np.array([0, 0, -0.3])
 
 # Apply camera frame transformation to final_points
+# NEGATIVE X AND NEGATIVE Z FOR CURRENT URDF
 B = np.array([[-final_points[0]], [final_points[2]], [-final_points[1]], [1]])
 C = np.dot(camera_frame_transformation, B)
 
