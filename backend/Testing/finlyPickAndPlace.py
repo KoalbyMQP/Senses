@@ -93,13 +93,13 @@ while True:
         print("No coordinates received yet, continuing to wait...")
 
 # Apply camera frame transformation to final_points
-B = np.array([[final_points[0]], [final_points[1]], -[final_points[2]], [1]])
+B = np.array([[-final_points[0]], [final_points[1]], [-final_points[2]], [1]])
 C = np.dot(camera_frame_transformation, B)
 
 leftArmTraj = [
     [[0,0,0], [20,20,20]],
     [[.50575,  -.006620, .28607],
-   [C[0],  C[1], C[2] - 0.3] ],
+   [C[0],  C[1], C[2]] ],
     [[0,0,0], [0,0,0]],
     [[0,0,0], [0,0,0]]
 ]
