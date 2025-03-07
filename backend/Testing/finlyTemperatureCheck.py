@@ -36,6 +36,7 @@ camera = Chain.from_urdf_file(
     urdf_path,
     base_elements=['neck', 'neck']
 )
+
 #forward kinematics for camera chain
 camera_angles=np.array([0,0,0,0])
 camera_frame_transformation=camera.forward_kinematics(camera_angles)
@@ -92,13 +93,13 @@ else:
     final_points = np.array([0, 0, -0.3])
 
 # Apply camera frame transformation to final_points
-B = np.array([[final_points[0]], [final_points[2]], [final_points[1] - 0.3], [1]])
+B = np.array([[final_points[0]], [final_points[2]], [final_points[1]], [1]])
 C = np.dot(camera_frame_transformation, B)
 
 leftArmTraj = [
     [[0,0,0], [20,20,20]],
     [[.50575,  -.006620, .28607],
-   [C[0],  C[1], C[2]] ],
+   [C[0],  C[1], C[2] - 0.3] ],
     [[0,0,0], [0,0,0]],
     [[0,0,0], [0,0,0]]
 ]
