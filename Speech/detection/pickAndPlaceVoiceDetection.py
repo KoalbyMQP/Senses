@@ -13,7 +13,7 @@ from Speech.config import initialize_api_keys
 initialize_api_keys()
 
 from Listen.audio_capture import capture_audio
-from Listen.transcription import transcribe_with_api, transcribe_with_google, transcribe_with_whisper
+from Listen.transcription import transcribe_with_api, transcribe_with_google
 from Speech.tts import play_tts
 from Speech.auditing import audit_command  
 
