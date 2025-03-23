@@ -10,6 +10,8 @@ class HostPi:
     def __init__(self):
         self.context = zmq.Context()
         
+        self.venv_path = self._get_venv_path()
+        
         self.host_ip = self._get_host_ip()
         print(f"\n=== Host Pi IP: {self.host_ip} ===")
         print("Use this IP when starting the client Pi\n")
@@ -66,11 +68,23 @@ class HostPi:
         except Exception as e:
             print(f"Failed to play TTS using espeak: {e}")
 
+    def _get_venv_path(self):
+        """Get the currently activated virtual environment path or use default"""
+        active_venv = os.environ.get('VIRTUAL_ENV')
+        if active_venv:
+            print(f"Using active virtual environment: {active_venv}")
+            return active_venv
+        
+        # Fallback to hardcoded path 
+        fallback_path = "/home/finley/Documents/GitHub/Senses/myvirtual"
+        print(f"No active virtual environment detected. Using default: {fallback_path}")
+        return fallback_path
+
     def _start_voice_detection(self):
         """Start voice detection with error handling"""
         current_dir = os.path.dirname(os.path.abspath(__file__))
         voice_script = os.path.join(current_dir, "..", "..", "Speech", "detection", "gripperswapVoiceDetection.py")
-        venv_path = "/home/finley/Documents/GitHub/Senses/myvirtual"
+        venv_path = self.venv_path
         print(f"Current directory: {current_dir}")
         print(f"Voice script: {voice_script}")
         print(f"Venv path: {venv_path}")
@@ -96,7 +110,7 @@ python3 {os.path.basename(voice_script)} || read -p "Error occurred! Press Enter
         """Start confirmation listener in new terminal"""
         current_dir = os.path.dirname(os.path.abspath(__file__))
         listener_script = os.path.join(current_dir, "confirmationListener.py")
-        venv_path = "/home/finley/Documents/GitHub/Senses/myvirtual" 
+        venv_path = self.venv_path
         
         temp_script = "/tmp/confirmationListener.sh"
         with open(temp_script, "w") as f:
