@@ -191,6 +191,13 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
         self._temp_demo_running = False
         self._main_pipeline_started = False
         
+        # Debug: Check ZMQ socket
+        print("DEBUG: ZMQ socket ready, waiting for commands...")
+        print(f"DEBUG: Target object is currently: {target_object}")
+        
+        # Force display flag to true
+        self._displayFrames = True
+        
         while target_object is None and not run_temperature_demo:
             try:
                 command = self.socket.recv_string(flags=zmq.NOBLOCK)
