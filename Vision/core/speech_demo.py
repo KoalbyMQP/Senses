@@ -35,6 +35,18 @@ class SpeechEnabledDemo(Demo):
         self.coord_socket = self.coord_context.socket(zmq.PUB)
         self.coord_socket.bind("tcp://*:5559")
 
+    def _get_venv_path(self):
+        """Get the currently activated virtual environment path or use default"""
+        active_venv = os.environ.get('VIRTUAL_ENV')
+        if active_venv:
+            print(f"Using active virtual environment: {active_venv}")
+            return active_venv
+        
+        # Fallback to hardcoded path 
+        fallback_path = "/home/finley/Documents/GitHub/Senses/venv"
+        print(f"No active virtual environment detected. Using default: {fallback_path}")
+        return fallback_path
+
     def filter_measurements_iqr(self, measurements):
         print(f"Starting IQR filtering with {len(measurements)} measurements")
         
@@ -102,9 +114,7 @@ class SpeechEnabledDemo(Demo):
             project_root = os.path.dirname(os.path.dirname(current_dir))
             speech_script_path = os.path.join(project_root, "Speech", "detection", "pickAndPlaceVoiceDetection.py")
             
-            venv_path = os.environ.get('VIRTUAL_ENV', '')
-            if not venv_path:
-                venv_path = "/home/finley/Documents/GitHub/Senses/myvirtual"  # Default path if not in virtual env
+            venv_path = self._get_venv_path()
             
             # Create a temporary shell script for speech detection
             temp_speech_script = "/tmp/pickAndPlaceVoiceListener.sh"
@@ -141,9 +151,7 @@ python3 {os.path.basename(speech_script_path)} || echo "Error occurred! Press En
             project_root = os.path.dirname(os.path.dirname(current_dir))
             robot_script_path = os.path.join(project_root, "backend", "Testing", "finlyPickAndPlace.py")
             
-            venv_path = os.environ.get('VIRTUAL_ENV', '')
-            if not venv_path:
-                venv_path = "/home/finley/Documents/GitHub/Senses/myvirtual"  # Default path if not in virtual env
+            venv_path = self._get_venv_path()
             
             # Create a temporary shell script for robot control
             temp_robot_script = "/tmp/robotController.sh"
@@ -315,9 +323,7 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
                 print(f"Error: Temperature demo script not found at {temp_demo_path}")
                 return
             
-            venv_path = os.environ.get('VIRTUAL_ENV', '')
-            if not venv_path:
-                venv_path = "/home/finley/Documents/GitHub/Senses/myvirtual"  # Default path if not in virtual env
+            venv_path = self._get_venv_path()
             
             # Create a temporary shell script for temperature demo
             temp_script = "/tmp/temperature_demo.sh"
