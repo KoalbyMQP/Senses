@@ -17,6 +17,9 @@ from backend.KoalbyHumanoid.Electromagnet import Electromagnet
 TIME_BETWEEN_MOTOR_CHECKS = 2
 
 class Robot():
+    # remote host and port in coppelia sim
+    DEFAULT_HOST = '130.215.125.237'
+    DEFAULT_PORT = 23000
 
     # Initialization methods
 
@@ -35,7 +38,7 @@ class Robot():
         else:
             self.checkCoppeliaSimResponding()
 
-            self.client = RemoteAPIClient(host='130.215.125.237', port=23000)  # remote ip and port 
+            self.client = RemoteAPIClient(host=self.DEFAULT_HOST, port=self.DEFAULT_PORT)  # remote ip and port 
             self.sim = self.client.require('sim')
             self.motorMovePositionScriptHandle = self.sim.getScript(self.sim.scripttype_childscript, self.sim.getObject("./chest_respondable"))
             self.motors = self.sim_motors_init()
@@ -66,7 +69,7 @@ class Robot():
         print("Robot Created and Initialized")
 
     def checkCoppeliaSimResponding(self):
-        client = RemoteAPIClient(host='130.215.125.237', port=23000)  # remote ip and port 
+        client = RemoteAPIClient(host=self.DEFAULT_HOST, port=self.DEFAULT_PORT)  # remote ip and port 
         client._send({'func': '', 'args': ['']})
         if client.socket.poll(1000) == 0:
             raise Exception("CoppeliaSim is not responding. Restart CoppeliaSim and try again.")
