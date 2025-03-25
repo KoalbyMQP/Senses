@@ -384,6 +384,24 @@ class Demo:
             self._pm.updateColorCamConfig(**parsedConfig[Previews.color.name])
 
     def _showFramesCallback(self, frame, name):
+        print(f"DEBUG: Attempting to show frame: {name}, DisplayFrames={self._displayFrames}")
+        try:
+            if self._displayFrames:
+                # Check if window exists
+                try:
+                    cv2.getWindowProperty(name, cv2.WND_PROP_VISIBLE)
+                    print(f"DEBUG: Window {name} already exists")
+                except:
+                    print(f"DEBUG: Creating new window {name}")
+                    cv2.namedWindow(name, cv2.WINDOW_NORMAL)
+                    
+                cv2.imshow(name, frame)
+                print(f"DEBUG: Successfully displayed frame: {name}")
+        except Exception as e:
+            print(f"ERROR: Failed to display frame {name}: {e}")
+            import traceback
+            traceback.print_exc()
+        
         returnFrame = self.onShowFrame(frame, name)
         return returnFrame if returnFrame is not None else frame
 

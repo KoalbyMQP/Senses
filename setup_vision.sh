@@ -1,5 +1,10 @@
 #!/bin/bash
 
+export GDK_BACKEND=x11
+export QT_QPA_PLATFORM=xcb
+export DISPLAY=:0
+export XDG_SESSION_TYPE=x11
+
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
