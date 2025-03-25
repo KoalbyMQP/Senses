@@ -5,6 +5,8 @@ sounddevice
 pygame
 python-dotenv
 pyaudio
+matplotlib
+psutil
 
 # Speech specific 
 SpeechRecognition
@@ -14,3 +16,14 @@ openai
 depthai>=2.21.0
 depthai-sdk>=1.9.0
 opencv-python>=4.7.0
+
+# Locomotion specific
+ikpy
+cbor
+cbor2
+pyserial
+modern_robotics
+adafruit-circuitpython-bno055
+coppeliasim-zmqremoteapi-client
+asyncio
+board
