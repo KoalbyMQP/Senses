@@ -11,7 +11,7 @@ from backend.KoalbyHumanoid.ArduinoSerial import ArduinoSerial
 from backend.KoalbyHumanoid.Motor import Motor
 from coppeliasim_zmqremoteapi_client import RemoteAPIClient
 from backend.KoalbyHumanoid import poe as poe
-from backend.KoalbyHumanoid.IMU import IMU
+# from backend.KoalbyHumanoid.IMU import IMU
 from backend.KoalbyHumanoid.Electromagnet import Electromagnet
 
 TIME_BETWEEN_MOTOR_CHECKS = 2
