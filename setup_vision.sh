@@ -87,6 +87,6 @@ fi
 
 echo -e "${GREEN}Starting Vision System...${NC}"
 echo -e "${YELLOW}Running: python3 depthai_demo.py${NC}"
-python3 depthai_demo.py -cnn yolo-v3-tiny-tf -s color "$@" -show -d || { echo -e "${RED}Failed to run depthai_demo.py${NC}"; exit 1; }
+python3 depthai_demo.py -cnn yolo-v3-tiny-tf -s color "$@" -show || { echo -e "${RED}Failed to run depthai_demo.py${NC}"; exit 1; }
 
 deactivate 
