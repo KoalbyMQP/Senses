@@ -203,7 +203,7 @@ while True:
             time.sleep(3)
             
             # Send the coordinates multiple times to ensure reception
-            for i in range(50):
+            for i in range(1000):
                 socket.send_string(coordinates_str)
                 print(f"Sent coordinates ({i+1}/1000): {coordinates_str}")
                 time.sleep(0.5)
