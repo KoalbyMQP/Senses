@@ -104,7 +104,7 @@ class SpeechEnabledDemo(Demo):
             
             venv_path = os.environ.get('VIRTUAL_ENV', '')
             if not venv_path:
-                venv_path = "/home/finley/Documents/GitHub/Senses/myvirtual"  # Default path if not in virtual env
+                venv_path = "/home/finley/Documents/GitHub/Senses/venv"  # Default path if not in virtual env
             
             # Create a temporary shell script for speech detection
             temp_speech_script = "/tmp/pickAndPlaceVoiceListener.sh"
@@ -143,7 +143,7 @@ python3 {os.path.basename(speech_script_path)} || echo "Error occurred! Press En
             
             venv_path = os.environ.get('VIRTUAL_ENV', '')
             if not venv_path:
-                venv_path = "/home/finley/Documents/GitHub/Senses/myvirtual"  # Default path if not in virtual env
+                venv_path = "/home/finley/Documents/GitHub/Senses/venv"  # Default path if not in virtual env
             
             # Create a temporary shell script for robot control
             temp_robot_script = "/tmp/robotController.sh"
@@ -317,7 +317,7 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
             
             venv_path = os.environ.get('VIRTUAL_ENV', '')
             if not venv_path:
-                venv_path = "/home/finley/Documents/GitHub/Senses/myvirtual"  # Default path if not in virtual env
+                venv_path = "/home/finley/Documents/GitHub/Senses/venv"  # Default path if not in virtual env
             
             # Create a temporary shell script for temperature demo
             temp_script = "/tmp/temperature_demo.sh"
