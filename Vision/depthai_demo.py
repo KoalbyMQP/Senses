@@ -12,8 +12,6 @@ import sys
 import os
 import platform
 from depthai_sdk.managers import ArgsManager
-from depthai_helpers.supervisor import Supervisor
-import signal
 
 def main():
     args = ArgsManager.parseArgs()
