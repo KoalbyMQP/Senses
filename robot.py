@@ -3,7 +3,7 @@ from typing import Callable
 from cyberonics_py import Robot, Device
 from cyberonics_py.graphics import Button, GraphicCell
 
-from targets import Depthai
+from .targets import Depthai
 class Finley(Robot):
     def __init__(self):
         self.control_cell = ControlCell()
