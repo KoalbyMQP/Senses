@@ -39,3 +39,6 @@ adafruit-circuitpython-bno055
 coppeliasim-zmqremoteapi-client
 asyncio
 board
+
+# Platform
+git+https://github.com/Skylerwiernik/cyberonics-py.git@master#egg=cyberonics-py
