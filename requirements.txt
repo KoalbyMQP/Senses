@@ -12,6 +12,7 @@ psutil
 # Speech specific 
 SpeechRecognition
 openai
+requests 
 
 # Vision specific
 depthai>=2.21.0
