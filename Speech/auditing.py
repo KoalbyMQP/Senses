@@ -75,7 +75,7 @@ def audit_command(text, audit_prompt, valid_check, openrouter_title, max_retries
                         "HTTP-Referer": "http://localhost/",
                         "X-Title": openrouter_title,
                     },
-                    model= "google/gemini-2.0-flash-exp:free",  
+                    model= "google/gemini-2.0-flash-thinking-exp:free",  
                     messages=[
                         {"role": "system", "content": audit_prompt},
                         {"role": "user", "content": text}
@@ -103,7 +103,7 @@ def audit_command(text, audit_prompt, valid_check, openrouter_title, max_retries
                         "X-Title": openrouter_title
                     },
                     json={
-                        "model": "google/gemini-2.0-flash-exp:free",  # Using lower-cost fallback
+                        "model": "google/gemini-2.0-flash-thinking-exp:free",
                         "messages": [
                             {"role": "system", "content": audit_prompt},
                             {"role": "user", "content": text}
