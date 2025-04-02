@@ -39,6 +39,7 @@ class Depthai(Target):
 
     def _run(self) -> Process:
         self.process = Process(target=depthai_demo)
+        self.process.start()
         return self.process
 
     async def _shutdown(self, beat):
