@@ -75,7 +75,7 @@ class HostPi:
             print(f"Using active virtual environment: {active_venv}")
             return active_venv
         
-        # Fallback to hardcoded path 
+        # Hardcode path fallback
         fallback_path = "/home/finley/Documents/GitHub/Senses/myvirtual"
         print(f"No active virtual environment detected. Using default: {fallback_path}")
         return fallback_path

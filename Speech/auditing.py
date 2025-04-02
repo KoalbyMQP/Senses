@@ -6,7 +6,6 @@ from openai import OpenAI
 
 from Speech.config import initialize_api_keys
 
-# Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -42,7 +41,6 @@ def audit_command(text, audit_prompt, valid_check, openrouter_title, max_retries
                     temperature=0,
                 )
                 
-                # Get response content
                 audited_text = completion.choices[0].message.content.strip()
                 logger.info(f"Audited text: {audited_text}")
                 
@@ -54,16 +52,14 @@ def audit_command(text, audit_prompt, valid_check, openrouter_title, max_retries
             except Exception as e:
                 logger.error(f"Error with OpenAI API on attempt {attempt+1}/{max_retries+1}: {str(e)}")
                 if attempt < max_retries:
-                    time.sleep(1)  # Wait before retry
+                    time.sleep(1) 
                 continue
                 
-    # Fallback to OpenRouter if OpenAI failed or API key not available
     openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
     if openrouter_api_key and openrouter_api_key != "YOUR_OPENROUTER_KEY":
         try:
             logger.info(f"Falling back to OpenRouter API: {text}")
             
-            # Method 1: Using OpenAI client with OpenRouter base URL
             try:
                 client = OpenAI(
                     base_url="https://openrouter.ai/api/v1",
@@ -91,7 +87,6 @@ def audit_command(text, audit_prompt, valid_check, openrouter_title, max_retries
             except Exception as e:
                 logger.error(f"Error with OpenRouter using OpenAI client: {str(e)}")
                 
-                # Method 2: Fallback to using direct requests if client approach fails
                 import requests
                 
                 response = requests.post(
@@ -115,11 +110,9 @@ def audit_command(text, audit_prompt, valid_check, openrouter_title, max_retries
                 
                 response.raise_for_status()
                 
-                # Log response for debugging
                 response_json = response.json()
                 logger.debug(f"OpenRouter API response: {json.dumps(response_json, indent=2)}")
-                
-                # Check if response has expected structure
+            
                 if 'choices' in response_json and len(response_json['choices']) > 0:
                     if 'message' in response_json['choices'][0] and 'content' in response_json['choices'][0]['message']:
                         audited_text = response_json['choices'][0]['message']['content'].strip()
@@ -134,6 +127,5 @@ def audit_command(text, audit_prompt, valid_check, openrouter_title, max_retries
         except Exception as e:
             logger.error(f"Error with OpenRouter API: {str(e)}")
     
-    # If all else fails, return the original text
     logger.warning("All API attempts failed, returning original text")
     return text

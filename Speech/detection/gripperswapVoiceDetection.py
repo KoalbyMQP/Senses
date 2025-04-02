@@ -106,7 +106,6 @@ class SpeechDetector:
         if audio is None or temp_audio is None:
             return None
 
-        # Attempt transcription using the API, then fall back to Google
         print("Transcribing speech...")
         text = transcribe_with_api(temp_audio)
         if not text:

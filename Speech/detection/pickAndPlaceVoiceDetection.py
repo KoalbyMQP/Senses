@@ -34,8 +34,6 @@ class SpeechDetector:
         self.speech_handler = None
         self.current_target = None
         self.openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
-        
-        # Enhanced auditing prompt with more flexible command recognition
         self.audit_prompt = """You are Finley, an elderly care robot with a pick and place system. Your task is to interpret user commands and return ONLY the name of the object to pick up or the special command.
 
 Valid objects are:
@@ -74,13 +72,11 @@ Return only a single valid object name, "temperature", or "invalid"."""
         normalized = text.lower()
         valid_objects = ["apple", "orange", "bottle", "cup", "remote"]
         
-        # Check for temperature requests 
         temperature_phrases = ["temperature", "body temperature", "check temperature", "get temperature"]
         for phrase in temperature_phrases:
             if phrase in normalized:
                 return "temperature"
         
-        # Check for pick up/grab/take/get commands with objects
         pick_up_words = ["pick up", "grab", "take", "get", "fetch", "bring"]
         
         for action in pick_up_words:
@@ -89,7 +85,6 @@ Return only a single valid object name, "temperature", or "invalid"."""
                     if obj in normalized:
                         return obj
                         
-        # Just object name
         for obj in valid_objects:
             if obj in normalized and not any(word in normalized for word in ["don't", "do not", "isn't", "is not"]):
                 return obj
@@ -101,7 +96,6 @@ Return only a single valid object name, "temperature", or "invalid"."""
         if audio is None or temp_audio is None:
             return
             
-        # Attempt transcription: API -> Whisper -> Google
         text = transcribe_with_api(temp_audio)
         if not text:
             text = transcribe_with_whisper(temp_audio)
@@ -113,11 +107,9 @@ Return only a single valid object name, "temperature", or "invalid"."""
             print("No speech detected")
             return
         
-        # Try direct parsing first
         object_name = self.parse_command(text)
         
         if object_name is None:
-            # Fall back to AI auditing
             audited_text = audit_command(
                 text,
                 self.audit_prompt,
@@ -136,7 +128,6 @@ Return only a single valid object name, "temperature", or "invalid"."""
                 print("Command not recognized.")
                 play_tts("Please say pick up followed by an object name, or ask me to check temperature.")
         else:
-            # Directly parsed successfully
             print(f"Directly parsed: {text} → {object_name}")
             if object_name == "temperature":
                 self._process_valid_command("get temperature")
@@ -198,7 +189,6 @@ class SpeechHandler:
     def process_command(self, spoken_text):
         lower_text = spoken_text.lower()
         
-        # Handle temperature command
         if "temperature" in lower_text:
             message = "get temperature"
             print(f"Attempting to send command: {message}")
@@ -211,7 +201,6 @@ class SpeechHandler:
                 print(f"Error sending message: {e}")
             return
             
-        # Handle pick up command
         if "pick up" in lower_text:
             target = lower_text.split("pick up ")[-1].strip()
             message = f"pick up {target}"

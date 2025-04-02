@@ -2,7 +2,6 @@ import os
 import speech_recognition as sr
 import sounddevice
 
-# Cache for the Whisper model
 _whisper_model = None
 
 def load_whisper_model(model_name="turbo"):

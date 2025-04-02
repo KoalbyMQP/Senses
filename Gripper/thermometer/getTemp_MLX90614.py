@@ -41,7 +41,6 @@ class MLX90614():
         data = self.read_reg(self.MLX90614_TOBJ1)
         return self.data_to_temp(data)
 
-# GUI Setup
 def update_temp():
     try:
         obj_temp_c = round(sensor.get_obj_temp(), 1)
@@ -54,11 +53,9 @@ def update_temp():
         obj_temp_f_label.set("Error")
         print(f"Error reading sensor: {e}")
 
-    root.after(200, update_temp)  # Update temperature every 200ms
+    root.after(200, update_temp) 
 
 if __name__ == "__main__":
-    # Check if --cli argument is provided
-    # This allows running in CLI mode without GUI for subprocess calls
     if "--cli" in sys.argv:
         try:
             sensor = MLX90614()
@@ -74,16 +71,13 @@ if __name__ == "__main__":
             print(f"Error: {e}")
         sys.exit(0)
     
-    # If no --cli argument, run with GUI
     sensor = MLX90614()
 
-    # Create the Tkinter window
     root = tk.Tk()
     root.title("Temperature Display")
     root.geometry("800x400")
     root.configure(bg="black")
 
-    # Object Temp Labels
     tk.Label(root, text="Object Temperature", font=("Helvetica", 24), bg="black", fg="white").pack(pady=20)
     
     obj_temp_c_label = StringVar()
@@ -92,8 +86,5 @@ if __name__ == "__main__":
     tk.Label(root, textvariable=obj_temp_c_label, font=("Helvetica", 48), bg="black", fg="white").pack(pady=10)
     tk.Label(root, textvariable=obj_temp_f_label, font=("Helvetica", 48), bg="black", fg="white").pack(pady=10)
 
-    # Start updating temperatures
     update_temp()
-
-    # Start the Tkinter event loop
     root.mainloop()
