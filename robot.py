@@ -3,7 +3,7 @@ import asyncio
 from multiprocessing import Process
 from cyberonics_py import Robot, Device, Target
 from cyberonics_py.graphics import Button, GraphicCell
-from .Vision.depthai_demo import main as depthai_demo
+from Vision.depthai_demo import main as depthai_demo
 
 
 # from .targets import Depthai
