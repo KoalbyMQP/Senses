@@ -1,10 +1,10 @@
 import signal
 import atexit
 import sys
-from utils.config_helper import prepareConfManager
+from ..utils.config_helper import prepareConfManager
 from depthai_sdk.managers import ArgsManager
-from core.demo_base import Demo
-from gui.demo_gui import GuiApp
+from ..core.demo_base import Demo
+from ..gui.demo_gui import GuiApp
 
 def runQt():
     args = ArgsManager.parseArgs()

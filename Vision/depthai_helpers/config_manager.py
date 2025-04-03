@@ -6,7 +6,7 @@ import cv2
 import depthai as dai
 import numpy as np
 
-from depthai_helpers.cli_utils import cliPrint, PrintColors
+from .cli_utils import cliPrint, PrintColors
 from depthai_sdk.previews import Previews
 
 

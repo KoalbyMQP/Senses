@@ -1,6 +1,6 @@
 from pathlib import Path
 from depthai_sdk.managers import ArgsManager
-from depthai_helpers.config_manager import ConfigManager, DEPTHAI_VIDEOS
+from ..depthai_helpers.config_manager import ConfigManager, DEPTHAI_VIDEOS
 from depthai_sdk import downloadYTVideo
 
 def prepareConfManager(in_args):
