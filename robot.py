@@ -27,7 +27,7 @@ class ControlCell(Device):
         button = Button(text="Press me", onclick=button_pressed)
         super().__init__(properties=[], graphic_cell=GraphicCell([button]))
 
-    def add_listener(self, listener: Callable):
+    def listen(self, listener: Callable):
         self.listeners.append(listener)
 
 
