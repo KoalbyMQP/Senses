@@ -4,7 +4,7 @@ import signal
 import subprocess
 import zmq
 import numpy as np
-from core.demo_base import Demo
+from .demo_base import Demo
 from depthai_sdk.previews import Previews
 import sys
 import math

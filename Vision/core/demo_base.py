@@ -2,7 +2,7 @@ import os
 import time
 import cv2
 from pathlib import Path
-from utils.trackbars import noop
+from ..utils.trackbars import noop
 import depthai as dai
 
 class Demo:
