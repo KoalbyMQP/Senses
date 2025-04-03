@@ -1,8 +1,8 @@
 import signal
 import atexit
 import sys
-from utils.config_helper import prepareConfManager
-from core.speech_demo import SpeechEnabledDemo
+from ..utils.config_helper import prepareConfManager
+from ..core.speech_demo import SpeechEnabledDemo
 from depthai_sdk.managers import ArgsManager
 
 def runOpenCv():
