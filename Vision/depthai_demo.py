@@ -20,11 +20,11 @@ def main():
     gui_type = args.guiType
     
     if gui_type == "qt":
-        from runners.run_qt import runQt
+        from .runners.run_qt import runQt
         runQt()
     else:
         # Default to OpenCV interface
-        from runners.run_cv import runOpenCv
+        from .runners.run_cv import runOpenCv
         runOpenCv()
 
 if __name__ == "__main__":
