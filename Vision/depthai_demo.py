@@ -11,7 +11,7 @@ It detects the GUI type (Qt or OpenCV) and launches the appropriate demo.
 import sys
 import os
 import platform
-from depthai_sdk.managers import ArgsManager
+from .depthai_sdk.managers import ArgsManager
 
 def main():
     args = ArgsManager.parseArgs()
