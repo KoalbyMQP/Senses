@@ -17,7 +17,7 @@ class Demo:
     def run_all(self, conf):
         # If an external app is specified, delegate to it; otherwise just run the demo.
         if conf.args.app is not None:
-            from depthai_helpers.app_manager import App
+            from ..depthai_helpers.app_manager import App
             app = App(appName=conf.args.app)
             self.onAppSetup(app)
             app.createVenv()
@@ -55,7 +55,7 @@ class Demo:
         self._blobManager = None
 
         if self._conf.useNN:
-            from depthai_helpers.config_manager import DEPTHAI_ZOO
+            from ..depthai_helpers.config_manager import DEPTHAI_ZOO
             model_dir = Path(DEPTHAI_ZOO) / self._conf.getModelName()
             if not model_dir.exists():
                 print(f"Downloading model files to {model_dir}...")
@@ -349,7 +349,7 @@ class Demo:
     def _createQueueCallback(self, queueName):
         from depthai_sdk.previews import Previews
         if self._displayFrames and queueName in [Previews.disparityColor.name, Previews.disparity.name, Previews.depth.name, Previews.depthRaw.name]:
-            from utils.trackbars import Trackbars
+            from ..utils.trackbars import Trackbars
             Trackbars.createTrackbar('Disparity confidence', queueName, self.DISP_CONF_MIN, self.DISP_CONF_MAX, self._conf.args.disparityConfidenceThreshold,
                      lambda value: self._pm.updateDepthConfig(dct=value))
             if queueName in [Previews.depthRaw.name, Previews.depth.name]:
