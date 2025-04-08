@@ -38,7 +38,7 @@ class Depthai(Target):
         self.process = None
 
     def _run(self) -> Process:
-        self.process = Process(target=depthai_demo)
+        self.process = Process(target=depthai_demo, args=["-cnn", "yolo-v3-tiny-tf", "-s", "color"])
         self.process.start()
         return self.process
 
