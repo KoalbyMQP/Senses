@@ -1,9 +1,9 @@
+import sys
 from typing import Callable
 import asyncio
 from multiprocessing import Process
 from cyberonics_py import Robot, Device, Target
 from cyberonics_py.graphics import Button, GraphicCell
-from Vision.depthai_demo import main as depthai_demo
 
 
 # from .targets import Depthai
@@ -37,8 +37,13 @@ class Depthai(Target):
         super().__init__("Depthai", robot)
         self.process = None
 
+    def run_demo(self):
+        sys.argv = ["-cnn", "yolo-v3-tiny-tf", "-s", "color"]
+        from Vision.depthai_demo import main as depthai_demo
+        depthai_demo()
+
     def _run(self) -> Process:
-        self.process = Process(target=depthai_demo, args=["-cnn", "yolo-v3-tiny-tf", "-s", "color"])
+        self.process = Process(target=self.run_demo)
         self.process.start()
         return self.process
 
