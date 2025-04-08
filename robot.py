@@ -38,7 +38,7 @@ class Depthai(Target):
         self.process = None
 
     def run_demo(self):
-        sys.argv = ["-cnn", "yolo-v3-tiny-tf", "-s", "color"]
+        sys.argv = ["depthai_demo", "-cnn", "yolo-v3-tiny-tf", "-s", "color"]
         from Vision.depthai_demo import main as depthai_demo
         depthai_demo()
 
