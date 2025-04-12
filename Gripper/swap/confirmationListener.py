@@ -211,6 +211,9 @@ class ConfirmationListener:
                         current_gripper = int(float(current_gripper_str))
                         previous_gripper = int(float(previous_gripper_str))
                         voice_sent = float(voice_sent_str)
+                        host_forwarded = float(host_forwarded_str)
+                        client_received = float(client_received_str)
+                        processing_time = float(processing_time_str)
                         client_sent = float(client_sent_str)
 
                         self.last_status_msg = {
@@ -228,7 +231,24 @@ class ConfirmationListener:
                         self.angle = (self.target_position / STEPS_PER_REVOLUTION) * 360.0
                         self.angle %= 360
 
-                        print(f"Received confirmation: Gripper {previous_gripper} -> {current_gripper}. Status: {status}. Angle: {self.angle:.1f}°")
+                        total_latency_calc = client_sent - voice_sent
+                        voice_to_host = host_forwarded - voice_sent
+                        host_to_client = client_received - host_forwarded
+                        client_processing_end = client_received + processing_time
+                        client_to_confirmation = client_sent - client_processing_end
+
+                        print(f"\n=== Confirmation Received ==="
+                              f"\nStatus: {self.last_status_msg}"
+                              f"\nPrevious Gripper Cmd: {previous_gripper}"
+                              f"\nCurrent Gripper Cmd: {current_gripper}"
+                              f"\nTarget Position (0-11): {self.input_value}"
+                              f"\nAngle: {self.angle:.1f}°"
+                              f"\n--- Latency Breakdown ---"
+                              f"\nTotal: {total_latency_calc*1000:.2f}ms"
+                              f"\n  Voice -> Host:     {voice_to_host*1000:.2f}ms"
+                              f"\n  Host -> Client:    {host_to_client*1000:.2f}ms"
+                              f"\n  Client Processing: {processing_time*1000:.2f}ms"
+                              f"\n  Client -> Confirm: {client_to_confirmation*1000:.2f}ms")
 
                     except ValueError as ve:
                         print(f"Error parsing message parts: {ve} - Message: {message}")
