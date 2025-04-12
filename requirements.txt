@@ -5,10 +5,10 @@ scipy>=1.10.0
 sounddevice
 pygame
 python-dotenv
-portaudio19-dev
 pyaudio
 matplotlib
 psutil
+shapely
 
 # Speech specific 
 SpeechRecognition
