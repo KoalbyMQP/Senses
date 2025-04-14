@@ -139,7 +139,7 @@ python3 {os.path.basename(speech_script_path)} || echo "Error occurred! Press En
         try:
             current_dir = os.path.dirname(os.path.abspath(__file__))
             project_root = os.path.dirname(os.path.dirname(current_dir))
-            robot_script_path = os.path.join(project_root, "Gripper", "pickandplace", "finlyPickAndPlace.py")
+            robot_script_path = os.path.join(project_root, "backend", "Testing", "finlyPickAndPlace.py")
             
             venv_path = os.environ.get('VIRTUAL_ENV', '')
             if not venv_path:
@@ -359,7 +359,7 @@ python3 {os.path.basename(temp_demo_path)} -a -xyz -n 0 || echo "Error occurred!
                 
                 # METHOD 1: Try creating and running a script in a new terminal
                 print("METHOD 1: Launching temperature check script in new terminal...")
-                temp_robot_path = os.path.join(project_root, "Gripper", "thermometer", "finlyTemperatureCheck.py")
+                temp_robot_path = os.path.join(project_root, "backend", "Testing", "finlyTemperatureCheck.py")
                 
                 try:
                     # Create a temporary script to run the robot movement
