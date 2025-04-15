@@ -3,25 +3,12 @@ import sys
 import time
 import math
 import random
-
-WIDTH = 800
-HEIGHT = 600
-HALF_WIDTH = WIDTH // 2
-HALF_HEIGHT = HEIGHT // 2
+from pygame.locals import * 
 
 BLACK = (0, 0, 0)
 EVE_BLUE = (0, 200, 255)
 WHITE = (255, 255, 255)
 TRANSPARENT = (0, 0, 0, 0)
-
-EYE_SPACING = WIDTH * 0.45
-EYE_WIDTH = WIDTH * 0.35
-EYE_HEIGHT = EYE_WIDTH * 0.7
-PUPIL_SIZE = EYE_WIDTH * 0.3
-
-LEFT_EYE_X = HALF_WIDTH - (EYE_SPACING // 2)
-RIGHT_EYE_X = HALF_WIDTH + (EYE_SPACING // 2)
-EYE_Y = HALF_HEIGHT - 20
 
 BLINK_DURATION = 0.3
 EMOTION_TRANSITION_TIME = 0.5
@@ -30,9 +17,25 @@ class FinleyFace:
     def __init__(self):
         """Initialize Pygame, screen, clock, and eye states."""
         pygame.init()
-        self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
+
+        info = pygame.display.Info()
+        self.WIDTH = info.current_w
+        self.HEIGHT = info.current_h
+        self.HALF_WIDTH = self.WIDTH // 2
+        self.HALF_HEIGHT = self.HEIGHT // 2
+
+        self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT), FULLSCREEN | NOFRAME)
         pygame.display.set_caption("Finley")
         self.clock = pygame.time.Clock()
+
+        self.EYE_SPACING = self.WIDTH * 0.45
+        self.EYE_WIDTH = self.WIDTH * 0.35
+        self.EYE_HEIGHT = self.EYE_WIDTH * 0.7
+        self.PUPIL_SIZE = self.EYE_WIDTH * 0.3 
+
+        self.LEFT_EYE_X = self.HALF_WIDTH - (self.EYE_SPACING // 2)
+        self.RIGHT_EYE_X = self.HALF_WIDTH + (self.EYE_SPACING // 2)
+        self.EYE_Y = self.HALF_HEIGHT - 20 
 
         self.current_emotion = "neutral"
         self.target_emotion = "neutral"
@@ -79,7 +82,7 @@ class FinleyFace:
             "sad": {
                 "shape": "arc", "width_factor": 1.2, "height_factor": 1.1,
                 "start_angle": 180, "stop_angle": 360,
-                "offset_y": -EYE_HEIGHT * 0.3, "tilt_angle": 10, "rotation": 0
+                "offset_y": -self.EYE_HEIGHT * 0.3, "tilt_angle": 10, "rotation": 0
             },
             "curious": {
                 "shape": "oval", "width_factor": 1.2, "height_factor": 1.1,
@@ -88,7 +91,7 @@ class FinleyFace:
             "angry": {
                 "shape": "arc", "width_factor": 1.2, "height_factor": 0.7,
                 "start_angle": 180, "stop_angle": 360,
-                "offset_y": -EYE_HEIGHT * 0.2, "rotation": 0, "tilt_angle": 20
+                "offset_y": -self.EYE_HEIGHT * 0.2, "rotation": 0, "tilt_angle": 20
             },
             "surprised": {
                 "shape": "oval", "width_factor": 1.2, "height_factor": 1.4,
@@ -97,7 +100,7 @@ class FinleyFace:
             "sleepy": {
                 "shape": "arc", "width_factor": 1.2, "height_factor": 0.5,
                 "start_angle": 180, "stop_angle": 360,
-                "offset_y": -EYE_HEIGHT * 0.4, "tilt_angle": 5, "rotation": 0
+                "offset_y": -self.EYE_HEIGHT * 0.4, "tilt_angle": 5, "rotation": 0
             },
             "scanning": {
                 "shape": "oval", "width_factor": 1.2, "height_factor": 1.4,
@@ -291,7 +294,7 @@ class FinleyFace:
             if is_left:
                 eye_props = self.emotions["angry"].copy()
                 eye_props.setdefault("shape", "arc"); eye_props.setdefault("width_factor", 1.2); eye_props.setdefault("height_factor", 0.7)
-                eye_props.setdefault("rotation", 0); eye_props.setdefault("offset_y", -EYE_HEIGHT * 0.2); eye_props.setdefault("tilt_angle", 20)
+                eye_props.setdefault("rotation", 0); eye_props.setdefault("offset_y", -self.EYE_HEIGHT * 0.2); eye_props.setdefault("tilt_angle", 20)
                 eye_props.setdefault("start_angle", 180); eye_props.setdefault("stop_angle", 360)
                 eye_props.setdefault("cutout", None); eye_props.setdefault("scanning", False)
             else:
@@ -309,10 +312,10 @@ class FinleyFace:
             blink_factor = max(0.01, 1.0 - progress if progress < 1.0 else progress - 1.0)
 
         y_offset = eye_props.get("offset_y", 0); y_pos = y + y_offset
-        width = EYE_WIDTH * eye_props.get("width_factor", 1.0)
-        height = EYE_HEIGHT * eye_props.get("height_factor", 1.0) * blink_factor
-        gaze_offset_x = self.eye_current_x * (EYE_WIDTH * 0.1)
-        gaze_offset_y = self.eye_current_y * (EYE_HEIGHT * 0.1)
+        width = self.EYE_WIDTH * eye_props.get("width_factor", 1.0)
+        height = self.EYE_HEIGHT * eye_props.get("height_factor", 1.0) * blink_factor
+        gaze_offset_x = self.eye_current_x * (self.EYE_WIDTH * 0.1)
+        gaze_offset_y = self.eye_current_y * (self.EYE_HEIGHT * 0.1)
         base_rotation = eye_props.get("rotation", 0)
         current_tilt = eye_props.get("tilt_angle", 0)
         tilt_rotation = base_rotation - current_tilt if is_left else base_rotation + current_tilt
@@ -424,8 +427,8 @@ class FinleyFace:
         """Clear screen, draw eyes, shared effects (scanning line), and info text."""
         self.screen.fill(BLACK)
 
-        self.draw_eye(LEFT_EYE_X, EYE_Y, is_left=True)
-        self.draw_eye(RIGHT_EYE_X, EYE_Y, is_left=False)
+        self.draw_eye(self.LEFT_EYE_X, self.EYE_Y, is_left=True)
+        self.draw_eye(self.RIGHT_EYE_X, self.EYE_Y, is_left=False)
 
         current_props = self.get_current_eye_properties()
         effective_emotion = self.target_emotion if self.transitioning else self.current_emotion
@@ -438,17 +441,17 @@ class FinleyFace:
 
             scan_width_factor = scan_props.get("width_factor", 1.2)
             scan_height_factor = scan_props.get("height_factor", 1.4)
-            scan_eye_width = EYE_WIDTH * scan_width_factor
-            scan_eye_height = EYE_HEIGHT * scan_height_factor
+            scan_eye_width = self.EYE_WIDTH * scan_width_factor
+            scan_eye_height = self.EYE_HEIGHT * scan_height_factor
 
-            leftmost_x = LEFT_EYE_X - scan_eye_width / 2
-            rightmost_x = RIGHT_EYE_X + scan_eye_width / 2
+            leftmost_x = self.LEFT_EYE_X - scan_eye_width / 2
+            rightmost_x = self.RIGHT_EYE_X + scan_eye_width / 2
             total_span_width = rightmost_x - leftmost_x
 
             scan_abs_x = leftmost_x + total_span_width * scan_pos_factor
 
-            top_y = EYE_Y - scan_eye_height / 2
-            bottom_y = EYE_Y + scan_eye_height / 2
+            top_y = self.EYE_Y - scan_eye_height / 2
+            bottom_y = self.EYE_Y + scan_eye_height / 2
 
             pygame.draw.line(self.screen, WHITE, (scan_abs_x, top_y), (scan_abs_x, bottom_y), 3)
 
@@ -463,7 +466,7 @@ class FinleyFace:
         emotion_text_display = self.target_emotion.capitalize() if self.transitioning else self.current_emotion.capitalize()
         status_text = f"{emotion_text_display}"
         status_surf = self.font.render(status_text, True, WHITE)
-        status_rect = status_surf.get_rect(centerx=HALF_WIDTH, bottom=HEIGHT - 10)
+        status_rect = status_surf.get_rect(centerx=self.HALF_WIDTH, bottom=self.HEIGHT - 10)
         self.screen.blit(status_surf, status_rect)
 
 
