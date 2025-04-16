@@ -5,7 +5,6 @@ from ikpy.chain import Chain
 from ikpy.utils import plot as plot_utils
 import sys, time, math, array
 import zmq
-import subprocess
 
 sys.path.append("./")
 
@@ -41,193 +40,71 @@ camera_angles=np.array([0,0,0,0])
 camera_frame_transformation=camera.forward_kinematics(camera_angles)
 
 # Edit to declare if you are testing the sim or the real robot
-is_real = True
+is_real = False
 robot = Robot(is_real)
 print("Setup Complete")
 # positions
 #Starting Agnles
-robot.motors[25].target = (math.radians(0), 'P')
-robot.motors[26].target = (math.radians(0), 'P')
-robot.motors[27].target = (math.radians(0), 'P')
-robot.motors[5].target = (math.radians(0), 'P')
-robot.motors[6].target = (math.radians(0), 'P')
-robot.motors[7].target = (math.radians(0), 'P')
-robot.motors[8].target = (math.radians(0), 'P')
-robot.motors[9].target = (math.radians(0), 'P')
-robot.motors[10].target =(math.radians(0), 'P')
-ik_solution_2=np.array([0,0,0,0,0,0,0,0])
 
-# centering all angles to zero
 prevTime = time.time()
 simStartTime = time.time()
-while time.time() - simStartTime < 2:
+while time.time() - simStartTime < 2: #Waypoint 1 
     time.sleep(0.01)
+    robot.motors[5].target = (math.radians(0), 'P')
+    robot.motors[6].target = (math.radians(0), 'P')
+    robot.motors[7].target = (math.radians(0), 'P')
+    robot.motors[8].target = (math.radians(0), 'P')
+    robot.motors[9].target = (math.radians(0), 'P')
     #robot.IMUBalance(0,0)
     robot.moveAllToTarget()
-    
-# Attempt to receive coordinates from demo
-context_zmq = zmq.Context()
-coord_sub = context_zmq.socket(zmq.SUB)
-coord_sub.setsockopt_string(zmq.SUBSCRIBE, "")
-coord_sub.connect("tcp://localhost:5560")
-
-# Loop until we get the coordinates from ZMQ
-print("Waiting for coordinates from ZMQ...")
-while True:
-    poller = zmq.Poller()
-    poller.register(coord_sub, zmq.POLLIN)                      
-    socks = dict(poller.poll(1000))  # wait 1000 ms for a message
-    if coord_sub in socks and socks[coord_sub] == zmq.POLLIN:
-        coord_str = coord_sub.recv_string(zmq.NOBLOCK)
-        try:
-            coord_vals = [float(val) for val in coord_str.split(",")]
-            if len(coord_vals) < 3:
-                print("Not enough coordinate values received, waiting for valid coordinates...")
-                continue
-            final_points = np.array(coord_vals[:3])
-            print("Received coordinates from speech demo:", final_points)
-            break
-        except Exception as e:
-            print("Error parsing coordinates from speech demo:", e)
-            print("Waiting for valid coordinates...")
-    else:
-        print("No coordinates received yet, continuing to wait...")
-
-# Apply camera frame transformation to final_points
-# NEGATIVE X AND NEGATIVE Z FOR CURRENT URDF
-B = np.array([[-final_points[0]], [final_points[1]], [-final_points[2]], [1]])
-C = np.dot(camera_frame_transformation, B)
-
-leftArmTraj = [
-    [[0,0,0], [20,20,20]],
-    [[.50575,  -.006620, .28607],
-   [C[0],  C[1], C[2]] ],
-    [[0,0,0], [0,0,0]],
-    [[0,0,0], [0,0,0]]
-]
-
-lArm_tj_joint = TrajPlannerTime(leftArmTraj[0], leftArmTraj[1], leftArmTraj[2], leftArmTraj[3])
-startTime = time.time()
-target_orientation_z=[1, 0, 0]
-Angle =0
-lastAngle=0
-
-# open gripper
-
-while time.time() - startTime < 4:
-        Angle=Angle+.1
-        robot.motors[27].target = (math.radians(Angle), 'P')
-        #robot.IMUBalance(0, 0)
-        robot.moveAllToTarget()
-        lastAngle=Angle
-startTime = time.time()
-
-# move gripper
-while time.time() - startTime < 20:
-        target_position_task = lArm_tj_joint.getQuinticPositions(time.time() - startTime)
-        target_position_2 = np.array([(target_position_task[0]), (target_position_task[1]), (target_position_task[2])])
-        ik_solution = left_arm_chain.inverse_kinematics(target_position_2, initial_position=ik_solution_2 )
-        ik_solution_2=ik_solution
-        motor_angle_task=ik_solution
-        robot.motors[5].target = (motor_angle_task[1], 'P')
-        robot.motors[6].target = (motor_angle_task[2], 'P')
-        robot.motors[7].target = (motor_angle_task[3], 'P')
-        robot.motors[8].target = (motor_angle_task[4], 'P')
-        robot.motors[9].target = (motor_angle_task[5], 'P')
-        print(motor_angle_task)
-        turnPosition=target_position_2
-        turnAngles=motor_angle_task
-        #robot.IMUBalance(0, 0)
-        robot.moveAllToTarget()
-
-# attempt to orientate
-target_position_2=turnPosition
-ik_solution = left_arm_chain.inverse_kinematics(target_position_2, target_orientation=target_orientation_z, orientation_mode="Z", initial_position=ik_solution_2 )
-leftArmTraj = [
-    [[0,0,0,0,0], [20,20,20,20,20]],
-    [[motor_angle_task[1],motor_angle_task[2],motor_angle_task[3],motor_angle_task[4],motor_angle_task[5] ],
-   [ik_solution[1], ik_solution[2], ik_solution[3],ik_solution[4],ik_solution[5]]] ,
-    [[0,0,0,0,0], [0,0,0,0,0]],
-    [[0,0,0,0,0], [0,0,0,0,0]]
-]
-lArm_tj_joint = TrajPlannerTime(leftArmTraj[0], leftArmTraj[1], leftArmTraj[2], leftArmTraj[3])
-startTime = time.time()
-while time.time() - startTime < 10:
-        target_position_joint = lArm_tj_joint.getQuinticPositions(time.time() - startTime)
-        robot.motors[5].target = (target_position_joint[0], 'P')
-        robot.motors[6].target = (target_position_joint[1], 'P')
-        robot.motors[7].target = (target_position_joint[2], 'P')
-        robot.motors[8].target = (target_position_joint[3], 'P')
-        robot.motors[9].target = (target_position_joint[4], 'P')
-       # robot.IMUBalance(0, 0)
-        robot.moveAllToTarget()
-startTime = time.time()
-
-# close gripper
-while time.time() - startTime < 8:
-        lastAngle=lastAngle-.1
-        robot.motors[27].target = (math.radians(lastAngle), 'P')
-        #robot.IMUBalance(0, 0)
-        robot.moveAllToTarget()
-
-print("Done")
-print("Reached forehead position. Holding for temperature measurement...")
-# Hold at forehead position for 3 seconds
-time.sleep(3)
-
-# Run temperature script as a subprocess outside of virtual environment
-print("Running temperature measurement script...")
-temp_script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../Gripper/thermometer/getTemp_MLX90614.py")
-temp_script_path = os.path.normpath(temp_script_path)
-project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-print(f"Temperature script path: {temp_script_path}")
-
-# Create a temporary shell script
-temp_shell_script = "/tmp/temperature_measure.sh"
-with open(temp_shell_script, "w") as f:
-    f.write(f"""#!/bin/bash
-echo "Starting temperature measurement..."
-export PYTHONPATH="{project_root}:$PYTHONPATH"
-cd {os.path.dirname(temp_script_path)}
-python3 {os.path.basename(temp_script_path)}
-""")
-os.chmod(temp_shell_script, 0o755)
-
-try:
-    # Launch in a new terminal window
-    temp_process = subprocess.Popen(
-        f"lxterminal --geometry=80x24 -e 'bash -c \"{temp_shell_script}; exec bash\"'",
-        shell=True,
-        preexec_fn=os.setsid
-    )
-
-    # Give it some time to run
-    print("Waiting for temperature measurement to complete...")
-    time.sleep(5)
-
-    # Check if output file exists and read it
-    if os.path.exists("/tmp/temperature_output.txt"):
-        with open("/tmp/temperature_output.txt", "r") as output_file:
-            temperature_output = output_file.read()
-            print(f"Temperature script output: {temperature_output}")
-
-        # Save temperature to file
-        with open("Gripper/thermometer/temperature.txt", "w") as temp_file:
-            temp_file.write(temperature_output)
-
-        print("Temperature data saved to temperature.txt")
-    else:
-        print("Temperature output file not found")
-
-    # Check exit code
-    if os.path.exists("/tmp/temperature_exit_code.txt"):
-        with open("/tmp/temperature_exit_code.txt", "r") as code_file:
-            exit_code = code_file.read().strip()
-            print(f"Temperature script exit code: {exit_code}")
-
-except Exception as e:
-    print(f"Error running temperature script: {e}")
-
-print("Temperature check movement complete.") 
 
 
+while time.time() - simStartTime < 2:#Waypoint 2
+    time.sleep(0.01)
+    robot.motors[5].target = (math.radians(0), 'P')
+    robot.motors[6].target = (math.radians(90), 'P')
+    robot.motors[7].target = (math.radians(0), 'P')
+    robot.motors[8].target = (math.radians(0), 'P')
+    robot.motors[9].target = (math.radians(0), 'P')
+    robot.moveAllToTarget()
+
+
+while time.time() - simStartTime < 2:#Waypoint 3
+    time.sleep(0.01)
+    robot.motors[5].target = (math.radians(90), 'P')
+    robot.motors[6].target = (math.radians(0), 'P')
+    robot.motors[7].target = (math.radians(0), 'P')
+    robot.motors[8].target = (math.radians(0), 'P')
+    robot.motors[9].target = (math.radians(0), 'P')
+    robot.moveAllToTarget()
+
+while time.time() - simStartTime < 2:#Waypoint 4
+    time.sleep(0.01)
+    robot.motors[5].target = (math.radians(-117), 'P')
+    robot.motors[6].target = (math.radians(-103), 'P')
+    robot.motors[7].target = (math.radians(0), 'P')
+    robot.motors[8].target = (math.radians(-53), 'P')
+    robot.motors[9].target = (math.radians(45), 'P')
+    robot.moveAllToTarget()
+
+# centering all angles to zero
+
+
+
+# conversion of final points from camera coordinate systm to rorbot coordinate system 
+# final_points=np.array([0, .3, 0])
+# B=np.array([[final_points[0]],[final_points[1]],[final_points[2]],[1]])
+# A= camera_frame_transformation
+# final_points=np.array([0,0, 0])
+# C = np.dot(A, B)
+
+
+
+
+#leftArmTraj = [
+   # [[0,0,0], [20,20,20]],
+  #  [[.49076,  -.08197, .76541],
+ #  [C[0],  C[1], C[2]] ],
+ #   [[0,0,0], [0,0,0]],
+#    [[0,0,0], [0,0,0]]
+#]
