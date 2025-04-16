@@ -45,16 +45,16 @@ robot = Robot(is_real)
 print("Setup Complete")
 # positions
 #Starting Agnles
-
+robot.motors[5].target = (math.radians(0), 'P')
+robot.motors[6].target = (math.radians(0), 'P')
+robot.motors[7].target = (math.radians(0), 'P')
+robot.motors[8].target = (math.radians(0), 'P')
+robot.motors[9].target = (math.radians(0), 'P')
 prevTime = time.time()
 simStartTime = time.time()
 while time.time() - simStartTime < 2: #Waypoint 1 
     time.sleep(0.01)
-    robot.motors[5].target = (math.radians(0), 'P')
-    robot.motors[6].target = (math.radians(0), 'P')
-    robot.motors[7].target = (math.radians(0), 'P')
-    robot.motors[8].target = (math.radians(0), 'P')
-    robot.motors[9].target = (math.radians(0), 'P')
+    
     #robot.IMUBalance(0,0)
     robot.moveAllToTarget()
 
