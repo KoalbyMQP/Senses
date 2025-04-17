@@ -505,7 +505,24 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
             if (len(self._nnManager.measurement_buffer) >= self._nnManager.max_buffer_size and 
                 not self._nnManager.coordinates_sent):
                 
-                filtered_measurements = self.filter_measurements_iqr(self._nnManager.measurement_buffer)
+
+                target_measurements = []
+                if self.current_target and hasattr(self._nnManager, 'getLabelText'):
+                    print(f"Filtering measurements for target: {self.current_target}")
+                    for m in self._nnManager.measurement_buffer:
+                        if 'label' in m:
+                            label_text = self._nnManager.getLabelText(m['label'])
+                            if label_text.lower() == self.current_target.lower():
+                                target_measurements.append(m)
+                        else:
+                            pass
+                    print(f"Found {len(target_measurements)} measurements for target '{self.current_target}' out of {len(self._nnManager.measurement_buffer)} total.")
+                else:
+                    print("No target set or getLabelText unavailable, processing all measurements.")
+                    target_measurements = self._nnManager.measurement_buffer
+
+                filtered_measurements = self.filter_measurements_iqr(target_measurements)
+
                 if filtered_measurements:
                     mean_x = np.mean([m['position']['x'] for m in filtered_measurements])
                     mean_y = np.mean([m['position']['y'] for m in filtered_measurements])
@@ -523,7 +540,7 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
                     self.coord_socket.send_string(coord_str)
                     print("Coordinates sent to robot")
                     self._nnManager.coordinates_sent = True
-                    self._nnManager.measurement_buffer = []
+                    self._nnManager.measurement_buffer = [] 
 
     def stop(self, *args, **kwargs):
         # Terminate speech process if running
