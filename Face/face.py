@@ -3,6 +3,7 @@ import sys
 import time
 import math
 import random
+import zmq
 from pygame.locals import * 
 
 BLACK = (0, 0, 0)
@@ -65,6 +66,19 @@ class FinleyFace:
         self.font = pygame.font.Font(None, 36)
         self.show_info = True
 
+        try:
+            self.context = zmq.Context()
+            self.face_listener = self.context.socket(zmq.SUB)
+            self.face_listener.bind("tcp://*:5563") 
+            self.face_listener.setsockopt_string(zmq.SUBSCRIBE, "") 
+            print("Face listener bound to tcp://*:5563")
+        except zmq.ZMQError as e:
+            print(f"ZMQ Error binding socket: {e}. Face commands will not be received.")
+            self.face_listener = None
+        except Exception as e:
+            print(f"Unexpected error setting up ZMQ: {e}")
+            self.face_listener = None
+
         self.emotions = {
             "neutral": {
                 "shape": "oval", "width_factor": 1.0, "height_factor": 1.0,
@@ -107,6 +121,18 @@ class FinleyFace:
                 "rotation": 0, "offset_y": 0, "scanning": True, "tilt_angle": 0
             },
             "focused": {
+                "shape": "special",
+                "width_factor": 1.0,
+                "height_factor": 1.0,
+                "rotation": 0,
+                "offset_y": 0,
+                "tilt_angle": 15
+            },
+            "listening": {
+                "shape": "oval", "width_factor": 1.2, "height_factor": 1.1,
+                "rotation": 0, "offset_y": 0, "tilt_angle": 18
+            },
+            "thinking": {
                 "shape": "special",
                 "width_factor": 1.0,
                 "height_factor": 1.0,
@@ -471,7 +497,7 @@ class FinleyFace:
 
 
     def handle_events(self):
-        """Handle user input events (quit, keys)."""
+        """Handle user input events (quit, keys) and ZMQ commands."""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -502,15 +528,37 @@ class FinleyFace:
                 elif event.key == pygame.K_8: self.set_emotion("scanning")
                 elif event.key == pygame.K_9: self.set_emotion("focused")
 
+        if self.face_listener:
+            try:
+                command = self.face_listener.recv_string(flags=zmq.NOBLOCK).lower()
+                print(f"Face received command: '{command}'")
+                self.set_emotion(command)
+            except zmq.Again:
+                pass 
+            except Exception as e:
+                print(f"Error processing ZMQ command: {e}")
+
     def set_emotion(self, emotion):
         """Start transition to a new target emotion."""
-        if emotion in self.emotions and emotion != self.target_emotion:
-            if not self.transitioning:
-                 self.current_emotion = self.target_emotion
-            print(f"Setting emotion to: {emotion}")
-            self.target_emotion = emotion
-            self.transitioning = True
-            self.emotion_transition = 0.0
+        emotion_map = {
+            "listening": "curious", 
+            "thinking": "focused",  
+            "idle": "neutral",
+            "waiting": "neutral",
+        }
+        effective_emotion = emotion_map.get(emotion, emotion)
+
+        if effective_emotion in self.emotions:
+            if effective_emotion != self.target_emotion:
+                if self.transitioning:
+                    self.current_emotion = self.target_emotion
+
+                print(f"Setting emotion to: {effective_emotion} (from command: '{emotion}')")
+                self.target_emotion = effective_emotion
+                self.transitioning = True
+                self.emotion_transition = 0.0
+        else:
+            print(f"Warning: Received unknown emotion command '{emotion}' (mapped to '{effective_emotion}')")
 
     def run(self):
         """Main application loop."""

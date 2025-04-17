@@ -18,14 +18,31 @@ class SpeechHandler:
     def __init__(self):
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.PUB)
-        self.socket.connect("tcp://localhost:5560")  
-        print("Connected to host Pi at localhost:5560")
+        self.socket.connect("tcp://localhost:5560")
+        print("Connected to host Pi command socket at localhost:5560")
+
+        self.face_publisher = self.context.socket(zmq.PUB)
+        try:
+            self.face_publisher.connect("tcp://localhost:5563")
+            print("Connected to face interface socket at localhost:5563")
+        except Exception as e:
+             print(f"Error connecting to face interface: {e}")
+             self.face_publisher = None 
 
     def send_command(self, gripper_num):
         timestamp = time.time()
         message = f"SWAP {gripper_num} {timestamp}"
         print(f"Sending command: {message}")
         self.socket.send_string(message)
+
+    def send_face_command(self, emotion_command):
+        """Send an emotion command string to the face interface."""
+        if self.face_publisher:
+            try:
+                print(f"Sending face command: {emotion_command}")
+                self.face_publisher.send_string(emotion_command)
+            except Exception as e:
+                print(f"Error sending face command '{emotion_command}': {e}")
 
 class SpeechDetector:
     def __init__(self):
@@ -102,11 +119,14 @@ class SpeechDetector:
         return None
 
     def listen_and_process(self):
+        self.speech_handler.send_face_command("listening") 
         audio, temp_audio = capture_audio(listen_timeout=3, phrase_time_limit=3, ambient_duration=0.2)
         if audio is None or temp_audio is None:
+            self.speech_handler.send_face_command("neutral") 
             return None
 
         print("Transcribing speech...")
+        self.speech_handler.send_face_command("thinking") 
         text = transcribe_with_api(temp_audio)
         if not text:
             print("OpenAI transcription failed, trying Google Speech...")
@@ -116,17 +136,21 @@ class SpeechDetector:
 
         if not text:
             print("No speech detected or couldn't transcribe audio")
+            self.speech_handler.send_face_command("sad") 
+            time.sleep(2) 
+            self.speech_handler.send_face_command("neutral")
             return None
 
         print(f"Transcribed text: '{text}'")
-        
+
         gripper_num = self.parse_command(text)
         if gripper_num is None:
             print("Couldn't directly parse command, using AI audit...")
+            self.speech_handler.send_face_command("thinking") 
             audited_text = audit_command(
                 text,
                 self.audit_prompt,
-                lambda x: x.isdigit() and 1 <= int(x) <= 10,
+                lambda x: x.isdigit() and 1 <= int(x) <= 10 or x == "invalid", 
                 "GripperSwapSystem"
             )
             print(f"Processed text: '{text}' | Audited result: '{audited_text}'")
@@ -134,13 +158,18 @@ class SpeechDetector:
                 gripper_num = int(audited_text)
                 print(f"Interpreted as gripper number: {gripper_num}")
             else:
-                print("Command not recognized as a valid gripper number")
+                print("Command not recognized as a valid gripper number after audit")
+                play_tts("Sorry, I didn't understand that gripper command.")
+                self.speech_handler.send_face_command("sad") 
+                time.sleep(2)
+                self.speech_handler.send_face_command("neutral")
                 return None
         else:
             print(f"Recognized command: '{text}' mapped to gripper {gripper_num}")
 
         self.speech_handler.send_command(gripper_num)
         play_tts(f"Command received: switching to gripper {gripper_num}")
+        self.speech_handler.send_face_command("neutral") 
         self.previous_gripper = self.previous_gripper if self.previous_gripper else gripper_num
         return gripper_num
 
@@ -171,40 +200,67 @@ def run_gripper_swap_detection():
         print("=========================================\n")
         
         play_tts("Gripper swap system ready. Say 'swap gripper' followed by a number 1 through 10 or the name of the gripper.")
+        detector.speech_handler.send_face_command("neutral") 
         
         while True:
             try:
                 print("\nWaiting for voice command...")
+                detector.speech_handler.send_face_command("neutral") 
                 result = detector.listen_and_process()
                 if result:
                     print(f"Waiting for confirmation of gripper {result}...")
-                
-                confirmation = None
-                start_time = time.time()
-                while time.time() - start_time < 5:  
-                    confirmation = detector.listen_for_confirmation()
-                    if confirmation:
-                        parts = confirmation.split('|')
-                        if parts[-1] == "success":
-                            play_tts(f"Swap to {parts[0]} successful")
-                        elif parts[-1] == "already_active":
-                            play_tts(f"Gripper {parts[0]} already active")
-                        break
-                    time.sleep(0.1)
                     
-                if not confirmation and result:
-                    print("No confirmation received within 5 seconds")
-                    
+
+                    confirmation = None
+                    start_time = time.time()
+                    wait_timeout = 5 
+                    while time.time() - start_time < wait_timeout:
+                        confirmation = detector.listen_for_confirmation()
+                        if confirmation:
+                            print(f"Confirmation received: {confirmation}")
+                            parts = confirmation.split('|')
+                            status = "unknown"
+                            confirmed_gripper = "?"
+                            if len(parts) > 0: confirmed_gripper = parts[0]
+                            if len(parts) > 7: status = parts[7]
+
+                            if status == "success":
+                                detector.speech_handler.send_face_command("happy")
+                                play_tts(f"Swap to {confirmed_gripper} successful")
+                                time.sleep(2) 
+                            elif status == "already_active":
+                                detector.speech_handler.send_face_command("neutral") 
+                                play_tts(f"Gripper {confirmed_gripper} already active")
+                                time.sleep(2)
+                            else:
+                                detector.speech_handler.send_face_command("sad") 
+                                play_tts(f"Received unclear confirmation status: {status}")
+                                time.sleep(2)
+                            break
+                        time.sleep(0.1)
+
+                    if not confirmation and result:
+                        print(f"No confirmation received within {wait_timeout} seconds for gripper {result}")
+                        detector.speech_handler.send_face_command("sad")
+                        play_tts("Did not receive confirmation from the gripper.")
+                        time.sleep(2) 
+
             except KeyboardInterrupt:
                 print("\nExiting by user request...")
-                break
+                detector.speech_handler.send_face_command("neutral") 
             except Exception as e:
                 print(f"Main loop error: {e}")
+                detector.speech_handler.send_face_command("sad") 
                 import traceback
                 traceback.print_exc()
                 time.sleep(1)
                 
     finally:
+        try:
+            detector.speech_handler.send_face_command("neutral")
+            time.sleep(0.1)
+        except Exception:
+            pass
         pygame.mixer.quit()
         pygame.quit()
 

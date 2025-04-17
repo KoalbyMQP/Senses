@@ -39,6 +39,7 @@ class HostPi:
             self.client_publisher = None
             self.voice_process = None
             self.confirmation_process = None
+            self.face_process = None
         else:
             self.command_receiver = self.context.socket(zmq.SUB)
             self.command_receiver.bind("tcp://*:5560")
@@ -49,6 +50,7 @@ class HostPi:
             
             self.voice_process = self._start_voice_detection()
             self.confirmation_process = self._start_confirmation_listener()
+            self.face_process = self._start_face_interface()
 
         self.error_occurred = False
 
@@ -129,6 +131,38 @@ python3 {os.path.basename(listener_script)} {self.host_ip} || read -p "Error occ
             preexec_fn=os.setsid
         )
 
+    def _start_face_interface(self):
+        """Start face interface in new terminal"""
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        face_script_dir = os.path.abspath(os.path.join(current_dir, "..", "..", "Face"))
+        face_script = os.path.join(face_script_dir, "face.py")
+        venv_path = self.venv_path
+
+        if not os.path.exists(face_script):
+             print(f"Error: Face script not found at {face_script}")
+             return None
+
+        temp_script = "/tmp/faceInterface.sh"
+        with open(temp_script, "w") as f:
+            f.write(f"""#!/bin/bash
+source "{venv_path}/bin/activate"
+export PYTHONPATH="/home/finley/Documents/GitHub/Senses:$PYTHONPATH"
+cd "{face_script_dir}"
+python3 {os.path.basename(face_script)} || read -p "Face Error occurred! Press Enter to close..."
+""")
+        os.chmod(temp_script, 0o755)
+
+        print("\nStarting Face interface...")
+        try:
+            return subprocess.Popen(
+                f"lxterminal --geometry=80x24 --title='Finley Face' -e 'bash -c "{temp_script}; exec bash"'",
+                shell=True,
+                preexec_fn=os.setsid
+            )
+        except Exception as e:
+            print(f"Failed to start face interface: {e}")
+            return None
+
     def _get_host_ip(self):
         """Get the first non-localhost IP address"""
         try:
@@ -164,17 +198,31 @@ python3 {os.path.basename(listener_script)} {self.host_ip} || read -p "Error occ
                     print(f"Critical error: {str(e)}")
                     break
         finally:
+            print("\nShutting down host system...")
             if hasattr(self, 'voice_process') and self.voice_process:
-                os.killpg(os.getpgid(self.voice_process.pid), signal.SIGTERM)
+                print("Terminating voice process...")
+                try: os.killpg(os.getpgid(self.voice_process.pid), signal.SIGTERM)
+                except ProcessLookupError: pass 
             if hasattr(self, 'confirmation_process') and self.confirmation_process:
-                os.killpg(os.getpgid(self.confirmation_process.pid), signal.SIGTERM)
-            print("Cleanly terminated all subprocesses")
+                print("Terminating confirmation listener...")
+                try: os.killpg(os.getpgid(self.confirmation_process.pid), signal.SIGTERM)
+                except ProcessLookupError: pass
+            if hasattr(self, 'face_process') and self.face_process: 
+                print("Terminating face interface...")
+                try: os.killpg(os.getpgid(self.face_process.pid), signal.SIGTERM)
+                except ProcessLookupError: pass
+            print("Cleanly terminated subprocesses.")
 
     def __del__(self):
-        if hasattr(self, 'voice_process') and self.voice_process:
-            os.killpg(os.getpgid(self.voice_process.pid), signal.SIGTERM)
-        if hasattr(self, 'confirmation_process') and self.confirmation_process:
-            os.killpg(os.getpgid(self.confirmation_process.pid), signal.SIGTERM)
+        if hasattr(self, 'voice_process') and self.voice_process and self.voice_process.poll() is None:
+            try: os.killpg(os.getpgid(self.voice_process.pid), signal.SIGTERM)
+            except Exception as e: print(f"Error terminating voice process in destructor: {e}")
+        if hasattr(self, 'confirmation_process') and self.confirmation_process and self.confirmation_process.poll() is None:
+            try: os.killpg(os.getpgid(self.confirmation_process.pid), signal.SIGTERM)
+            except Exception as e: print(f"Error terminating confirmation listener in destructor: {e}")
+        if hasattr(self, 'face_process') and self.face_process and self.face_process.poll() is None: 
+            try: os.killpg(os.getpgid(self.face_process.pid), signal.SIGTERM)
+            except Exception as e: print(f"Error terminating face process in destructor: {e}")
 
 if __name__ == "__main__":
     host = HostPi()
