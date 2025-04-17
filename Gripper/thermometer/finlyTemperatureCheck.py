@@ -24,7 +24,7 @@ robot.motors[10].target =(math.radians(0), 'P')
 simStartTime = time.time()
 while time.time() - simStartTime < 2:
     time.sleep(0.01)
-    robot.IMUBalance(0,0)
+    #robot.IMUBalance(0,0)
     robot.moveAllToTarget()
 leftArmTraj = [
     [[0,0,0,0,0],[5,5,5,5,5],[10,10,10,10,10],[15,15,15,15,15]],
@@ -46,5 +46,5 @@ while time.time() - startTime < 20:
     robot.motors[7].target = (target_position_joint[2], 'P')
     robot.motors[8].target = (target_position_joint[3], 'P')
     robot.motors[9].target = (target_position_joint[4], 'P')
-    robot.IMUBalance(0,0)
+    #robot.IMUBalance(0,0)
     robot.moveAllToTarget()
