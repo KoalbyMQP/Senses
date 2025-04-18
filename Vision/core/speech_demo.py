@@ -228,7 +228,7 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
 source \"{venv_path}/bin/activate\"
 export PYTHONPATH=\"{project_root}:$PYTHONPATH\"
 cd \"{face_script_dir}\"
-python3 {os.path.basename(face_script)} || echo \"Face Error occurred! Press Enter to close...\" && read
+python3 {os.path.basename(face_script)} || read -p \"Face script exited. Press Enter to close...\"
 """)
             os.chmod(temp_script, 0o755)
             print(f"Created face launch script: {temp_script}")
@@ -720,7 +720,7 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
                     try:
                         print("Waiting 1s for subscriber connection...")
                         time.sleep(1)
-                        send_count = 200
+                        send_count = 3000
                         print(f"Sending coordinates {send_count} times...")
                         for i in range(send_count):
                             self.coord_socket.send_string(coord_str)
