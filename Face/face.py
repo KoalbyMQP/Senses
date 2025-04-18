@@ -503,10 +503,10 @@ class FinleyFace:
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    pygame.quit()
-                    sys.exit()
-                elif event.key == pygame.K_f:
+                # if event.key == pygame.K_ESCAPE:
+                #     pygame.quit()
+                #     sys.exit()
+                if event.key == pygame.K_f:
                     self.show_info = not self.show_info
                 elif event.key == pygame.K_a:
                     self.auto_change = not self.auto_change
