@@ -18,7 +18,7 @@ class SpeechEnabledDemo(Demo):
         self.temperature_process = None
         self.current_target = None
         self.measurement_buffer = []
-        self.max_buffer_size = 10
+        self.max_buffer_size = 200
         self.coordinates_sent = False 
         
         # State tracking for demo transitions
@@ -633,7 +633,7 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
                     try:
                         print("Waiting 1s for subscriber connection...")
                         time.sleep(1)
-                        send_count = 30
+                        send_count = 200
                         print(f"Sending coordinates {send_count} times...")
                         for i in range(send_count):
                             self.coord_socket.send_string(coord_str)
