@@ -161,10 +161,10 @@ while time.time() - startTime < 10:
         robot.motors[9].target = (target_position_joint[4], 'P')
        # robot.IMUBalance(0, 0)
         robot.moveAllToTarget()
-# startTime = time.time()
+startTime = time.time()
 # close gripper
-# while time.time() - startTime < 8:
-#         lastAngle=lastAngle-.1
-#         robot.motors[27].target = (math.radians(lastAngle), 'P')
-#         #robot.IMUBalance(0, 0)
-#         robot.moveAllToTarget()
+while time.time() - startTime < 8:
+        lastAngle=lastAngle-.1
+        robot.motors[27].target = (math.radians(lastAngle), 'P')
+        #robot.IMUBalance(0, 0)
+        robot.moveAllToTarget()
