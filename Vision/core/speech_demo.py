@@ -720,7 +720,7 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
                     try:
                         print("Waiting 1s for subscriber connection...")
                         time.sleep(1)
-                        send_count = 200
+                        send_count = 3000
                         print(f"Sending coordinates {send_count} times...")
                         for i in range(send_count):
                             self.coord_socket.send_string(coord_str)
