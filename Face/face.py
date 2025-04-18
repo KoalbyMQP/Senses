@@ -498,11 +498,15 @@ class FinleyFace:
 
     def handle_events(self):
         """Handle user input events (quit, keys) and ZMQ commands."""
-        for event in pygame.event.get():
+        # print("--- handle_events: A ---", flush=True) # Optional extra debug
+        for event in pygame.event.get(): # Check Pygame events first
+            print(f"--- handle_events: B (Processing event: {event.type}) ---", flush=True)
             if event.type == pygame.QUIT:
+                print("--- handle_events: QUIT event received ---", flush=True)
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
+                print(f"--- handle_events: KEYDOWN event received (Key: {event.key}) ---", flush=True)
                 # if event.key == pygame.K_ESCAPE:
                 #     pygame.quit()
                 #     sys.exit()
@@ -528,15 +532,28 @@ class FinleyFace:
                 elif event.key == pygame.K_8: self.set_emotion("scanning")
                 elif event.key == pygame.K_9: self.set_emotion("focused")
 
+        # ---> Point C <---
+        # print("--- handle_events: C ---", flush=True) # Optional extra debug
         if self.face_listener:
+            # print("--- handle_events: Listener exists ---", flush=True) # Optional extra debug
             try:
+                # ---> Point D <---
+                print("--- handle_events: D (Before recv_string) ---", flush=True)
                 command = self.face_listener.recv_string(flags=zmq.NOBLOCK).lower()
-                print(f"Face received command: '{command}'")
+                # ---> Point E <---
+                print(f"--- handle_events: E (After recv_string, Command: '{command}') ---", flush=True)
+                print(f"Face received command: '{command}'" , flush=True) # Added flush
                 self.set_emotion(command)
+                # ---> Point F <---
+                print("--- handle_events: F (After set_emotion) ---", flush=True)
             except zmq.Again:
-                pass 
+                # ---> Point G <---
+                # print("--- handle_events: G (zmq.Again) ---", flush=True) # Normal, maybe too verbose
+                pass
             except Exception as e:
-                print(f"Error processing ZMQ command: {e}")
+                # ---> Point H <---
+                print(f"--- handle_events: H (ZMQ Exception: {e}) ---", flush=True)
+                print(f"Error processing ZMQ command: {e}", flush=True) # Added flush
 
     def set_emotion(self, emotion):
         """Start transition to a new target emotion."""
