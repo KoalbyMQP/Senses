@@ -566,6 +566,121 @@
       effort="0"
       velocity="0" -->
   </joint>
+    </joint>
+
+  <link
+
+    name="hand_left_h">
+
+    <inertial>
+
+      <origin
+
+        xyz="-0.00274732119092806 -0.130438246232879 -0.523832325990649"
+
+        rpy="0 0 0" />
+
+      <mass
+
+        value="3.91869023943691" />
+
+      <inertia
+
+        ixx="0.314153307650138"
+
+        ixy="0.00745526051058722"
+
+        ixz="0.00100378782624991"
+
+        iyy="0.125372288499059"
+
+        iyz="-0.00552569776068719"
+
+        izz="0.196962889810012" />
+
+    </inertial>
+
+    <visual>
+
+      <origin
+
+        xyz="0 0 0"
+
+        rpy="0 0 0" />
+
+      <geometry>
+
+        <mesh
+
+          filename="package://FullAssemFIN_straight_2025_5/meshes/hand_left_h.STL" />
+
+      </geometry>
+
+      <material
+
+        name="">
+
+        <color
+
+          rgba="1 1 1 1" />
+
+      </material>
+
+    </visual>
+
+    <collision>
+
+      <origin
+
+        xyz="0 0 0"
+
+        rpy="0 0 0" />
+
+      <geometry>
+
+        <mesh
+
+          filename="package://FullAssemFIN_straight_2025_5/meshes/hand_left_h.STL" />
+
+      </geometry>
+
+    </collision>
+
+  </link>
+
+  <joint
+
+    name="hand_left_h"
+
+    type="revolute">
+
+    <origin
+
+      xyz="0.0010735 -6.0738E-05 0.0602"
+
+      rpy="0 0 0" />
+
+    <parent
+
+      link="hand_left" />
+
+    <child
+
+      link="hand_left_h" />
+
+    <axis
+
+      xyz="0 0 -1" />
+
+    <!-- <limit
+
+      lower="0"
+
+      upper="0"
+
+      effort="0"
+
+      velocity="0" /> -->
   <link
     name="shoulder1_right">
     <inertial>
