@@ -629,10 +629,17 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
                     # 
                     print(f"Publishing final mean coordinates: X={mean_x:.5f}, Y={mean_y:.5f}, Z={mean_z:.5f}")
                     coord_str = f"{mean_x:.5f},{mean_y:.5f},{mean_z:.5f}"
-                        
+
                     try:
-                        self.coord_socket.send_string(coord_str)
-                        print("Coordinates sent to robot")
+                        print("Waiting 1s for subscriber connection...")
+                        time.sleep(1)
+                        send_count = 30
+                        print(f"Sending coordinates {send_count} times...")
+                        for i in range(send_count):
+                            self.coord_socket.send_string(coord_str)
+                            time.sleep(0.05)
+                        print(f"Finished sending coordinates {send_count} times.")
+
                         self.send_face_command("happy") # Face: Happy when coords sent
                         time.sleep(1.5)
                         self.send_face_command("neutral") # Back to neutral
