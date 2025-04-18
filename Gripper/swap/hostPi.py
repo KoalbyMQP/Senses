@@ -155,7 +155,7 @@ python3 {os.path.basename(face_script)} || read -p "Face Error occurred! Press E
         print("\nStarting Face interface...")
         try:
             return subprocess.Popen(
-                f"lxterminal --geometry=80x24 --title='Finley Face' -e 'bash -c "{temp_script}; exec bash"'",
+                f"lxterminal --geometry=80x24 --title='Finley Face' -e 'bash -c \"{temp_script}; exec bash\"'",
                 shell=True,
                 preexec_fn=os.setsid
             )
