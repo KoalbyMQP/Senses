@@ -228,7 +228,7 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
 source \"{venv_path}/bin/activate\"
 export PYTHONPATH=\"{project_root}:$PYTHONPATH\"
 cd \"{face_script_dir}\"
-python3 {os.path.basename(face_script)} || echo \"Face Error occurred! Press Enter to close...\" && read
+python3 {os.path.basename(face_script)} || read -p \"Face script exited. Press Enter to close...\"
 """)
             os.chmod(temp_script, 0o755)
             print(f"Created face launch script: {temp_script}")
