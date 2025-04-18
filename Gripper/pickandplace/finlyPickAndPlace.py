@@ -29,6 +29,7 @@ urdf_path = found_paths[0]
 left_arm_chain = Chain.from_urdf_file(
     urdf_path,
     base_elements=['shoulder1_left', 'shoulder1_left']
+    
 )
 # creating URDF chain for camera
 camera = Chain.from_urdf_file(
@@ -94,12 +95,12 @@ while True:
 
 # Apply camera frame transformation to final_points
 # NEGATIVE X AND NEGATIVE Z FOR CURRENT URDF
-B = np.array([[-final_points[0]], [final_points[1]], [-final_points[2]], [1]])
+B = np.array([[-final_points[0]], [final_points[1]-0.01], [-final_points[2]], [1]])
 C = np.dot(camera_frame_transformation, B)
 
 leftArmTraj = [
-    [[0,0,0], [20,20,20]],
-    [[.50575,  -.006620, .28607],
+    [[0,0,0], [20,20,20]],#time 
+    [[.50575,  -.006620, .28607],# joint angles
    [C[0],  C[1], C[2]] ],
     [[0,0,0], [0,0,0]],
     [[0,0,0], [0,0,0]]
