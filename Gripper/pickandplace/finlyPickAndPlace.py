@@ -119,7 +119,7 @@ while time.time() - startTime < 4:
         robot.motors[27].target = (math.radians(Angle), 'P')
         #robot.IMUBalance(0, 0)
         robot.moveAllToTarget()
-#         lastAngle=Angle
+        lastAngle=Angle
 startTime = time.time()
 
 # move gripper
