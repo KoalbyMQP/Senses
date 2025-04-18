@@ -17,6 +17,9 @@ class SpeechEnabledDemo(Demo):
         self.robot_process = None
         self.temperature_process = None
         self.current_target = None
+        self.measurement_buffer = []
+        self.max_buffer_size = 50     
+        self.coordinates_sent = False 
         
         # State tracking for demo transitions
         self._temp_demo_running = False
@@ -192,15 +195,23 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
                     target_object = command.split("pick up ")[1]
                     self.current_target = target_object
                     print(f"New target received: {target_object}")
+                    
+                    self.measurement_buffer = []
+                    self.coordinates_sent = False
+                    print("Measurement buffer and coordinate sent flag reset.")
+
                     if hasattr(self, '_nnManager'):
                         print("Setting target object in NNetManager")
-                        if self._nnManager.set_target_object(target_object):
-                            print(f"Target object set to: {self._nnManager._target_object}")
-                        else:
-                            print("Failed to set target object")
-                            continue
-                        
-                        # Create measurements file
+                        try:
+                            if self._nnManager.set_target_object(target_object): 
+                                print(f"Target object hint set in NNetManager: {self._nnManager._target_object}") 
+                            else:
+                                print("NNetManager did not confirm setting target object.")
+                        except AttributeError:
+                             print("NNetManager does not have a 'set_target_object' method. Skipping.")
+                        except Exception as e:
+                             print(f"Error trying to set target in NNetManager: {e}")
+
                         self.measurements_file = open('test_tuple.txt', 'w')
                         print("Created measurements file: test_tuple.txt")
                         break
@@ -252,20 +263,30 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
                         self.current_target = target_object
                         print(f"New target for pick and place: {target_object}")
                         
-                        # Setup and run the main pipeline
+                        self.measurement_buffer = []
+                        self.coordinates_sent = False
+                        print("Measurement buffer and coordinate sent flag reset.")
+
                         if hasattr(self, '_nnManager'):
-                            if self._nnManager.set_target_object(target_object):
-                                print(f"Target object set to: {self._nnManager._target_object}")
+                            try:
+                                if self._nnManager.set_target_object(target_object): 
+                                    print(f"Target object hint set in NNetManager: {self._nnManager._target_object}") 
+                                else:
+                                    print("NNetManager did not confirm setting target object.")
+                            except AttributeError:
+                                print("NNetManager does not have a 'set_target_object' method. Skipping.")
+                            except Exception as e:
+                                print(f"Error trying to set target in NNetManager: {e}")
+
+                            
+                            if not hasattr(self, 'measurements_file') or self.measurements_file.closed:
+                                self.measurements_file = open('test_tuple.txt', 'w')
+                                print("Created measurements file: test_tuple.txt")
                                 
-                                # Create measurements file if needed
-                                if not hasattr(self, 'measurements_file') or self.measurements_file.closed:
-                                    self.measurements_file = open('test_tuple.txt', 'w')
-                                    print("Created measurements file: test_tuple.txt")
-                                
-                                # Mark that main pipeline is starting and run it
-                                self._main_pipeline_started = True
-                                super().run()
-                                return
+                            
+                            self._main_pipeline_started = True
+                            super().run()
+                            return
                     
                     elif command == "get temperature":
                         # Run temperature demo again
@@ -470,15 +491,21 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
                 # Set the current target for tracking purposes
                 self.current_target = target
                 
-                # Execute the robot movement by sending to robotController
-                if self.current_target:
-                    try:
-                        self.coord_socket.send_string(command, zmq.NOBLOCK)
-                        print(f"Sent pick command: {command}")
-                    except zmq.error.Again:
-                        print("Failed to send message (would block)")
-                    except Exception as e:
-                        print(f"Error sending message: {e}")
+                self.measurement_buffer = []
+                self.coordinates_sent = False
+                print("Measurement buffer and coordinate sent flag reset.")
+                
+                if hasattr(self, '_nnManager'):
+                     try:
+                         if self._nnManager.set_target_object(target): 
+                             print(f"Target object hint set in NNetManager: {self._nnManager._target_object}") 
+                         else:
+                             print("NNetManager did not confirm setting target object.")
+                     except AttributeError:
+                         print("NNetManager does not have a 'set_target_object' method. Skipping.")
+                     except Exception as e:
+                         print(f"Error trying to set target in NNetManager: {e}")
+
             else:
                 print(f"Unknown command format: {command}")
                 
@@ -496,51 +523,69 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
             # After temperature demo completes, restart listening for commands
             self._listen_for_next_command()
         
-        # Process coordinates if enough measurements have been collected
-        if (hasattr(self, '_nnManager') and 
-            hasattr(self._nnManager, 'measurement_buffer') and 
-            hasattr(self._nnManager, 'max_buffer_size') and
-            hasattr(self._nnManager, 'coordinates_sent')):
-            
-            if (len(self._nnManager.measurement_buffer) >= self._nnManager.max_buffer_size and 
-                not self._nnManager.coordinates_sent):
+        if hasattr(self, '_nnManager'):
+            newData, inNn = self._nnManager.parse() 
+            if newData is not None and not self.coordinates_sent:
+                print(f"Received {len(newData)} detections. Current buffer size: {len(self.measurement_buffer)}")
+                for detection in newData:
+                    if hasattr(detection, 'spatialCoordinates'):
+                        label_text = self._nnManager.getLabelText(detection.label)
+                        coords = detection.spatialCoordinates
+                        measurement = {
+                            'label': detection.label, 
+                            'label_text': label_text, 
+                            'confidence': detection.confidence,
+                            'position': {
+                                'x': coords.x / 1000.0, 
+                                'y': coords.y / 1000.0,
+                                'z': coords.z / 1000.0
+                            }
+                        }
+                        self.measurement_buffer.append(measurement)
+                    else:
+                         print(f"Detection label {detection.label} lacks spatialCoordinates.")
+
+        
+        if len(self.measurement_buffer) >= self.max_buffer_size and not self.coordinates_sent:
+            print(f"Buffer full ({len(self.measurement_buffer)} >= {self.max_buffer_size}). Processing for target: '{self.current_target}'...")
+
+            target_measurements = []
+            if self.current_target:
+                print(f"Filtering measurements for target: {self.current_target}")
+                for m in self.measurement_buffer:
+                    if 'label_text' in m and m['label_text'].lower() == self.current_target.lower():
+                        target_measurements.append(m)
+                print(f"Found {len(target_measurements)} measurements for target '{self.current_target}' out of {len(self.measurement_buffer)} total.")
+            else:
+                print("No target set, cannot process buffer for specific object.")
                 
 
-                target_measurements = []
-                if self.current_target and hasattr(self._nnManager, 'getLabelText'):
-                    print(f"Filtering measurements for target: {self.current_target}")
-                    for m in self._nnManager.measurement_buffer:
-                        if 'label' in m:
-                            label_text = self._nnManager.getLabelText(m['label'])
-                            if label_text.lower() == self.current_target.lower():
-                                target_measurements.append(m)
-                        else:
-                            pass
-                    print(f"Found {len(target_measurements)} measurements for target '{self.current_target}' out of {len(self._nnManager.measurement_buffer)} total.")
-                else:
-                    print("No target set or getLabelText unavailable, processing all measurements.")
-                    target_measurements = self._nnManager.measurement_buffer
-
+            if target_measurements: 
                 filtered_measurements = self.filter_measurements_iqr(target_measurements)
 
                 if filtered_measurements:
                     mean_x = np.mean([m['position']['x'] for m in filtered_measurements])
                     mean_y = np.mean([m['position']['y'] for m in filtered_measurements])
                     mean_z = np.mean([m['position']['z'] for m in filtered_measurements])
-                    width_values = [m['dimensions']['width'] for m in filtered_measurements if 'dimensions' in m and 'width' in m['dimensions']]
                     
-                    if width_values:
-                        mean_width = np.mean(width_values)
-                        print(f"Publishing final mean coordinates with width: {mean_x:.5f}, {mean_y:.5f}, {mean_z:.5f}, width: {mean_width:.5f}")
-                        coord_str = f"{mean_x:.5f},{mean_y:.5f},{mean_z:.5f},{mean_width:.5f}"
-                    else:
-                        print(f"Publishing final mean coordinates (no width available): {mean_x:.5f}, {mean_y:.5f}, {mean_z:.5f}")
-                        coord_str = f"{mean_x:.5f},{mean_y:.5f},{mean_z:.5f}"
+                    # 
+                    # ADD WIDTH HERE IF WORK
+                    # 
+                    print(f"Publishing final mean coordinates: X={mean_x:.5f}, Y={mean_y:.5f}, Z={mean_z:.5f}")
+                    coord_str = f"{mean_x:.5f},{mean_y:.5f},{mean_z:.5f}"
                         
-                    self.coord_socket.send_string(coord_str)
-                    print("Coordinates sent to robot")
-                    self._nnManager.coordinates_sent = True
-                    self._nnManager.measurement_buffer = [] 
+                    try:
+                        self.coord_socket.send_string(coord_str)
+                        print("Coordinates sent to robot")
+                        self.coordinates_sent = True 
+                        self.measurement_buffer = [] 
+                        print("Buffer cleared.")
+                    except Exception as e:
+                        print(f"Error sending coordinates via ZMQ: {e}")
+                else:
+                    print("No measurements remained after IQR filtering. Not sending coordinates.")
+            else:
+                print("No measurements found for the target object in the buffer. Not sending coordinates.")
 
     def stop(self, *args, **kwargs):
         # Terminate speech process if running
