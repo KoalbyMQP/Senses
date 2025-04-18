@@ -542,7 +542,7 @@ class FinleyFace:
         """Start transition to a new target emotion."""
         emotion_map = {
             "listening": "curious", 
-            "thinking": "focused",  
+            "thinking": "scanning",  
             "idle": "neutral",
             "waiting": "neutral",
         }

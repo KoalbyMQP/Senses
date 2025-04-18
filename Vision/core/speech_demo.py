@@ -38,6 +38,18 @@ class SpeechEnabledDemo(Demo):
         self.coord_socket = self.coord_context.socket(zmq.PUB)
         self.coord_socket.bind("tcp://*:5559")
 
+        # Set up ZMQ for face commands
+        self.face_publisher = None
+        try:
+            self.face_publisher = self.context.socket(zmq.PUB)
+            self.face_publisher.connect("tcp://localhost:5563")
+            print("Connected to face interface socket at localhost:5563 for speech_demo")
+        except Exception as e:
+             print(f"speech_demo: Error connecting to face interface: {e}. Face commands will not be sent.")
+             if self.face_publisher:
+                 self.face_publisher.close()
+             self.face_publisher = None
+
     def filter_measurements_iqr(self, measurements):
         print(f"Starting IQR filtering with {len(measurements)} measurements")
         
@@ -97,6 +109,7 @@ class SpeechEnabledDemo(Demo):
 
     def setup(self, conf):
         super().setup(conf)
+        self.send_face_command("neutral") # Start with a neutral face
         
         # Start speech detection process
         print("Starting speech detection process...")
@@ -176,6 +189,19 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
         except Exception as e:
             print(f"Error starting robot control: {e}")
 
+    def send_face_command(self, emotion_command):
+        """Send an emotion command string to the face interface."""
+        if self.face_publisher:
+            try:
+                # print(f"speech_demo: Sending face command: {emotion_command}") # Optional: uncomment for verbose logging
+                self.face_publisher.send_string(emotion_command, zmq.NOBLOCK)
+            except zmq.error.Again:
+                 print(f"Warning: speech_demo Face command '{emotion_command}' send would block.")
+            except Exception as e:
+                print(f"speech_demo: Error sending face command '{emotion_command}': {e}")
+        # else: # Optional: uncomment for verbose logging
+        #     print(f"speech_demo: Skipping face command '{emotion_command}': publisher not available.")
+
     def run(self):
         print("Starting speech-enabled pipeline...")
         # Start listening for commands before running the main pipeline
@@ -185,6 +211,9 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
         # Set initial state
         self._temp_demo_running = False
         self._main_pipeline_started = False
+        
+        print("Waiting for initial command (pick up <object> or get temperature)...")
+        self.send_face_command("listening") # Face: Listening for first command
         
         while target_object is None and not run_temperature_demo:
             try:
@@ -200,7 +229,9 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
                     self.coordinates_sent = False
                     print("Measurement buffer and coordinate sent flag reset.")
 
-                    
+                    # Face: Focused, ready for pick & place
+                    self.send_face_command("focused")
+
                     # if hasattr(self, '_nnManager'):
                     #     print("Setting target object in NNetManager")
                     #     try:
@@ -219,6 +250,8 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
                 elif command == "get temperature":
                     print("Temperature command received")
                     run_temperature_demo = True
+                    # Face: Focused, ready for temperature check
+                    self.send_face_command("focused")
                     break
             except zmq.Again:
                 time.sleep(0.01)
@@ -233,6 +266,7 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
             
             # After temperature demo completes, check for new commands
             print("Temperature demo completed. Listening for new commands...")
+            self.send_face_command("neutral") # Face: Neutral after temp demo
             self._listen_for_next_command()
         else:
             # Mark that the main pipeline is starting
@@ -249,6 +283,7 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
     def _listen_for_next_command(self):
         """Listen for new commands after a demo completes"""
         print("Listening for new commands...")
+        self.send_face_command("listening") # Face: Listening again
         timeout = 300  # 5 minutes
         start_time = time.time()
         
@@ -257,6 +292,7 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
                 command = self.socket.recv_string(flags=zmq.NOBLOCK)
                 if command:
                     print(f"Received new command: {command}")
+                    self.send_face_command("focused") # Face: Focused on new command
                     
                     if command.startswith("pick up"):
                         # Start the main pipeline with the new target
@@ -268,7 +304,9 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
                         self.coordinates_sent = False
                         print("Measurement buffer and coordinate sent flag reset.")
 
-                        
+                        # Face: Focused, ready for pick & place
+                        self.send_face_command("focused")
+
                         # if hasattr(self, '_nnManager'):
                         #     try:
                         #         if self._nnManager.set_target_object(target_object): 
@@ -280,12 +318,10 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
                         #     except Exception as e:
                         #         print(f"Error trying to set target in NNetManager: {e}")
 
-                            
                         if not hasattr(self, 'measurements_file') or self.measurements_file.closed:
                             self.measurements_file = open('test_tuple.txt', 'w')
                             print("Created measurements file: test_tuple.txt")
                                 
-                            
                         self._main_pipeline_started = True
                         super().run()
                         return
@@ -295,6 +331,7 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
                         self._run_temperature_demo()
                         # Reset timeout
                         start_time = time.time()
+                        self.send_face_command("listening") # Face: Back to listening after temp demo
             
             except zmq.Again:
                 time.sleep(0.1)
@@ -303,11 +340,13 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
                 time.sleep(0.1)
                 
         print("Timeout reached. Exiting command listener.")
+        self.send_face_command("neutral") # Face: Neutral on timeout
 
     def _run_temperature_demo(self):
         """Runs the temperature demo by launching demo.py in the Thermometer folder"""
         print("========== STARTING TEMPERATURE MEASUREMENT SEQUENCE ==========")
         print("Step 1: Starting temperature monitoring demo...")
+        self.send_face_command("scanning") # Face: Scanning for temperature
         
         # First, check if we need to close any existing device connections
         if hasattr(self, '_device') and not self._device.isClosed():
@@ -372,10 +411,12 @@ python3 {os.path.basename(temp_demo_path)} -a -xyz -n 0 || echo "Error occurred!
             coord_receiver.setsockopt(zmq.RCVTIMEO, 120000)  # 120-second timeout
             
             print("Step 3: Waiting for forehead coordinates from temperature demo...")
+            self.send_face_command("thinking") # Face: Thinking while waiting for coords
             try:
                 # Wait for coordinates from the demo
                 coordinates_str = coord_receiver.recv_string()
                 print(f"Step 4: Received coordinates from thermometer demo: {coordinates_str}")
+                self.send_face_command("neutral") # Face: Neutral after getting coords
                 
                 # After receiving coordinates, try ALL methods to move the robot
                 print("Step 5: Received coordinates, now trying multiple methods to move the robot...")
@@ -430,8 +471,12 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
                     
             except zmq.error.Again:
                 print("Timeout waiting for coordinates from temperature demo")
+                self.send_face_command("sad") # Face: Sad on timeout
+                time.sleep(1.5)
             except Exception as e:
                 print(f"Error in temperature demo process: {e}")
+                self.send_face_command("sad") # Face: Sad on error
+                time.sleep(1.5)
                 import traceback
                 traceback.print_exc()
             finally:
@@ -445,8 +490,10 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
             if hasattr(self, '_temp_demo_running'):
                 self._temp_demo_running = False
             print("========== TEMPERATURE MEASUREMENT SEQUENCE COMPLETE ==========")
+            self.send_face_command("neutral") # Ensure neutral at the very end
 
     def loop(self):
+        # Call super().loop() first to handle core processing (frame prep, NN parsing etc.)
         super().loop()
         
         # Handle speech commands while running
@@ -463,6 +510,7 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
                 # Make sure we're not already in a temperature demo
                 if hasattr(self, '_temp_demo_running') and self._temp_demo_running:
                     print("Temperature demo is already running")
+                    self.send_face_command("focused") # Keep face focused if already running
                     return
                 
                 # Launch temperature demo in a separate process
@@ -489,7 +537,8 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
                 # Format: "pick up {object}"
                 target = command.lower().split("pick up ")[-1].strip()
                 print(f"PICK UP COMMAND DETECTED! Target object: {target}")
-                
+                self.send_face_command("focused") # Face: Focus on new pick target
+
                 # Set the current target for tracking purposes
                 self.current_target = target
                 
@@ -517,12 +566,16 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
             pass
         except Exception as e:
             print(f"Error processing command: {e}")
+            self.send_face_command("sad") # Face: Sad on command processing error
+            time.sleep(1.5)
+            self.send_face_command("neutral")
         
         # Check if we need to run the temperature demo after stopping the main pipeline
         if hasattr(self, '_pending_temperature_demo') and self._pending_temperature_demo and self._device.isClosed():
             self._pending_temperature_demo = False
             self._run_temperature_demo()
-            
+            self.send_face_command("neutral") # Face: Neutral after pending demo
+
             # After temperature demo completes, restart listening for commands
             self._listen_for_next_command()
         
@@ -580,6 +633,9 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
                     try:
                         self.coord_socket.send_string(coord_str)
                         print("Coordinates sent to robot")
+                        self.send_face_command("happy") # Face: Happy when coords sent
+                        time.sleep(1.5)
+                        self.send_face_command("neutral") # Back to neutral
                         self.coordinates_sent = True 
                         self.measurement_buffer = [] 
                         print("Buffer cleared.")
@@ -587,10 +643,19 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
                         print(f"Error sending coordinates via ZMQ: {e}")
                 else:
                     print("No measurements remained after IQR filtering. Not sending coordinates.")
+                    # Maybe send a slightly sad/confused face?
+                    self.send_face_command("curious") # Or sad?
+                    time.sleep(1.5)
+                    self.send_face_command("neutral")
             else:
                 print("No measurements found for the target object in the buffer. Not sending coordinates.")
+                # Maybe send a slightly sad/confused face?
+                self.send_face_command("curious") # Or sad?
+                time.sleep(1.5)
+                self.send_face_command("neutral")
 
     def stop(self, *args, **kwargs):
+        self.send_face_command("neutral") # Ensure neutral face on stop
         # Terminate speech process if running
         if hasattr(self, 'speech_process') and self.speech_process is not None:
             try:
@@ -615,4 +680,13 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
             except Exception as e:
                 print(f"Error terminating temperature process: {e}")
 
-        super().stop(*args, **kwargs) 
+        super().stop(*args, **kwargs)
+
+        # Clean up face publisher socket
+        if hasattr(self, 'face_publisher') and self.face_publisher:
+            try:
+                self.face_publisher.close()
+                print("speech_demo: Face publisher socket closed.")
+            except Exception as e:
+                print(f"speech_demo: Error closing face publisher socket: {e}")
+        
