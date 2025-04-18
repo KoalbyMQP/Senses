@@ -22,6 +22,12 @@ class SpeechEnabledDemo(Demo):
         self.max_buffer_size = 200
         self.coordinates_sent = False 
         
+        # Camera parameters for 1080p
+        self.nn_source_width = 1920
+        self.nn_source_height = 1080
+        self.fx = 1504.128173828125
+        self.fy = 1504.2720947265625
+        
         # State tracking for demo transitions
         self._temp_demo_running = False
         self._main_pipeline_started = False
@@ -64,6 +70,8 @@ class SpeechEnabledDemo(Demo):
         print(f"X: {min(x_coords) if x_coords else 0:.5f} to {max(x_coords) if x_coords else 0:.5f}")
         print(f"Y: {min(y_coords) if y_coords else 0:.5f} to {max(y_coords) if y_coords else 0:.5f}")
         print(f"Z: {min(z_coords) if z_coords else 0:.5f} to {max(z_coords) if z_coords else 0:.5f}")
+        print(f"W: {min(widths) if widths else 0:.5f} to {max(widths) if widths else 0:.5f}")
+        print(f"H: {min(heights) if heights else 0:.5f} to {max(heights) if heights else 0:.5f}")
         
         def apply_iqr_filter(data):
             if not data:
@@ -85,6 +93,8 @@ class SpeechEnabledDemo(Demo):
         print(f"X: {x_bounds[0]:.5f} to {x_bounds[1]:.5f}")
         print(f"Y: {y_bounds[0]:.5f} to {y_bounds[1]:.5f}")
         print(f"Z: {z_bounds[0]:.5f} to {z_bounds[1]:.5f}")
+        print(f"W: {width_bounds[0]:.5f} to {width_bounds[1]:.5f}")
+        print(f"H: {height_bounds[0]:.5f} to {height_bounds[1]:.5f}")
         
         filtered_measurements = []
         for m in measurements:
@@ -459,7 +469,7 @@ python3 {os.path.basename(temp_demo_path)} -a -xyz -n 0 || echo "Error occurred!
             coord_receiver = self.context.socket(zmq.SUB)
             coord_receiver.connect("tcp://localhost:5560")
             coord_receiver.setsockopt_string(zmq.SUBSCRIBE, "")
-            coord_receiver.setsockopt(zmq.RCVTIMEO, 120000)  # 120-second timeout
+            coord_receiver.setsockopt(zmq.RCVTIMEO, 120000)  
             
             print("Step 3: Waiting for forehead coordinates from temperature demo...")
             self.send_face_command("thinking") # Face: Thinking while waiting for coords
@@ -648,6 +658,31 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
                                 'z': coords.z / 1000.0
                             }
                         }
+                        # Calculate physical width/height
+                        if hasattr(detection, 'xmin') and hasattr(detection, 'xmax') and \
+                           hasattr(detection, 'ymin') and hasattr(detection, 'ymax') and \
+                           coords.z > 0: # Need depth > 0
+
+                            z_meters = coords.z / 1000.0
+
+                            # De-normalize bounding box to pixel coordinates
+                            pixel_xmin = int(detection.xmin * self.nn_source_width)
+                            pixel_ymin = int(detection.ymin * self.nn_source_height)
+                            pixel_xmax = int(detection.xmax * self.nn_source_width)
+                            pixel_ymax = int(detection.ymax * self.nn_source_height)
+
+                            pixel_width = pixel_xmax - pixel_xmin
+                            pixel_height = pixel_ymax - pixel_ymin
+
+                            # Calculate physical size using pinhole camera model
+                            physical_width = (pixel_width * z_meters) / self.fx
+                            physical_height = (pixel_height * z_meters) / self.fy
+
+                            measurement['dimensions'] = {
+                                'width': physical_width,
+                                'height': physical_height
+                            }
+
                         self.measurement_buffer.append(measurement)
                     else:
                          print(f"Detection label {detection.label} lacks spatialCoordinates.")
@@ -675,11 +710,12 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
                     mean_y = np.mean([m['position']['y'] for m in filtered_measurements])
                     mean_z = np.mean([m['position']['z'] for m in filtered_measurements])
                     
-                    # 
-                    # ADD WIDTH HERE IF WORK
-                    # 
-                    print(f"Publishing final mean coordinates: X={mean_x:.5f}, Y={mean_y:.5f}, Z={mean_z:.5f}")
-                    coord_str = f"{mean_x:.5f},{mean_y:.5f},{mean_z:.5f}"
+                    # Calculate mean width and height if dimensions exist
+                    mean_w = np.mean([m['dimensions']['width'] for m in filtered_measurements if 'dimensions' in m]) if any('dimensions' in m for m in filtered_measurements) else 0.0
+                    mean_h = np.mean([m['dimensions']['height'] for m in filtered_measurements if 'dimensions' in m]) if any('dimensions' in m for m in filtered_measurements) else 0.0
+
+                    print(f"Publishing final mean values: X={mean_x:.5f}, Y={mean_y:.5f}, Z={mean_z:.5f}, W={mean_w:.5f}, H={mean_h:.5f}")
+                    coord_str = f"{mean_x:.5f},{mean_y:.5f},{mean_z:.5f},{mean_w:.5f},{mean_h:.5f}"
 
                     try:
                         print("Waiting 1s for subscriber connection...")
