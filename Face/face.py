@@ -501,11 +501,12 @@ class FinleyFace:
         # print("--- handle_events: A ---", flush=True) # Optional extra debug
         for event in pygame.event.get(): # Check Pygame events first
             print(f"--- handle_events: B (Processing event: {event.type}) ---", flush=True)
-            if event.type == pygame.QUIT:
-                print("--- handle_events: QUIT event received ---", flush=True)
-                pygame.quit()
-                sys.exit()
-            elif event.type == pygame.KEYDOWN:
+            # Temporarily disable QUIT event handling for debugging
+            # if event.type == pygame.QUIT:
+            #     print("--- handle_events: QUIT event received ---", flush=True)
+            #     pygame.quit()
+            #     sys.exit()
+            if event.type == pygame.KEYDOWN:
                 print(f"--- handle_events: KEYDOWN event received (Key: {event.key}) ---", flush=True)
                 # if event.key == pygame.K_ESCAPE:
                 #     pygame.quit()
