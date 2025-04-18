@@ -19,7 +19,7 @@ class SpeechEnabledDemo(Demo):
         self.face_process = None
         self.current_target = None
         self.measurement_buffer = []
-        self.max_buffer_size = 200
+        self.max_buffer_size = 100
         self.coordinates_sent = False 
         
         # Camera parameters for 1080p
@@ -641,69 +641,62 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
             self._listen_for_next_command()
         
         if hasattr(self, '_nnManager'):
-            newData, inNn = self._nnManager.parse() 
+            newData, inNn = self._nnManager.parse()
             if newData is not None and not self.coordinates_sent:
-                print(f"Received {len(newData)} detections. Current buffer size: {len(self.measurement_buffer)}")
+                detections_received = len(newData) # Store original count
+                added_count = 0
                 for detection in newData:
-                    if hasattr(detection, 'spatialCoordinates'):
+                    if hasattr(detection, 'spatialCoordinates') and self.current_target:
                         label_text = self._nnManager.getLabelText(detection.label)
-                        coords = detection.spatialCoordinates
-                        measurement = {
-                            'label': detection.label, 
-                            'label_text': label_text, 
-                            'confidence': detection.confidence,
-                            'position': {
-                                'x': coords.x / 1000.0, 
-                                'y': coords.y / 1000.0,
-                                'z': coords.z / 1000.0
+                        if label_text.lower() == self.current_target.lower():
+                            coords = detection.spatialCoordinates
+                            measurement = {
+                                'label': detection.label,
+                                'label_text': label_text,
+                                'confidence': detection.confidence,
+                                'position': {
+                                    'x': coords.x / 1000.0,
+                                    'y': coords.y / 1000.0,
+                                    'z': coords.z / 1000.0
+                                }
                             }
-                        }
-                        # Calculate physical width/height
-                        if hasattr(detection, 'xmin') and hasattr(detection, 'xmax') and \
-                           hasattr(detection, 'ymin') and hasattr(detection, 'ymax') and \
-                           coords.z > 0: # Need depth > 0
+                            if hasattr(detection, 'xmin') and hasattr(detection, 'xmax') and \
+                               hasattr(detection, 'ymin') and hasattr(detection, 'ymax') and \
+                               coords.z > 0: # Need depth > 0
 
-                            z_meters = coords.z / 1000.0
+                                z_meters = coords.z / 1000.0
 
-                            # De-normalize bounding box to pixel coordinates
-                            pixel_xmin = int(detection.xmin * self.nn_source_width)
-                            pixel_ymin = int(detection.ymin * self.nn_source_height)
-                            pixel_xmax = int(detection.xmax * self.nn_source_width)
-                            pixel_ymax = int(detection.ymax * self.nn_source_height)
+                                # De-normalize bounding box to pixel coordinates
+                                pixel_xmin = int(detection.xmin * self.nn_source_width)
+                                pixel_ymin = int(detection.ymin * self.nn_source_height)
+                                pixel_xmax = int(detection.xmax * self.nn_source_width)
+                                pixel_ymax = int(detection.ymax * self.nn_source_height)
 
-                            pixel_width = pixel_xmax - pixel_xmin
-                            pixel_height = pixel_ymax - pixel_ymin
+                                pixel_width = pixel_xmax - pixel_xmin
+                                pixel_height = pixel_ymax - pixel_ymin
 
-                            # Calculate physical size using pinhole camera model
-                            physical_width = (pixel_width * z_meters) / self.fx
-                            physical_height = (pixel_height * z_meters) / self.fy
+                                # Calculate physical size using pinhole camera model
+                                physical_width = (pixel_width * z_meters) / self.fx
+                                physical_height = (pixel_height * z_meters) / self.fy
 
-                            measurement['dimensions'] = {
-                                'width': physical_width,
-                                'height': physical_height
-                            }
+                                measurement['dimensions'] = {
+                                    'width': physical_width,
+                                    'height': physical_height
+                                }
 
-                        self.measurement_buffer.append(measurement)
-                    else:
-                         print(f"Detection label {detection.label} lacks spatialCoordinates.")
+                            print(f"Adding measurement for target '{label_text}' to buffer. Buffer size: {len(self.measurement_buffer) + 1}")
+                            self.measurement_buffer.append(measurement)
+                            added_count += 1
 
-        
+                if detections_received > 0: # Only print if there were detections to process
+                    print(f"Processed {detections_received} detections, added {added_count} matching target '{self.current_target}'. Current buffer size: {len(self.measurement_buffer)}")
+
+
         if len(self.measurement_buffer) >= self.max_buffer_size and not self.coordinates_sent:
-            print(f"Buffer full ({len(self.measurement_buffer)} >= {self.max_buffer_size}). Processing for target: '{self.current_target}'...")
+            print(f"Buffer full ({len(self.measurement_buffer)} >= {self.max_buffer_size}) with measurements for target: '{self.current_target}'. Processing...")
 
-            target_measurements = []
-            if self.current_target:
-                print(f"Filtering measurements for target: {self.current_target}")
-                for m in self.measurement_buffer:
-                    if 'label_text' in m and m['label_text'].lower() == self.current_target.lower():
-                        target_measurements.append(m)
-                print(f"Found {len(target_measurements)} measurements for target '{self.current_target}' out of {len(self.measurement_buffer)} total.")
-            else:
-                print("No target set, cannot process buffer for specific object.")
-                
-
-            if target_measurements: 
-                filtered_measurements = self.filter_measurements_iqr(target_measurements)
+            if self.measurement_buffer: # Check if buffer actually has items
+                filtered_measurements = self.filter_measurements_iqr(self.measurement_buffer)
 
                 if filtered_measurements:
                     mean_x = np.mean([m['position']['x'] for m in filtered_measurements])
@@ -742,8 +735,8 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
                     time.sleep(1.5)
                     self.send_face_command("neutral")
             else:
-                print("No measurements found for the target object in the buffer. Not sending coordinates.")
-                # Maybe send a slightly sad/confused face?
+                # This case is less likely now, but good practice to keep
+                print("Buffer is full but contains no measurements (unexpected). Not sending coordinates.")
                 self.send_face_command("curious") # Or sad?
                 time.sleep(1.5)
                 self.send_face_command("neutral")

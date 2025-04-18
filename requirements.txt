@@ -13,6 +13,7 @@ psutil
 SpeechRecognition
 openai
 requests 
+gTTS
 
 # Vision specific
 depthai>=2.21.0
