@@ -200,21 +200,22 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
                     self.coordinates_sent = False
                     print("Measurement buffer and coordinate sent flag reset.")
 
-                    if hasattr(self, '_nnManager'):
-                        print("Setting target object in NNetManager")
-                        try:
-                            if self._nnManager.set_target_object(target_object): 
-                                print(f"Target object hint set in NNetManager: {self._nnManager._target_object}") 
-                            else:
-                                print("NNetManager did not confirm setting target object.")
-                        except AttributeError:
-                             print("NNetManager does not have a 'set_target_object' method. Skipping.")
-                        except Exception as e:
-                             print(f"Error trying to set target in NNetManager: {e}")
+                    
+                    # if hasattr(self, '_nnManager'):
+                    #     print("Setting target object in NNetManager")
+                    #     try:
+                    #         if self._nnManager.set_target_object(target_object): 
+                    #             print(f"Target object hint set in NNetManager: {self._nnManager._target_object}") 
+                    #         else:
+                    #             print("NNetManager did not confirm setting target object.")
+                    #     except AttributeError:
+                    #          print("NNetManager does not have a 'set_target_object' method. Skipping.")
+                    #     except Exception as e:
+                    #          print(f"Error trying to set target in NNetManager: {e}")
 
-                        self.measurements_file = open('test_tuple.txt', 'w')
-                        print("Created measurements file: test_tuple.txt")
-                        break
+                    self.measurements_file = open('test_tuple.txt', 'w')
+                    print("Created measurements file: test_tuple.txt")
+                    break
                 elif command == "get temperature":
                     print("Temperature command received")
                     run_temperature_demo = True
@@ -267,26 +268,27 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
                         self.coordinates_sent = False
                         print("Measurement buffer and coordinate sent flag reset.")
 
-                        if hasattr(self, '_nnManager'):
-                            try:
-                                if self._nnManager.set_target_object(target_object): 
-                                    print(f"Target object hint set in NNetManager: {self._nnManager._target_object}") 
-                                else:
-                                    print("NNetManager did not confirm setting target object.")
-                            except AttributeError:
-                                print("NNetManager does not have a 'set_target_object' method. Skipping.")
-                            except Exception as e:
-                                print(f"Error trying to set target in NNetManager: {e}")
+                        
+                        # if hasattr(self, '_nnManager'):
+                        #     try:
+                        #         if self._nnManager.set_target_object(target_object): 
+                        #             print(f"Target object hint set in NNetManager: {self._nnManager._target_object}") 
+                        #         else:
+                        #             print("NNetManager did not confirm setting target object.")
+                        #     except AttributeError:
+                        #         print("NNetManager does not have a 'set_target_object' method. Skipping.")
+                        #     except Exception as e:
+                        #         print(f"Error trying to set target in NNetManager: {e}")
 
                             
-                            if not hasattr(self, 'measurements_file') or self.measurements_file.closed:
-                                self.measurements_file = open('test_tuple.txt', 'w')
-                                print("Created measurements file: test_tuple.txt")
+                        if not hasattr(self, 'measurements_file') or self.measurements_file.closed:
+                            self.measurements_file = open('test_tuple.txt', 'w')
+                            print("Created measurements file: test_tuple.txt")
                                 
                             
-                            self._main_pipeline_started = True
-                            super().run()
-                            return
+                        self._main_pipeline_started = True
+                        super().run()
+                        return
                     
                     elif command == "get temperature":
                         # Run temperature demo again
@@ -495,16 +497,17 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
                 self.coordinates_sent = False
                 print("Measurement buffer and coordinate sent flag reset.")
                 
-                if hasattr(self, '_nnManager'):
-                     try:
-                         if self._nnManager.set_target_object(target): 
-                             print(f"Target object hint set in NNetManager: {self._nnManager._target_object}") 
-                         else:
-                             print("NNetManager did not confirm setting target object.")
-                     except AttributeError:
-                         print("NNetManager does not have a 'set_target_object' method. Skipping.")
-                     except Exception as e:
-                         print(f"Error trying to set target in NNetManager: {e}")
+                
+                # if hasattr(self, '_nnManager'):
+                #      try:
+                #          if self._nnManager.set_target_object(target): 
+                #              print(f"Target object hint set in NNetManager: {self._nnManager._target_object}") 
+                #          else:
+                #              print("NNetManager did not confirm setting target object.")
+                #      except AttributeError:
+                #          print("NNetManager does not have a 'set_target_object' method. Skipping.")
+                #      except Exception as e:
+                #          print(f"Error trying to set target in NNetManager: {e}")
 
             else:
                 print(f"Unknown command format: {command}")
