@@ -18,7 +18,7 @@ class SpeechEnabledDemo(Demo):
         self.temperature_process = None
         self.current_target = None
         self.measurement_buffer = []
-        self.max_buffer_size = 50     
+        self.max_buffer_size = 10
         self.coordinates_sent = False 
         
         # State tracking for demo transitions
