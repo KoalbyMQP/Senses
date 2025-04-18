@@ -1,0 +1,1787 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="FullAssemFIN_tempProbe">
+  <link
+    name="chest">
+    <inertial>
+      <origin
+        xyz="-0.0202638179458287 -0.0129139590090204 0.284958773030035"
+        rpy="0 0 0" />
+      <mass
+        value="0.786711405511894" />
+      <inertia
+        ixx="0.000573531193893458"
+        ixy="-7.55703611062011E-07"
+        ixz="-4.31810822559814E-06"
+        iyy="0.000829158924865465"
+        iyz="2.08678712234045E-05"
+        izz="0.000996599566852093" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/chest.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 0.501960784313725 0.501960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/chest.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="neck">
+    <inertial>
+      <origin
+        xyz="-0.0103514467502364 -0.000383883120441148 -0.00127933442635713"
+        rpy="0 0 0" />
+      <mass
+        value="0.00649329301930082" />
+      <inertia
+        ixx="2.02635190148395E-06"
+        ixy="-2.52969494383621E-08"
+        ixz="-8.43049787164719E-08"
+        iyy="2.17364124955234E-06"
+        iyz="-4.08867017787649E-07"
+        izz="9.33731691688554E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/neck.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 0.501960784313725 0.501960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/neck.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="neck"
+    type="revolute">
+    <origin
+      xyz="-0.020694 -0.018154 0.32857"
+      rpy="1.5708 1.5358 1.2814" />
+    <parent
+      link="chest" />
+    <child
+      link="neck" />
+    <axis
+      xyz="-1 0 0" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="head">
+    <inertial>
+      <origin
+        xyz="-0.000773628144498859 0.010151844929091 0.0369792239983472"
+        rpy="0 0 0" />
+      <mass
+        value="0.594579327741898" />
+      <inertia
+        ixx="0.000979548834057596"
+        ixy="1.52017694511787E-08"
+        ixz="1.35810008031718E-06"
+        iyy="0.00124413685045187"
+        iyz="0.000296290658293"
+        izz="0.00103924672298209" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/head.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.529411764705882 0.549019607843137 0.549019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/head.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="head"
+    type="revolute">
+    <origin
+      xyz="-0.0205 0 0"
+      rpy="-0.033532 -1.2793 1.5708" />
+    <parent
+      link="neck" />
+    <child
+      link="head" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="camera">
+    <inertial>
+      <origin
+        xyz="-0.00612592971438968 -0.284260404377679 0.0390020355102088"
+        rpy="0 0 0" />
+      <mass
+        value="3.80893293219309" />
+      <inertia
+        ixx="0.194944900512307"
+        ixy="0.0010865964430035"
+        ixz="-0.00347242102363337"
+        iyy="0.147490312765229"
+        iyz="0.0795727230534413"
+        izz="0.246053497649951" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/camera.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/camera.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="camera"
+    type="revolute">
+    <origin
+      xyz="-0.00098396 0.049804 0.11774"
+      rpy="0.55714 -0.00595 -0.0037066" />
+    <parent
+      link="head" />
+    <child
+      link="camera" />
+    <axis
+      xyz="-0.00701 0 -0.99998" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="shoulder1_left">
+    <inertial>
+      <origin
+        xyz="0.0111764168694553 -0.000384543947655913 0.0114567171945299"
+        rpy="0 0 0" />
+      <mass
+        value="0.0104989821167456" />
+      <inertia
+        ixx="6.19340879843901E-06"
+        ixy="3.55657027739905E-09"
+        ixz="-1.0596089237389E-07"
+        iyy="6.87645557823541E-06"
+        iyz="1.60197782171676E-07"
+        izz="2.10906034763582E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/shoulder1_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 0.501960784313725 0.501960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/shoulder1_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="shoulder1_left"
+    type="revolute">
+    <origin
+      xyz="0.073449 -0.03446 0.27833"
+      rpy="1.5708 -0.01006 0.0019922" />
+    <parent
+      link="chest" />
+    <child
+      link="shoulder1_left" />
+    <axis
+      xyz="-1 0 0" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="shoulder2_left">
+    <inertial>
+      <origin
+        xyz="0.0011443929549487 0.0593008691133662 -0.0031982944693893"
+        rpy="0 0 0" />
+      <mass
+        value="0.292831940250828" />
+      <inertia
+        ixx="0.000118766391194577"
+        ixy="-1.16389367113909E-06"
+        ixz="6.89863022017643E-08"
+        iyy="9.29970540600717E-05"
+        iyz="2.58662631892054E-06"
+        izz="0.000118067571820643" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/shoulder2_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.149019607843137 0.149019607843137 0.149019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/shoulder2_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="shoulder2_left"
+    type="revolute">
+    <origin
+      xyz="0.025 -0.00033546 0.0099944"
+      rpy="0.059313 -1.5372 -1.5708" />
+    <parent
+      link="shoulder1_left" />
+    <child
+      link="shoulder2_left" />
+    <axis
+      xyz="-1 0 0" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="elbow_left">
+    <inertial>
+      <origin
+        xyz="-0.00047626900994624 0.0597035394069108 -0.000100563608806989"
+        rpy="0 0 0" />
+      <mass
+        value="0.275474242322615" />
+      <inertia
+        ixx="7.22487883822082E-05"
+        ixy="4.68832434253455E-09"
+        ixz="-7.34875443012984E-10"
+        iyy="6.59030058538354E-05"
+        iyz="7.48472175202495E-07"
+        izz="5.02209215296456E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/elbow_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 0.501960784313725 0.501960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/elbow_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="elbow_left"
+    type="revolute">
+    <origin
+      xyz="0.0021 0.11796 -0.0083072"
+      rpy="-1.5688 1.5115 -1.5708" />
+    <parent
+      link="shoulder2_left" />
+    <child
+      link="elbow_left" />
+    <axis
+      xyz="-1 0 0" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="forearm_left">
+    <inertial>
+      <origin
+        xyz="-0.0299529912201598 6.25732837435944E-05 0.00190722389006545"
+        rpy="0 0 0" />
+      <mass
+        value="0.262462082128775" />
+      <inertia
+        ixx="3.49506257991209E-05"
+        ixy="3.52230228696536E-08"
+        ixz="1.07077846429184E-06"
+        iyy="6.56734317873408E-05"
+        iyz="-2.11970471921867E-07"
+        izz="5.92048988684953E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/forearm_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.529411764705882 0.549019607843137 0.549019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/forearm_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="forearm_left"
+    type="revolute">
+    <origin
+      xyz="-0.00049932 0.078674 -0.012957"
+      rpy="0.033552 -0.0019932 -1.5708" />
+    <parent
+      link="elbow_left" />
+    <child
+      link="forearm_left" />
+    <axis
+      xyz="-1 0 0" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="wrist_left">
+    <inertial>
+      <origin
+        xyz="0.00111847730260198 0.0513821548757833 -0.00141307242594535"
+        rpy="0 0 0" />
+      <mass
+        value="0.0511410181180367" />
+      <inertia
+        ixx="1.79287886660567E-05"
+        ixy="-4.39075824577695E-07"
+        ixz="-6.91510309092966E-09"
+        iyy="1.04199020316605E-05"
+        iyz="-1.87041790911049E-06"
+        izz="1.96651586821727E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/wrist_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 0.501960784313725 0.501960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/wrist_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="wrist_left"
+    type="revolute">
+    <origin
+      xyz="-0.042798 6.4388E-05 0.0019183"
+      rpy="0.059302 -1.5372 1.5739" />
+    <parent
+      link="forearm_left" />
+    <child
+      link="wrist_left" />
+    <axis
+      xyz="0.00010381 0.99805 -0.062354" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="hand_left">
+    <inertial>
+      <origin
+        xyz="-0.485591473249365 -0.151525211114298 -0.010630685135938"
+        rpy="0 0 0" />
+      <mass
+        value="3.80893293219309" />
+      <inertia
+        ixx="0.194919399906698"
+        ixy="0.00236992738649372"
+        ixz="-0.00133693191312615"
+        iyy="0.103609659808419"
+        iyz="-0.00920332348250028"
+        izz="0.289959651212497" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/hand_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/hand_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="hand_left"
+    type="revolute">
+    <origin
+      xyz="0.0020577 0.1202 0.0042789"
+      rpy="1.536 0.062385 1.5535" />
+    <parent
+      link="wrist_left" />
+    <child
+      link="hand_left" />
+    <axis
+      xyz="-1 0 0" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="shoulder1_right">
+    <inertial>
+      <origin
+        xyz="0.0178422545124166 -0.0138830733370498 -1.74595491247986E-06"
+        rpy="0 0 0" />
+      <mass
+        value="0.133882145951707" />
+      <inertia
+        ixx="3.77560393609244E-05"
+        ixy="-1.19093471916067E-06"
+        ixz="1.10445008515588E-09"
+        iyy="4.40497250246042E-05"
+        iyz="1.0600453952227E-10"
+        izz="5.86071352817368E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/shoulder1_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.149019607843137 0.149019607843137 0.149019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/shoulder1_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="shoulder1_right"
+    type="revolute">
+    <origin
+      xyz="-0.16761 -0.03873 0.27618"
+      rpy="3.0812 -0.0084604 0.0018954" />
+    <parent
+      link="chest" />
+    <child
+      link="shoulder1_right" />
+    <axis
+      xyz="0 0 0" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="shoulder2_right">
+    <inertial>
+      <origin
+        xyz="-0.0123434054461642 -0.0183967069895282 -0.000407293038537537"
+        rpy="0 0 0" />
+      <mass
+        value="0.283499621102926" />
+      <inertia
+        ixx="6.27570222968577E-05"
+        ixy="-2.43117853702278E-06"
+        ixz="-9.01104647656075E-07"
+        iyy="7.32837872528233E-05"
+        iyz="-7.29576197924312E-08"
+        izz="9.14790665699663E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/shoulder2_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 0.501960784313725 0.501960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/shoulder2_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="shoulder2_right"
+    type="revolute">
+    <origin
+      xyz="-0.017521 -0.0144 0"
+      rpy="-3.1416 0 1.5708" />
+    <parent
+      link="shoulder1_right" />
+    <child
+      link="shoulder2_right" />
+    <axis
+      xyz="0 0 0" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="elbow_right">
+    <inertial>
+      <origin
+        xyz="0.0155992062669026 -0.0137656380158471 -9.00579640722432E-09"
+        rpy="0 0 0" />
+      <mass
+        value="0.1233831657007" />
+      <inertia
+        ixx="3.15626293814504E-05"
+        ixy="-1.08491427794101E-06"
+        ixz="3.48210187293535E-12"
+        iyy="4.19460424557379E-05"
+        iyz="-6.36675222036763E-11"
+        izz="5.17253048665666E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/elbow_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.149019607843137 0.149019607843137 0.149019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/elbow_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="elbow_right"
+    type="revolute">
+    <origin
+      xyz="-0.013388 -0.078496 0.013769"
+      rpy="1.6036 0 -1.5708" />
+    <parent
+      link="shoulder2_right" />
+    <child
+      link="elbow_right" />
+    <axis
+      xyz="0 0 0" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="forearm_right">
+    <inertial>
+      <origin
+        xyz="3.56030536181051E-05 0.0174944270367947 0.00175806047568959"
+        rpy="0 0 0" />
+      <mass
+        value="0.265833333989939" />
+      <inertia
+        ixx="8.11344200407582E-05"
+        ixy="-2.50822262655923E-08"
+        ixz="-3.59889568074735E-08"
+        iyy="5.98722205710143E-05"
+        iyz="9.03562006342861E-07"
+        izz="5.49785455234758E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/forearm_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 0.501960784313725 0.501960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/forearm_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="forearm_right"
+    type="revolute">
+    <origin
+      xyz="0.15587 -0.0138 0.0013298"
+      rpy="-3.131 0 -1.5708" />
+    <parent
+      link="elbow_right" />
+    <child
+      link="forearm_right" />
+    <axis
+      xyz="0 0 0" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="wrist_right">
+    <inertial>
+      <origin
+        xyz="-0.0363560541754394 0.000249679597631107 0.102745463314497"
+        rpy="0 0 0" />
+      <mass
+        value="0.304833573521094" />
+      <inertia
+        ixx="0.000124360941676186"
+        ixy="-2.47604410943666E-07"
+        ixz="9.65828100130931E-06"
+        iyy="9.40041100916993E-05"
+        iyz="8.06616858019095E-07"
+        izz="6.40820096734684E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/wrist_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/wrist_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="wrist_right"
+    type="revolute">
+    <origin
+      xyz="-0.018514 -0.11281 0.0043279"
+      rpy="1.5702 -0.0041657 -2.9929" />
+    <parent
+      link="forearm_right" />
+    <child
+      link="wrist_right" />
+    <axis
+      xyz="0 0 0" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="hand_right">
+    <inertial>
+      <origin
+        xyz="5.37471004391499E-06 0.0103521895264475 -0.0414150937686502"
+        rpy="0 0 0" />
+      <mass
+        value="0.00592304018471756" />
+      <inertia
+        ixx="4.30212406736482E-06"
+        ixy="-8.84423106328253E-13"
+        ixz="3.03780099329982E-12"
+        iyy="4.18718806221886E-06"
+        iyz="1.55166081571461E-08"
+        izz="9.07267090441124E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/hand_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/hand_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="hand_right"
+    type="revolute">
+    <origin
+      xyz="0 0 0"
+      rpy="0 0 0" />
+    <parent
+      link="wrist_right" />
+    <child
+      link="hand_right" />
+    <axis
+      xyz="0 0 0" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="back">
+    <inertial>
+      <origin
+        xyz="-1.52143596440432E-06 0.0152807124517679 7.40506062161528E-05"
+        rpy="0 0 0" />
+      <mass
+        value="0.248711578239757" />
+      <inertia
+        ixx="5.88287717989445E-05"
+        ixy="5.37846748838484E-09"
+        ixz="-7.16803120341335E-10"
+        iyy="5.14012275812822E-05"
+        iyz="8.40580848531948E-07"
+        izz="3.05620252612058E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/back.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.529411764705882 0.549019607843137 0.549019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/back.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="back"
+    type="revolute">
+    <origin
+      xyz="-0.019744 0.0041222 0.21846"
+      rpy="0.033537 -0.018903 0.0016955" />
+    <parent
+      link="chest" />
+    <child
+      link="back" />
+    <axis
+      xyz="0 0 0" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="middle">
+    <inertial>
+      <origin
+        xyz="0.000560500090420624 0.015405408798863 -0.00372106619310772"
+        rpy="0 0 0" />
+      <mass
+        value="0.264698964925595" />
+      <inertia
+        ixx="7.48868745223158E-05"
+        ixy="5.25542853902381E-09"
+        ixz="9.94112240388823E-07"
+        iyy="6.32838806736758E-05"
+        iyz="8.79096334472576E-07"
+        izz="4.07391595207208E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/middle.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.529411764705882 0.549019607843137 0.549019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/middle.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="middle"
+    type="revolute">
+    <origin
+      xyz="0.014 -0.0213 0"
+      rpy="0 0 1.5708" />
+    <parent
+      link="back" />
+    <child
+      link="middle" />
+    <axis
+      xyz="0 0 0" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="stomach">
+    <inertial>
+      <origin
+        xyz="5.71350114761567E-06 0.0205274944103767 0.00214804536223144"
+        rpy="0 0 0" />
+      <mass
+        value="0.297021522194379" />
+      <inertia
+        ixx="0.00014107008365042"
+        ixy="4.13319028607506E-09"
+        ixz="-8.90562196792405E-08"
+        iyy="0.000133970875705451"
+        iyz="1.16104724006137E-07"
+        izz="6.03945932103346E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/stomach.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.529411764705882 0.549019607843137 0.549019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/stomach.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="stomach"
+    type="revolute">
+    <origin
+      xyz="0.012467 0.0129 -0.052741"
+      rpy="-1.6044 0 -1.5708" />
+    <parent
+      link="middle" />
+    <child
+      link="stomach" />
+    <axis
+      xyz="0 0 0" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="back_pelvic">
+    <inertial>
+      <origin
+        xyz="0.0154896651068036 -0.0145430436345362 -1.25882191233384E-08"
+        rpy="0 0 0" />
+      <mass
+        value="0.127534330370919" />
+      <inertia
+        ixx="3.31939186082329E-05"
+        ixy="-1.08642354889134E-06"
+        ixz="1.13476122911235E-11"
+        iyy="4.49529966113182E-05"
+        iyz="-6.33216396674236E-11"
+        izz="5.31790636323387E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/back_pelvic.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.149019607843137 0.149019607843137 0.149019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/back_pelvic.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="back_pelvic"
+    type="revolute">
+    <origin
+      xyz="0.00067812 0.060214 0.048499"
+      rpy="1.5725 -3.2042E-05 1.5897" />
+    <parent
+      link="stomach" />
+    <child
+      link="back_pelvic" />
+    <axis
+      xyz="0 0 0" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="front_pelvic">
+    <inertial>
+      <origin
+        xyz="0.0222119432354238 -0.013986947910165 -0.00266969548748355"
+        rpy="0 0 0" />
+      <mass
+        value="0.147883656233175" />
+      <inertia
+        ixx="4.62024278761668E-05"
+        ixy="-1.08453094979405E-06"
+        ixz="1.41120569241741E-06"
+        iyy="5.0533080020926E-05"
+        iyz="-6.28394392183738E-10"
+        izz="6.84231295590116E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/front_pelvic.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.149019607843137 0.149019607843137 0.149019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/front_pelvic.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="front_pelvic"
+    type="revolute">
+    <origin
+      xyz="0 -0.0575 0.0142"
+      rpy="1.5708 0 0" />
+    <parent
+      link="back_pelvic" />
+    <child
+      link="front_pelvic" />
+    <axis
+      xyz="0 0 0" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="hip_in_right">
+    <inertial>
+      <origin
+        xyz="-0.000946233981735142 0.0154752002819355 -0.00118103488937676"
+        rpy="0 0 0" />
+      <mass
+        value="0.255325056524351" />
+      <inertia
+        ixx="6.42532903135767E-05"
+        ixy="-1.81345586589188E-08"
+        ixz="-1.07344190155063E-06"
+        iyy="5.37049571663589E-05"
+        iyz="9.08138275398371E-07"
+        izz="3.61850194737787E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/hip_in_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.529411764705882 0.549019607843137 0.549019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/hip_in_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="hip_in_right"
+    type="revolute">
+    <origin
+      xyz="0.10468 -0.0331 -0.031"
+      rpy="1.5708 0 1.5708" />
+    <parent
+      link="front_pelvic" />
+    <child
+      link="hip_in_right" />
+    <axis
+      xyz="0 0 0" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="hip_out_right">
+    <inertial>
+      <origin
+        xyz="-2.37861197104061E-06 0.0161338203448436 -7.97465949599566E-05"
+        rpy="0 0 0" />
+      <mass
+        value="0.250598308846552" />
+      <inertia
+        ixx="5.85686161895885E-05"
+        ixy="5.38267638294726E-09"
+        ixz="-2.87575635167088E-09"
+        iyy="5.16590538641582E-05"
+        iyz="8.68528047719158E-07"
+        izz="3.09675121346263E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/hip_out_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.529411764705882 0.549019607843137 0.549019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/hip_out_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="hip_out_right"
+    type="revolute">
+    <origin
+      xyz="-0.048999 0.0079 -0.0491"
+      rpy="1.5708 0 0" />
+    <parent
+      link="hip_in_right" />
+    <child
+      link="hip_out_right" />
+    <axis
+      xyz="0 0 0" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="hip_right">
+    <inertial>
+      <origin
+        xyz="0.0216855102764412 -0.0170026736760605 0.0215563974808886"
+        rpy="0 0 0" />
+      <mass
+        value="0.167723240374988" />
+      <inertia
+        ixx="0.000186073408069879"
+        ixy="1.46706764541881E-06"
+        ixz="-1.57077334577908E-05"
+        iyy="0.000190840187735441"
+        iyz="2.16570164167421E-05"
+        izz="9.53300792928008E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/hip_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.149019607843137 0.149019607843137 0.149019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/hip_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="hip_right"
+    type="revolute">
+    <origin
+      xyz="-0.014347 0.0546 0.021017"
+      rpy="-1.5708 1.5665 0" />
+    <parent
+      link="hip_out_right" />
+    <child
+      link="hip_right" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="knee_right">
+    <inertial>
+      <origin
+        xyz="0.000621482050361409 0.0148388886624423 -0.0332100460649537"
+        rpy="0 0 0" />
+      <mass
+        value="0.335243117008366" />
+      <inertia
+        ixx="0.000493191077071924"
+        ixy="7.24198167796699E-08"
+        ixz="5.14109168657718E-05"
+        iyy="0.000506223890000364"
+        iyz="7.09445460664505E-07"
+        izz="9.32983372559678E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/knee_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.529411764705882 0.549019607843137 0.549019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/knee_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="knee_right"
+    type="revolute">
+    <origin
+      xyz="0.041636 -0.053237 0.17073"
+      rpy="3.1416 -0.06584 3.1416" />
+    <parent
+      link="hip_right" />
+    <child
+      link="knee_right" />
+    <axis
+      xyz="0 0 0" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="foot_right">
+    <inertial>
+      <origin
+        xyz="-0.0121225464308996 0.00654990760495422 0.0033174943281487"
+        rpy="0 0 0" />
+      <mass
+        value="0.293881052658244" />
+      <inertia
+        ixx="0.000131981764678921"
+        ixy="7.16429650758611E-07"
+        ixz="2.42392524727464E-06"
+        iyy="0.000121211048480328"
+        iyz="6.61234910585417E-06"
+        izz="7.97152331505251E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/foot_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 0.501960784313725 0.501960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/foot_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="foot_right"
+    type="revolute">
+    <origin
+      xyz="0.015415 0 -0.24384"
+      rpy="1.6374 0 -1.5708" />
+    <parent
+      link="knee_right" />
+    <child
+      link="foot_right" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="hip_in_left">
+    <inertial>
+      <origin
+        xyz="0.000943270199825563 0.0154751972875073 -0.00118103512571611"
+        rpy="0 0 0" />
+      <mass
+        value="0.255325055007331" />
+      <inertia
+        ixx="6.42532919653291E-05"
+        ixy="2.88955333127184E-08"
+        ixz="1.07200679057235E-06"
+        iyy="5.37049602297781E-05"
+        iyz="9.08130010613131E-07"
+        izz="3.61850205470108E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/hip_in_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.529411764705882 0.549019607843137 0.549019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/hip_in_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="hip_in_left"
+    type="revolute">
+    <origin
+      xyz="0.10468 0.0029 -0.031"
+      rpy="1.5708 0 1.5708" />
+    <parent
+      link="front_pelvic" />
+    <child
+      link="hip_in_left" />
+    <axis
+      xyz="0 0 0" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="hip_out_left">
+    <inertial>
+      <origin
+        xyz="4.94382271509775E-08 0.0161338200331302 -7.97506020892656E-05"
+        rpy="0 0 0" />
+      <mass
+        value="0.250598304151983" />
+      <inertia
+        ixx="5.85686290789601E-05"
+        ixy="5.26031160409562E-09"
+        ixz="2.55323693937456E-09"
+        iyy="5.16590526083049E-05"
+        iyz="8.68528687246983E-07"
+        izz="3.09674981203773E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/hip_out_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.529411764705882 0.549019607843137 0.549019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/hip_out_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="hip_out_left"
+    type="revolute">
+    <origin
+      xyz="0.048999 0.0079 -0.0491"
+      rpy="1.5708 0 0" />
+    <parent
+      link="hip_in_left" />
+    <child
+      link="hip_out_left" />
+    <axis
+      xyz="0 0 0" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="hip_left">
+    <inertial>
+      <origin
+        xyz="0.0208201840739736 -0.0167208581057926 -0.0191765448665117"
+        rpy="0 0 0" />
+      <mass
+        value="0.162495582911545" />
+      <inertia
+        ixx="0.000173080205146766"
+        ixy="-8.10464027190375E-07"
+        ixz="1.0074950024505E-05"
+        iyy="0.000176637265062155"
+        iyz="-1.72655504215418E-05"
+        izz="8.93836670826605E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/hip_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.149019607843137 0.149019607843137 0.149019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/hip_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="hip_left"
+    type="revolute">
+    <origin
+      xyz="0.014453 0.0546 0.020972"
+      rpy="-1.5708 1.5633 3.1416" />
+    <parent
+      link="hip_out_left" />
+    <child
+      link="hip_left" />
+    <axis
+      xyz="0 0 0" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="knee_left">
+    <inertial>
+      <origin
+        xyz="-0.00075491488231815 -0.0204051355364177 -0.0264038387275944"
+        rpy="0 0 0" />
+      <mass
+        value="0.335242694489353" />
+      <inertia
+        ixx="0.00049825047898019"
+        ixy="2.44481709574276E-05"
+        ixz="-3.92473837310216E-09"
+        iyy="8.82327773762535E-05"
+        iyz="1.04984495109728E-06"
+        izz="0.000506218268725272" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/knee_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/knee_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="knee_left"
+    type="revolute">
+    <origin
+      xyz="0.042335 -0.011871 -0.18351"
+      rpy="1.5708 0.00043082 -3.1416" />
+    <parent
+      link="hip_left" />
+    <child
+      link="knee_left" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="foot_left">
+    <inertial>
+      <origin
+        xyz="-0.0291141555452533 0.00654625162217964 0.00332645315346826"
+        rpy="0 0 0" />
+      <mass
+        value="0.293911578215976" />
+      <inertia
+        ixx="0.00013196193376218"
+        ixy="-7.17931087839273E-07"
+        ixz="-2.41465041739628E-06"
+        iyy="0.000121197524751733"
+        iyz="6.61426874918663E-06"
+        izz="7.97136292237884E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/foot_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 0.501960784313725 0.501960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/foot_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="foot_left"
+    type="revolute">
+    <origin
+      xyz="0 -0.23155 0"
+      rpy="-3.104 -1.5708 3.104" />
+    <parent
+      link="knee_left" />
+    <child
+      link="foot_left" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+</robot>
