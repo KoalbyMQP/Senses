@@ -562,12 +562,21 @@ class FinleyFace:
 
     def run(self):
         """Main application loop."""
+        print("--- Face run() loop started ---", flush=True) # DEBUG + flush
+        frame_count = 0 # DEBUG
         while True:
+            print(f"--- Frame {frame_count}: Top of loop ---", flush=True) # DEBUG + flush
             self.handle_events()
+            print(f"--- Frame {frame_count}: After handle_events ---", flush=True) # DEBUG + flush
             self.update()
+            print(f"--- Frame {frame_count}: After update ---", flush=True) # DEBUG + flush
             self.draw()
+            print(f"--- Frame {frame_count}: After draw ---", flush=True) # DEBUG + flush
             pygame.display.flip()
+            print(f"--- Frame {frame_count}: After flip ---", flush=True) # DEBUG + flush
             self.clock.tick(60)
+            print(f"--- Frame {frame_count}: After tick ---", flush=True) # DEBUG + flush
+            frame_count += 1 # DEBUG
 
 if __name__ == "__main__":
     app = FinleyFace()
