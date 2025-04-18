@@ -16,6 +16,7 @@ class SpeechEnabledDemo(Demo):
         self.speech_process = None
         self.robot_process = None
         self.temperature_process = None
+        self.face_process = None
         self.current_target = None
         self.measurement_buffer = []
         self.max_buffer_size = 200
@@ -111,6 +112,9 @@ class SpeechEnabledDemo(Demo):
         super().setup(conf)
         self.send_face_command("neutral") # Start with a neutral face
         
+        # Start face interface process
+        self._start_face_interface()
+        
         # Start speech detection process
         print("Starting speech detection process...")
         try:
@@ -188,6 +192,53 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
                 print("Warning: Robot control process failed to start")
         except Exception as e:
             print(f"Error starting robot control: {e}")
+
+    def _start_face_interface(self):
+        """Start face interface in new terminal"""
+        print("\nStarting Face interface...")
+        try:
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            project_root = os.path.dirname(os.path.dirname(current_dir))
+            face_script_dir = os.path.join(project_root, "Face")
+            face_script = os.path.join(face_script_dir, "face.py")
+
+            if not os.path.exists(face_script):
+                 print(f"Error: Face script not found at {face_script}")
+                 self.face_process = None
+                 return
+
+            venv_path = os.environ.get('VIRTUAL_ENV', '')
+            if not venv_path:
+                venv_path = "/home/finley/Documents/GitHub/Senses/venv"
+                print(f"Warning: No active virtual environment detected. Using default: {venv_path}")
+
+            temp_script = "/tmp/faceInterfaceLaunch.sh" 
+            with open(temp_script, "w") as f:
+                f.write(f"""#!/bin/bash
+source \"{venv_path}/bin/activate\"
+export PYTHONPATH=\"{project_root}:$PYTHONPATH\"
+cd \"{face_script_dir}\"
+python3 {os.path.basename(face_script)} || echo \"Face Error occurred! Press Enter to close...\" && read
+""")
+            os.chmod(temp_script, 0o755)
+            print(f"Created face launch script: {temp_script}")
+
+            self.face_process = subprocess.Popen(
+                f"lxterminal --geometry=80x24 --title='Finley Face (Pick/Place)' -e 'bash -c \"{temp_script}; exec bash\"'",
+                shell=True,
+                preexec_fn=os.setsid
+            )
+
+            time.sleep(1)
+            if self.face_process.poll() is None:
+                print("Face interface process started successfully in new terminal.")
+            else:
+                print("Warning: Face interface process failed to start or exited quickly.")
+                self.face_process = None
+
+        except Exception as e:
+            print(f"Failed to start face interface: {e}")
+            self.face_process = None
 
     def send_face_command(self, emotion_command):
         """Send an emotion command string to the face interface."""
@@ -686,6 +737,14 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
                 print("Temperature process terminated")
             except Exception as e:
                 print(f"Error terminating temperature process: {e}")
+
+        # Terminate face process if running
+        if hasattr(self, 'face_process') and self.face_process is not None:
+            try:
+                os.killpg(os.getpgid(self.face_process.pid), signal.SIGTERM)
+                print("Face interface process terminated")
+            except Exception as e:
+                print(f"Error terminating face interface process: {e}")
 
         super().stop(*args, **kwargs)
 
