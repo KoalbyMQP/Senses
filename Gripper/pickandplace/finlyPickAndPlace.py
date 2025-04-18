@@ -114,13 +114,13 @@ lastAngle=0
 
 #open gripper
 
-while time.time() - startTime < 4:
-        Angle=Angle+.1
-        robot.motors[27].target = (math.radians(Angle), 'P')
-        #robot.IMUBalance(0, 0)
-        robot.moveAllToTarget()
-        lastAngle=Angle
-startTime = time.time()
+# while time.time() - startTime < 4:
+#         Angle=Angle+.1
+#         robot.motors[27].target = (math.radians(Angle), 'P')
+#         #robot.IMUBalance(0, 0)
+#         robot.moveAllToTarget()
+#         lastAngle=Angle
+# startTime = time.time()
 
 # move gripper
 while time.time() - startTime < 20:
@@ -141,30 +141,30 @@ while time.time() - startTime < 20:
         robot.moveAllToTarget()
 
 # attempt to orientate
-target_position_2=turnPosition
-ik_solution = left_arm_chain.inverse_kinematics(target_position_2, target_orientation=target_orientation_z, orientation_mode="Z", initial_position=ik_solution_2 )
-leftArmTraj = [
-    [[0,0,0,0,0], [20,20,20,20,20]],
-    [[motor_angle_task[1],motor_angle_task[2],motor_angle_task[3],motor_angle_task[4],motor_angle_task[5] ],
-   [ik_solution[1], ik_solution[2], ik_solution[3],ik_solution[4],ik_solution[5]]] ,
-    [[0,0,0,0,0], [0,0,0,0,0]],
-    [[0,0,0,0,0], [0,0,0,0,0]]
-]
-lArm_tj_joint = TrajPlannerTime(leftArmTraj[0], leftArmTraj[1], leftArmTraj[2], leftArmTraj[3])
-startTime = time.time()
-while time.time() - startTime < 10:
-        target_position_joint = lArm_tj_joint.getQuinticPositions(time.time() - startTime)
-        robot.motors[5].target = (target_position_joint[0], 'P')
-        robot.motors[6].target = (target_position_joint[1], 'P')
-        robot.motors[7].target = (target_position_joint[2], 'P')
-        robot.motors[8].target = (target_position_joint[3], 'P')
-        robot.motors[9].target = (target_position_joint[4], 'P')
-       # robot.IMUBalance(0, 0)
-        robot.moveAllToTarget()
-startTime = time.time()
-# close gripper
-while time.time() - startTime < 8:
-        lastAngle=lastAngle-.1
-        robot.motors[27].target = (math.radians(lastAngle), 'P')
-        #robot.IMUBalance(0, 0)
-        robot.moveAllToTarget()
+# target_position_2=turnPosition
+# ik_solution = left_arm_chain.inverse_kinematics(target_position_2, target_orientation=target_orientation_z, orientation_mode="Z", initial_position=ik_solution_2 )
+# leftArmTraj = [
+#     [[0,0,0,0,0], [20,20,20,20,20]],
+#     [[motor_angle_task[1],motor_angle_task[2],motor_angle_task[3],motor_angle_task[4],motor_angle_task[5] ],
+#    [ik_solution[1], ik_solution[2], ik_solution[3],ik_solution[4],ik_solution[5]]] ,
+#     [[0,0,0,0,0], [0,0,0,0,0]],
+#     [[0,0,0,0,0], [0,0,0,0,0]]
+# ]
+# lArm_tj_joint = TrajPlannerTime(leftArmTraj[0], leftArmTraj[1], leftArmTraj[2], leftArmTraj[3])
+# startTime = time.time()
+# while time.time() - startTime < 10:
+#         target_position_joint = lArm_tj_joint.getQuinticPositions(time.time() - startTime)
+#         robot.motors[5].target = (target_position_joint[0], 'P')
+#         robot.motors[6].target = (target_position_joint[1], 'P')
+#         robot.motors[7].target = (target_position_joint[2], 'P')
+#         robot.motors[8].target = (target_position_joint[3], 'P')
+#         robot.motors[9].target = (target_position_joint[4], 'P')
+#        # robot.IMUBalance(0, 0)
+#         robot.moveAllToTarget()
+# startTime = time.time()
+# # close gripper
+# while time.time() - startTime < 8:
+#         lastAngle=lastAngle-.1
+#         robot.motors[27].target = (math.radians(lastAngle), 'P')
+#         #robot.IMUBalance(0, 0)
+#         robot.moveAllToTarget()
