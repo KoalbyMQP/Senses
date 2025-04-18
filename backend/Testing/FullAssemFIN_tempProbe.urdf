@@ -512,17 +512,17 @@
     name="hand_left">
     <inertial>
       <origin
-        xyz="-0.485591473249365 -0.151525211114298 -0.010630685135938"
+        xyz="-0.0209377720382662 -0.00101980223789949 0.0390482514986171"
         rpy="0 0 0" />
       <mass
-        value="3.80893293219309" />
+        value="0.0166113155249944" />
       <inertia
-        ixx="0.194919399906698"
-        ixy="0.00236992738649372"
-        ixz="-0.00133693191312615"
-        iyy="0.103609659808419"
-        iyz="-0.00920332348250028"
-        izz="0.289959651212497" />
+        ixx="8.72814673990524E-06"
+        ixy="3.52615349529447E-08"
+        ixz="-3.20550750575317E-07"
+        iyy="7.53945211429571E-06"
+        iyz="-2.55712847127687E-08"
+        izz="6.45411287363187E-06" />
     </inertial>
     <visual>
       <origin
@@ -535,7 +535,7 @@
       <material
         name="">
         <color
-          rgba="1 1 1 1" />
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
     </visual>
     <collision>
@@ -552,135 +552,78 @@
     name="hand_left"
     type="revolute">
     <origin
-      xyz="0.0020577 0.1202 0.0042789"
-      rpy="1.536 0.062385 1.5535" />
+      xyz="-0.0016539 0.033214 0.10278"
+      rpy="-0.027602 0.29984 1.5358" />
     <parent
       link="wrist_left" />
     <child
       link="hand_left" />
     <axis
-      xyz="-1 0 0" />
+      xyz="0.033389 -0.99944 0" />
     <!-- <limit
       lower="0"
       upper="0"
       effort="0"
-      velocity="0" -->
-  </joint>
-
-
-  <link
-
-    name="hand_left_h">
-
-    <inertial>
-
-      <origin
-
-        xyz="-0.00274732119092806 -0.130438246232879 -0.523832325990649"
-
-        rpy="0 0 0" />
-
-      <mass
-
-        value="3.91869023943691" />
-
-      <inertia
-
-        ixx="0.314153307650138"
-
-        ixy="0.00745526051058722"
-
-        ixz="0.00100378782624991"
-
-        iyy="0.125372288499059"
-
-        iyz="-0.00552569776068719"
-
-        izz="0.196962889810012" />
-
-    </inertial>
-
-    <visual>
-
-      <origin
-
-        xyz="0 0 0"
-
-        rpy="0 0 0" />
-
-      <geometry>
-
-        <mesh
-
-          filename="package://FullAssemFIN_tempProbe/meshes/hand_left.STL" />
-
-      </geometry>
-
-      <material
-
-        name="">
-
-        <color
-
-          rgba="1 1 1 1" />
-
-      </material>
-
-    </visual>
-
-    <collision>
-
-      <origin
-
-        xyz="0 0 0"
-
-        rpy="0 0 0" />
-
-      <geometry>
-
-        <mesh
-
-          filename="package://FullAssemFIN_tempProbe/meshes/hand_left.STL" />
-
-      </geometry>
-
-    </collision>
-
-  </link>
-
-  <joint
-
-    name="hand_left_h"
-
-    type="revolute">
-
-    <origin
-
-      xyz="0.0010735 -6.0738E-05 0.0602"
-
-      rpy="0 0 0" />
-
-    <parent
-
-      link="hand_left" />
-
-    <child
-
-      link="hand_left_h" />
-
-    <axis
-
-      xyz="0 0 -1" />
-
-    <!-- <limit
-
-      lower="0"
-
-      upper="0"
-
-      effort="0"
-
       velocity="0" /> -->
+  </joint>
+  <link
+    name="hand_left_h">
+    <inertial>
+      <origin
+        xyz="-0.00274732119092806 -0.130438246232879 -0.523832325990649"
+        rpy="0 0 0" />
+      <mass
+        value="3.91869023943691" />
+      <inertia
+        ixx="0.314153307650138"
+        ixy="0.00745526051058722"
+        ixz="0.00100378782624991"
+        iyy="0.125372288499059"
+        iyz="-0.00552569776068719"
+        izz="0.196962889810012" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/hand_left_h.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullAssemFIN_tempProbe/meshes/hand_left_h.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="hand_left_h"
+    type="revolute">
+    <origin
+      xyz="0.0010735 -6.0738E-05 0.0602"
+      rpy="0 0 0" />
+    <parent
+      link="hand_left" />
+    <child
+      link="hand_left_h" />
+    <axis
+      xyz="0 0 -1" />
+    <!-- <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" /> -->
+  </joint>
   <link
     name="shoulder1_right">
     <inertial>
