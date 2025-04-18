@@ -95,7 +95,7 @@ while True:
 
 # Apply camera frame transformation to final_points
 # NEGATIVE X AND NEGATIVE Z FOR CURRENT URDF
-B = np.array([[-final_points[0]], [final_points[1]-0.01], [-final_points[2]], [1]])
+B = np.array([[-final_points[0]], [final_points[1]], [-final_points[2]], [1]])
 C = np.dot(camera_frame_transformation, B)
 
 leftArmTraj = [
@@ -163,8 +163,8 @@ while time.time() - startTime < 10:
         robot.moveAllToTarget()
 startTime = time.time()
 # close gripper
-while time.time() - startTime < 8:
-        lastAngle=lastAngle-.1
-        robot.motors[27].target = (math.radians(lastAngle), 'P')
-        #robot.IMUBalance(0, 0)
-        robot.moveAllToTarget()
+# while time.time() - startTime < 8:
+#         lastAngle=lastAngle-.1
+#         robot.motors[27].target = (math.radians(lastAngle), 'P')
+#         #robot.IMUBalance(0, 0)
+#         robot.moveAllToTarget()
