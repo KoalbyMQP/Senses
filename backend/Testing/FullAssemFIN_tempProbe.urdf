@@ -612,7 +612,7 @@
 
         <mesh
 
-          filename="package://FullAssemFIN_straight_2025_5/meshes/hand_left_h.STL" />
+          filename="package://FullAssemFIN_tempProbe/meshes/hand_left.STL" />
 
       </geometry>
 
@@ -640,7 +640,7 @@
 
         <mesh
 
-          filename="package://FullAssemFIN_straight_2025_5/meshes/hand_left_h.STL" />
+          filename="package://FullAssemFIN_tempProbe/meshes/hand_left.STL" />
 
       </geometry>
 
