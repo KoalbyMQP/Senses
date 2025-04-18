@@ -112,35 +112,35 @@ target_orientation_z=[1, 0, 0]
 Angle =0
 lastAngle=0
 
-# open gripper
+#open gripper
 
-# while time.time() - startTime < 4:
-#         Angle=Angle+.1
-#         robot.motors[27].target = (math.radians(Angle), 'P')
-#         #robot.IMUBalance(0, 0)
-#         robot.moveAllToTarget()
-# #         lastAngle=Angle
-# startTime = time.time()
+while time.time() - startTime < 4:
+        Angle=Angle+.1
+        robot.motors[27].target = (math.radians(Angle), 'P')
+        #robot.IMUBalance(0, 0)
+        robot.moveAllToTarget()
+#         lastAngle=Angle
+startTime = time.time()
 
-# # move gripper
-# while time.time() - startTime < 20:
-#         target_position_task = lArm_tj_joint.getQuinticPositions(time.time() - startTime)
-#         target_position_2 = np.array([(target_position_task[0]), (target_position_task[1]), (target_position_task[2])])
-#         ik_solution = left_arm_chain.inverse_kinematics(target_position_2, initial_position=ik_solution_2 )
-#         ik_solution_2=ik_solution
-#         motor_angle_task=ik_solution
-#         robot.motors[5].target = (motor_angle_task[1], 'P')
-#         robot.motors[6].target = (motor_angle_task[2], 'P')
-#         robot.motors[7].target = (motor_angle_task[3], 'P')
-#         robot.motors[8].target = (motor_angle_task[4], 'P')
-#         robot.motors[9].target = (motor_angle_task[5], 'P')
-#         print(motor_angle_task)
-#         turnPosition=target_position_2
-#         turnAngles=motor_angle_task
-#         #robot.IMUBalance(0, 0)
-#         robot.moveAllToTarget()
+# move gripper
+while time.time() - startTime < 20:
+        target_position_task = lArm_tj_joint.getQuinticPositions(time.time() - startTime)
+        target_position_2 = np.array([(target_position_task[0]), (target_position_task[1]), (target_position_task[2])])
+        ik_solution = left_arm_chain.inverse_kinematics(target_position_2, initial_position=ik_solution_2 )
+        ik_solution_2=ik_solution
+        motor_angle_task=ik_solution
+        robot.motors[5].target = (motor_angle_task[1], 'P')
+        robot.motors[6].target = (motor_angle_task[2], 'P')
+        robot.motors[7].target = (motor_angle_task[3], 'P')
+        robot.motors[8].target = (motor_angle_task[4], 'P')
+        robot.motors[9].target = (motor_angle_task[5], 'P')
+        print(motor_angle_task)
+        turnPosition=target_position_2
+        turnAngles=motor_angle_task
+        #robot.IMUBalance(0, 0)
+        robot.moveAllToTarget()
 
-# # attempt to orientate
+# attempt to orientate
 # target_position_2=turnPosition
 # ik_solution = left_arm_chain.inverse_kinematics(target_position_2, target_orientation=target_orientation_z, orientation_mode="Z", initial_position=ik_solution_2 )
 # leftArmTraj = [
