@@ -23,7 +23,7 @@ def find_file(filename, search_path="/home/finley"):
 # Find all instances of your URDF file
 found_paths = find_file("FullAssemFIN_straight_2025_5.urdf")
 print("Found URDF files at:", found_paths)
-urdf_path = found_paths[0]
+urdf_path = "/Senses/backend/Testing/FullAssemFIN_straight_2025_5.urdf"
 
 # Creating URDF chain for left arm
 left_arm_chain = Chain.from_urdf_file(
