@@ -19,7 +19,7 @@ class SpeechEnabledDemo(Demo):
         self.face_process = None
         self.current_target = None
         self.measurement_buffer = []
-        self.max_buffer_size = 20000
+        self.max_buffer_size = 100
         self.coordinates_sent = False 
         
         # Camera parameters for 1080p
