@@ -40,7 +40,7 @@ camera_angles=np.array([0,0,0,0])
 camera_frame_transformation=camera.forward_kinematics(camera_angles)
 
 # Edit to declare if you are testing the sim or the real robot
-is_real = False 
+is_real = True 
 robot = Robot(is_real)
 print("Setup Complete")
 # positions
@@ -94,7 +94,7 @@ while True:
 
 # Apply camera frame transformation to final_points
 # NEGATIVE X AND NEGATIVE Z FOR CURRENT URDF
-B = np.array([[-final_points[0]], [final_points[1]], [-final_points[2]], [1]])
+B = np.array([[final_points[0]], [final_points[1]], [-final_points[2]], [1]])
 C = np.dot(camera_frame_transformation, B)
 print(C)
 

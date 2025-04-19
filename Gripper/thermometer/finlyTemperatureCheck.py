@@ -41,7 +41,7 @@ camera_angles=np.array([0,0,0,0])
 camera_frame_transformation=camera.forward_kinematics(camera_angles)
 
 # Edit to declare if you are testing the sim or the real robot
-is_real = False
+is_real = True
 robot = Robot(is_real)
 print("Setup Complete")
 # positions
