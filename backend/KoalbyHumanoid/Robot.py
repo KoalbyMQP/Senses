@@ -18,7 +18,7 @@ TIME_BETWEEN_MOTOR_CHECKS = 2
 
 class Robot():
     # remote host and port in coppelia sim
-    DEFAULT_HOST = '130.215.125.237'
+    DEFAULT_HOST = '130.215.124.184'
     DEFAULT_PORT = 23000
 
     # Initialization methods
