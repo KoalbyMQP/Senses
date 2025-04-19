@@ -116,9 +116,9 @@ lastAngle=0
 
 while time.time() - startTime < 4:
         Angle=Angle+.1
-        robot.motors[27].target = (math.radians(Angle), 'P')
+        # robot.motors[27].target = (math.radians(Angle), 'P')
         #robot.IMUBalance(0, 0)
-        robot.moveAllToTarget()
+        # robot.moveAllToTarget()
         lastAngle=Angle
 startTime = time.time()
 
@@ -166,9 +166,9 @@ startTime = time.time()
 # close gripper
 while time.time() - startTime < 8:
         lastAngle=lastAngle-.1
-        robot.motors[27].target = (math.radians(lastAngle), 'P')
+        # robot.motors[27].target = (math.radians(lastAngle), 'P')
         #robot.IMUBalance(0, 0)
-        robot.moveAllToTarget()
+        # robot.moveAllToTarget()
 
 print("Done")
 print("Reached forehead position. Holding for temperature measurement...")
