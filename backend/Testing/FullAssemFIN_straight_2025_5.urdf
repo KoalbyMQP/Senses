@@ -328,11 +328,11 @@
       link="shoulder2_left" />
     <axis
       xyz="-1 0 0" />
-    <!-- <limit
-      lower="0"
-      upper="0"
+     <limit
+      lower="-1.628"
+      upper="1.628"
       effort="0"
-      velocity="0" /> -->
+      velocity="0" /> 
   </joint>
   <link
     name="elbow_left">
