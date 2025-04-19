@@ -45,9 +45,9 @@ robot = Robot(is_real)
 print("Setup Complete")
 # positions
 #Starting Agnles
-robot.motors[25].target = (math.radians(0), 'P')
-robot.motors[26].target = (math.radians(0), 'P')
-robot.motors[27].target = (math.radians(0), 'P')
+# robot.motors[25].target = (math.radians(0), 'P')
+# robot.motors[26].target = (math.radians(0), 'P')
+# robot.motors[27].target = (math.radians(0), 'P')
 robot.motors[5].target = (math.radians(0), 'P')
 robot.motors[6].target = (math.radians(0), 'P')
 robot.motors[7].target = (math.radians(0), 'P')
