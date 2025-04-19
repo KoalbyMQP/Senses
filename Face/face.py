@@ -508,9 +508,9 @@ class FinleyFace:
                 sys.exit()
             if event.type == pygame.KEYDOWN:
                 print(f"--- handle_events: KEYDOWN event received (Key: {event.key}) ---", flush=True)
-                # if event.key == pygame.K_ESCAPE:
-                #     pygame.quit()
-                #     sys.exit()
+                if event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    sys.exit()
                 if event.key == pygame.K_f:
                     self.show_info = not self.show_info
                 elif event.key == pygame.K_a:
