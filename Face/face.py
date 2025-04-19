@@ -501,37 +501,6 @@ class FinleyFace:
         # print("--- handle_events: A ---", flush=True) # Optional extra debug
         for event in pygame.event.get(): # Check Pygame events first
             print(f"--- handle_events: B (Processing event: {event.type}) ---", flush=True)
-            # Temporarily disable QUIT event handling for debugging
-            if event.type == pygame.QUIT:
-                print("--- handle_events: QUIT event received ---", flush=True)
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.KEYDOWN:
-                print(f"--- handle_events: KEYDOWN event received (Key: {event.key}) ---", flush=True)
-                # if event.key == pygame.K_ESCAPE:
-                #     pygame.quit()
-                #     sys.exit()
-                if event.key == pygame.K_f:
-                    self.show_info = not self.show_info
-                elif event.key == pygame.K_a:
-                    self.auto_change = not self.auto_change
-                    print(f"Auto Emotion Change: {'ON' if self.auto_change else 'OFF'}")
-                    if self.auto_change:
-                         self.last_emotion_change = time.time()
-                         self.emotion_change_interval = random.uniform(3, 7)
-                elif event.key == pygame.K_b:
-                    if not self.is_blinking:
-                        self.is_blinking = True; self.blink_progress = 0.0
-
-                elif event.key == pygame.K_1: self.set_emotion("neutral")
-                elif event.key == pygame.K_2: self.set_emotion("happy")
-                elif event.key == pygame.K_3: self.set_emotion("sad")
-                elif event.key == pygame.K_4: self.set_emotion("angry")
-                elif event.key == pygame.K_5: self.set_emotion("curious")
-                elif event.key == pygame.K_6: self.set_emotion("surprised")
-                elif event.key == pygame.K_7: self.set_emotion("sleepy")
-                elif event.key == pygame.K_8: self.set_emotion("scanning")
-                elif event.key == pygame.K_9: self.set_emotion("focused")
 
         # ---> Point C <---
         # print("--- handle_events: C ---", flush=True) # Optional extra debug
