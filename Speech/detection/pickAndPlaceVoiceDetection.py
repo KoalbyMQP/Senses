@@ -47,22 +47,28 @@ Special commands:
 - temperature (if the user asks for temperature, body temperature, to check temperature)
 
 Instructions:
-- If the user says "pick up" followed by a valid object name, return only that object name
-- If the user says things like "grab", "take", or "get" followed by a valid object, interpret it as a pick up command
-- If the user asks for temperature (e.g., "get temperature", "check temperature", "body temperature"), return "temperature"
-- If there are typos, misspellings, or extra words, try to interpret the command correctly
-- If the user's request doesn't mention any valid object or doesn't appear to be a valid command, return "invalid"
-- If the user speaks in other languages, try to understand it and follow the rules above
+- If the user says "pick up" followed by a valid object name (or something that sounds similar), return only that object name
+- If the user says things like "grab", "take", or "get" followed by a valid object (or something that sounds similar), interpret it as a pick up command
+- If the user asks for temperature or mentions temperature checking, return "temperature"
+- Pay special attention to words that sound similar to valid objects:
+  - Words that sound like "cup" (such as "cop", "cub")
+  - Words that sound like "bottle" (such as "boddle", "battle")
+  - Words that sound like "apple" (such as "appo", "happle")
+  - Words that sound like "orange" (such as "oringe", "horinge")
+  - Words that sound like "remote" (such as "remoke", "rimote")
+- Consider regional accents, speech impediments, and non-native English speakers when interpreting commands
+- If the user's request doesn't mention any valid object or doesn't appear to be asking for temperature, return "invalid"
 - Return ONLY the object name or special command, with no additional text or explanation
 
 For example:
 Input: "pick up apple" → Output: apple
 Input: "grab the orange" → Output: orange
 Input: "take the bottle" → Output: bottle
-Input: "could you please pick up the remote control" → Output: remote
+Input: "pick up the cop" → Output: cup
 Input: "get me a cup" → Output: cup
-Input: "get temperature" → Output: temperature
-Input: "check my temperature" → Output: temperature
+Input: "check temperature" → Output: temperature
+Input: "temperature" → Output: temperature
+Input: "give me the remoke" → Output: remote
 Input: "pick up the banana" → Output: invalid
 
 Return only a single valid object name, "temperature", or "invalid"."""
