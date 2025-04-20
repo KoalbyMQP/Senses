@@ -65,6 +65,8 @@ Input: "pick up apple" → Output: apple
 Input: "grab the orange" → Output: orange
 Input: "take the bottle" → Output: bottle
 Input: "pick up the cop" → Output: cup
+Input: "could you please pick up the remote control" → Output: remote
+Input: "pick up cop" → Output: cup
 Input: "get me a cup" → Output: cup
 Input: "check temperature" → Output: temperature
 Input: "temperature" → Output: temperature
