@@ -488,7 +488,7 @@ class FinleyFace:
             fps = self.clock.get_fps()
             current_display = self.target_emotion.capitalize() if self.transitioning else self.current_emotion.capitalize()
             transition_perc = int(self.emotion_transition * 100) if self.transitioning else 100
-            info_text = f"Emotion: {current_display} ({transition_perc}%) | FPS: {fps:.1f}"
+            info_text = f""
             text_surf = self.font.render(info_text, True, WHITE)
             self.screen.blit(text_surf, (10, 10))
 
