@@ -19,7 +19,7 @@ def play_tts(text):
                 client = OpenAI()
                 temp_file = f"temp_{time.time()}.mp3"
                 response = client.audio.speech.create(
-                    model="tts-1-hd",
+                    model="gpt-4o-mini-tts",
                     voice="sage",
                     input=text
                 )
