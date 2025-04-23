@@ -120,7 +120,7 @@ Return only a single valid object name, "temperature", or "invalid"."""
             os.remove(temp_audio)
         if not text:
             print("No speech detected")
-            self.speech_handler.send_face_command("sad") # Face: Sad if transcription failed
+            self.speech_handler.send_face_command("curious") # Face: Sad if transcription failed
             time.sleep(1.5)
             self.speech_handler.send_face_command("neutral")
             return
@@ -146,7 +146,7 @@ Return only a single valid object name, "temperature", or "invalid"."""
             else:
                 print("Command not recognized.")
                 play_tts("Please say pick up followed by an object name, or ask me to check temperature.")
-                self.speech_handler.send_face_command("sad") # Face: Sad if invalid command
+                self.speech_handler.send_face_command("curious") # Face: Sad if invalid command
                 time.sleep(1.5)
                 self.speech_handler.send_face_command("neutral")
         else:
@@ -180,7 +180,7 @@ Return only a single valid object name, "temperature", or "invalid"."""
 
         except Exception as e:
             print(f"Command processing error: {e}")
-            self.speech_handler.send_face_command("sad") # Face: Sad on error
+            self.speech_handler.send_face_command("curious") # Face: Sad on error
             time.sleep(1.5)
             self.current_state = State.IDLE # Reset state even on error
             self.speech_handler.send_face_command("neutral")
@@ -208,21 +208,17 @@ class SpeechHandler:
                 print(f"ZMQ command socket initialization attempt {attempt + 1} failed: {e}")
                 if attempt == max_retries - 1:
                     print("!!! FAILED TO BIND COMMAND SOCKET !!!")
-                    # Decide if you want to raise or just proceed without it
-                    # raise # Or set self.socket = None
                 else:
                     time.sleep(retry_delay)
                     self._cleanup_port(5558)
 
         # Connect face socket
-        # Use connect for face since face.py binds
         try:
             print("Attempting to connect face publisher to tcp://localhost:5563")
             self.face_publisher.connect("tcp://localhost:5563")
             print("Connected to face interface socket at localhost:5563")
         except Exception as e:
              print(f"Error connecting to face interface: {e}. Face commands will not be sent.")
-             # Close the socket if connection failed, set to None
              if self.face_publisher:
                  self.face_publisher.close()
              self.face_publisher = None
@@ -236,13 +232,11 @@ class SpeechHandler:
             try:
                 connections = proc.net_connections(kind='inet')
                 for conn in connections:
-                    # Check for listening sockets on the target port
                     if conn.status == psutil.CONN_LISTEN and conn.laddr.port == port:
                         print(f"Terminating process {proc.info['name']} (PID: {proc.info['pid']}) using port {port}")
                         psutil.Process(proc.info['pid']).terminate()
-                        time.sleep(0.5) # Give time for termination
+                        time.sleep(0.5) 
                         cleaned = True
-                        # Wait for process to terminate
                         try:
                            proc.wait(timeout=1.0)
                         except psutil.TimeoutExpired:
@@ -289,14 +283,12 @@ class SpeechHandler:
         """Send an emotion command string to the face interface."""
         if self.face_publisher:
             try:
-                # print(f"Sending face command: {emotion_command}") # Optional: uncomment for verbose logging
+                print(f"Sending face command: {emotion_command}")
                 self.face_publisher.send_string(emotion_command, zmq.NOBLOCK)
             except zmq.error.Again:
                  print(f"Warning: Face command '{emotion_command}' send would block.")
             except Exception as e:
                 print(f"Error sending face command '{emotion_command}': {e}")
-        # else: # Optional: uncomment for verbose logging
-        #     print(f"Skipping face command '{emotion_command}': publisher not available.")
 
     def cleanup(self):
         try:
@@ -346,7 +338,7 @@ def run_speech_detection():
     except Exception as e:
         print(f"Error in speech detection: {e}")
         if detector.speech_handler:
-             detector.speech_handler.send_face_command("sad") # Set face to sad on error
+             detector.speech_handler.send_face_command("curious") # Set face to sad on error
              time.sleep(1.5)
              detector.speech_handler.send_face_command("neutral")
     finally:
