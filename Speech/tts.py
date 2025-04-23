@@ -20,7 +20,7 @@ def play_tts(text, child=True):
                 from openai import OpenAI
                 client = OpenAI()
 
-                voice = "child" if child else "sage"
+                voice = "sage"
 
                 if child:
                     use_ssml = True
