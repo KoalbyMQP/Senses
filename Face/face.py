@@ -5,6 +5,7 @@ import math
 import random
 import zmq
 from pygame.locals import * 
+import os
 
 BLACK = (0, 0, 0)
 EVE_BLUE = (0, 200, 255)
@@ -141,6 +142,8 @@ class FinleyFace:
                 "tilt_angle": 15
             }
         }
+
+        os.system('wmctrl -r "Finley" -b add,above')
 
     def draw_ellipse(self, x, y, width, height, color, fill=True, rotation=0, cutout=None):
         """Draw an ellipse with optional rotation and bottom cutout."""
