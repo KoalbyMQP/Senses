@@ -185,15 +185,14 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
             
             # Launch the script in a new terminal
             self.robot_process = subprocess.Popen(
-                f"lxterminal --geometry=0x0 -e 'bash -c \"{temp_robot_script}; exec bash\"'",
+                f"lxterminal --geometry=80x24 --title='Robot Controller' -e 'bash -c \"{temp_robot_script}; exec bash\"'",
                 shell=True,
                 preexec_fn=os.setsid
             )
-            
-            # Wait a moment for the terminal to appear, then bring face window to top
-            time.sleep(1)
-            os.system('wmctrl -r "Finley" -b add,above')
-            
+
+            time.sleep(2)
+            os.system('wmctrl -r "Robot Controller" -b add,shaded')
+            os.system('wmctrl -a "Finley Face" -b add,above,sticky')
             time.sleep(1)
             print("Robot control process started successfully in new terminal")
         except Exception as e:
@@ -224,18 +223,18 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
 source \"{venv_path}/bin/activate\"
 export PYTHONPATH=\"{project_root}:$PYTHONPATH\"
 cd \"{face_script_dir}\"
-python3 {os.path.basename(face_script)} || read -p \"Face script exited. Press Enter to close...\"
-""")
+python3 {os.path.basename(face_script)} || read -p \"Face script exited. Press Enter to close...\"\n""")
             os.chmod(temp_script, 0o755)
             print(f"Created face launch script: {temp_script}")
 
             self.face_process = subprocess.Popen(
-                f"lxterminal --geometry=80x24 --title='Finley Face (Pick/Place)' -e 'bash -c \"{temp_script}; exec bash\"'",
+                f"lxterminal --geometry=80x24 --title='Finley Face' -e 'bash -c \"{temp_script}; exec bash\"'",
                 shell=True,
                 preexec_fn=os.setsid
             )
-
-            time.sleep(1)
+            time.sleep(2)
+            os.system('wmctrl -r "Finley Face" -b add,above,sticky,fullscreen')
+            os.system('wmctrl -a "Finley Face"')
             print("Face interface process started successfully in new terminal.")
         
         except Exception as e:

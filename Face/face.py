@@ -27,8 +27,10 @@ class FinleyFace:
         self.HALF_HEIGHT = self.HEIGHT // 2
 
         self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT), FULLSCREEN | NOFRAME)
-        pygame.display.set_caption("Finley")
+        pygame.display.set_caption("Finley Face")
         self.clock = pygame.time.Clock()
+        self.keep_on_top()
+        pygame.time.set_timer(pygame.USEREVENT + 1, 1000) 
 
         self.EYE_SPACING = self.WIDTH * 0.45
         self.EYE_WIDTH = self.WIDTH * 0.35
@@ -142,8 +144,6 @@ class FinleyFace:
                 "tilt_angle": 15
             }
         }
-
-        os.system('wmctrl -r "Finley" -b add,above')
 
     def draw_ellipse(self, x, y, width, height, color, fill=True, rotation=0, cutout=None):
         """Draw an ellipse with optional rotation and bottom cutout."""
@@ -498,13 +498,17 @@ class FinleyFace:
         status_rect = status_surf.get_rect(centerx=self.HALF_WIDTH, bottom=self.HEIGHT - 10)
         self.screen.blit(status_surf, status_rect)
 
+    def keep_on_top(self):
+        """Ensure window stays on top using multiple methods"""
+        os.system('wmctrl -r "Finley Face" -b add,above,sticky')
+        os.system('wmctrl -a "Finley Face"')  
 
     def handle_events(self):
         """Handle user input events (quit, keys) and ZMQ commands."""
-        # print("--- handle_events: A ---", flush=True) # Optional extra debug
-        for event in pygame.event.get(): # Check Pygame events first
+        for event in pygame.event.get(): 
             print(f"--- handle_events: B (Processing event: {event.type}) ---", flush=True)
-            # Temporarily disable QUIT event handling for debugging
+            if event.type == pygame.USEREVENT + 1:
+                self.keep_on_top()
             if event.type == pygame.QUIT:
                 print("--- handle_events: QUIT event received ---", flush=True)
                 pygame.quit()
@@ -536,28 +540,19 @@ class FinleyFace:
                 elif event.key == pygame.K_8: self.set_emotion("scanning")
                 elif event.key == pygame.K_9: self.set_emotion("focused")
 
-        # ---> Point C <---
-        # print("--- handle_events: C ---", flush=True) # Optional extra debug
         if self.face_listener:
-            # print("--- handle_events: Listener exists ---", flush=True) # Optional extra debug
             try:
-                # ---> Point D <---
                 print("--- handle_events: D (Before recv_string) ---", flush=True)
                 command = self.face_listener.recv_string(flags=zmq.NOBLOCK).lower()
-                # ---> Point E <---
                 print(f"--- handle_events: E (After recv_string, Command: '{command}') ---", flush=True)
-                print(f"Face received command: '{command}'" , flush=True) # Added flush
+                print(f"Face received command: '{command}'" , flush=True)
                 self.set_emotion(command)
-                # ---> Point F <---
                 print("--- handle_events: F (After set_emotion) ---", flush=True)
             except zmq.Again:
-                # ---> Point G <---
-                # print("--- handle_events: G (zmq.Again) ---", flush=True) # Normal, maybe too verbose
                 pass
             except Exception as e:
-                # ---> Point H <---
                 print(f"--- handle_events: H (ZMQ Exception: {e}) ---", flush=True)
-                print(f"Error processing ZMQ command: {e}", flush=True) # Added flush
+                print(f"Error processing ZMQ command: {e}", flush=True)
 
     def set_emotion(self, emotion):
         """Start transition to a new target emotion."""
@@ -583,21 +578,21 @@ class FinleyFace:
 
     def run(self):
         """Main application loop."""
-        print("--- Face run() loop started ---", flush=True) # DEBUG + flush
-        frame_count = 0 # DEBUG
+        print("--- Face run() loop started ---", flush=True)
+        frame_count = 0
         while True:
-            print(f"--- Frame {frame_count}: Top of loop ---", flush=True) # DEBUG + flush
+            print(f"--- Frame {frame_count}: Top of loop ---", flush=True)
             self.handle_events()
-            print(f"--- Frame {frame_count}: After handle_events ---", flush=True) # DEBUG + flush
+            print(f"--- Frame {frame_count}: After handle_events ---", flush=True)
             self.update()
-            print(f"--- Frame {frame_count}: After update ---", flush=True) # DEBUG + flush
+            print(f"--- Frame {frame_count}: After update ---", flush=True)
             self.draw()
-            print(f"--- Frame {frame_count}: After draw ---", flush=True) # DEBUG + flush
+            print(f"--- Frame {frame_count}: After draw ---", flush=True)
             pygame.display.flip()
-            print(f"--- Frame {frame_count}: After flip ---", flush=True) # DEBUG + flush
+            print(f"--- Frame {frame_count}: After flip ---", flush=True)
             self.clock.tick(60)
-            print(f"--- Frame {frame_count}: After tick ---", flush=True) # DEBUG + flush
-            frame_count += 1 # DEBUG
+            print(f"--- Frame {frame_count}: After tick ---", flush=True)
+            frame_count += 1
 
 if __name__ == "__main__":
     app = FinleyFace()
