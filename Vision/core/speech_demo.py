@@ -120,12 +120,10 @@ class SpeechEnabledDemo(Demo):
 
     def setup(self, conf):
         super().setup(conf)
-        self.send_face_command("neutral") # Start with a neutral face
+        self.send_face_command("neutral")
         
-        # Start face interface process
         self._start_face_interface()
         
-        # Start speech detection process
         print("Starting speech detection process...")
         try:
             current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -134,7 +132,7 @@ class SpeechEnabledDemo(Demo):
             
             venv_path = os.environ.get('VIRTUAL_ENV', '')
             if not venv_path:
-                venv_path = "/home/finley/Documents/GitHub/Senses/venv"  # Default path if not in virtual env
+                venv_path = "/home/finley/Documents/GitHub/Senses/venv"
             
             # Create a temporary shell script for speech detection
             temp_speech_script = "/tmp/pickAndPlaceVoiceListener.sh"
@@ -157,10 +155,7 @@ python3 {os.path.basename(speech_script_path)} || echo "Error occurred! Press En
             )
             
             time.sleep(1)
-            if self.speech_process.poll() is None:
-                print("Speech detection process started successfully in new terminal")
-            else:
-                print("Warning: Speech detection process failed to start")
+            print("Speech detection process started successfully in new terminal")
         except Exception as e:
             print(f"Error starting speech detection: {e}")
 
@@ -196,10 +191,7 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
             )
             
             time.sleep(1)
-            if self.robot_process.poll() is None:
-                print("Robot control process started successfully in new terminal")
-            else:
-                print("Warning: Robot control process failed to start")
+            print("Robot control process started successfully in new terminal")
         except Exception as e:
             print(f"Error starting robot control: {e}")
 
@@ -240,12 +232,8 @@ python3 {os.path.basename(face_script)} || read -p \"Face script exited. Press E
             )
 
             time.sleep(1)
-            if self.face_process.poll() is None:
-                print("Face interface process started successfully in new terminal.")
-            else:
-                print("Warning: Face interface process failed to start or exited quickly.")
-                self.face_process = None
-
+            print("Face interface process started successfully in new terminal.")
+        
         except Exception as e:
             print(f"Failed to start face interface: {e}")
             self.face_process = None
@@ -254,14 +242,11 @@ python3 {os.path.basename(face_script)} || read -p \"Face script exited. Press E
         """Send an emotion command string to the face interface."""
         if self.face_publisher:
             try:
-                # print(f"speech_demo: Sending face command: {emotion_command}") # Optional: uncomment for verbose logging
                 self.face_publisher.send_string(emotion_command, zmq.NOBLOCK)
             except zmq.error.Again:
                  print(f"Warning: speech_demo Face command '{emotion_command}' send would block.")
             except Exception as e:
                 print(f"speech_demo: Error sending face command '{emotion_command}': {e}")
-        # else: # Optional: uncomment for verbose logging
-        #     print(f"speech_demo: Skipping face command '{emotion_command}': publisher not available.")
 
     def run(self):
         print("Starting speech-enabled pipeline...")
@@ -292,19 +277,6 @@ python3 {os.path.basename(face_script)} || read -p \"Face script exited. Press E
 
                     # Face: Focused, ready for pick & place
                     self.send_face_command("focused")
-
-                    # if hasattr(self, '_nnManager'):
-                    #     print("Setting target object in NNetManager")
-                    #     try:
-                    #         if self._nnManager.set_target_object(target_object): 
-                    #             print(f"Target object hint set in NNetManager: {self._nnManager._target_object}") 
-                    #         else:
-                    #             print("NNetManager did not confirm setting target object.")
-                    #     except AttributeError:
-                    #          print("NNetManager does not have a 'set_target_object' method. Skipping.")
-                    #     except Exception as e:
-                    #          print(f"Error trying to set target in NNetManager: {e}")
-
                     self.measurements_file = open('test_tuple.txt', 'w')
                     print("Created measurements file: test_tuple.txt")
                     break
@@ -367,17 +339,6 @@ python3 {os.path.basename(face_script)} || read -p \"Face script exited. Press E
 
                         # Face: Focused, ready for pick & place
                         self.send_face_command("focused")
-
-                        # if hasattr(self, '_nnManager'):
-                        #     try:
-                        #         if self._nnManager.set_target_object(target_object): 
-                        #             print(f"Target object hint set in NNetManager: {self._nnManager._target_object}") 
-                        #         else:
-                        #             print("NNetManager did not confirm setting target object.")
-                        #     except AttributeError:
-                        #         print("NNetManager does not have a 'set_target_object' method. Skipping.")
-                        #     except Exception as e:
-                        #         print(f"Error trying to set target in NNetManager: {e}")
 
                         if not hasattr(self, 'measurements_file') or self.measurements_file.closed:
                             self.measurements_file = open('test_tuple.txt', 'w')
@@ -463,7 +424,6 @@ python3 {os.path.basename(temp_demo_path)} -a -xyz -n 0 || echo "Error occurred!
             )
             
             print("Step 2: Temperature demo started in new terminal")
-            # Skip the poll check - assume it's running regardless of poll result
             
             # Create a socket for receiving coordinates from the temperature demo
             coord_receiver = self.context.socket(zmq.SUB)
@@ -532,11 +492,11 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
                     
             except zmq.error.Again:
                 print("Timeout waiting for coordinates from temperature demo")
-                self.send_face_command("sad") # Face: Sad on timeout
+                self.send_face_command("curious") # Face: Curious on timeout
                 time.sleep(1.5)
             except Exception as e:
                 print(f"Error in temperature demo process: {e}")
-                self.send_face_command("sad") # Face: Sad on error
+                self.send_face_command("curious") # Face: Curious on error
                 time.sleep(1.5)
                 import traceback
                 traceback.print_exc()
@@ -606,18 +566,6 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
                 self.measurement_buffer = []
                 self.coordinates_sent = False
                 print("Measurement buffer and coordinate sent flag reset.")
-                
-                
-                # if hasattr(self, '_nnManager'):
-                #      try:
-                #          if self._nnManager.set_target_object(target): 
-                #              print(f"Target object hint set in NNetManager: {self._nnManager._target_object}") 
-                #          else:
-                #              print("NNetManager did not confirm setting target object.")
-                #      except AttributeError:
-                #          print("NNetManager does not have a 'set_target_object' method. Skipping.")
-                #      except Exception as e:
-                #          print(f"Error trying to set target in NNetManager: {e}")
 
             else:
                 print(f"Unknown command format: {command}")
@@ -627,7 +575,7 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
             pass
         except Exception as e:
             print(f"Error processing command: {e}")
-            self.send_face_command("sad") # Face: Sad on command processing error
+            self.send_face_command("curious") # Face: curious on command processing error
             time.sleep(1.5)
             self.send_face_command("neutral")
         
@@ -643,7 +591,7 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
         if hasattr(self, '_nnManager'):
             newData, inNn = self._nnManager.parse()
             if newData is not None and not self.coordinates_sent:
-                detections_received = len(newData) # Store original count
+                detections_received = len(newData)
                 added_count = 0
                 for detection in newData:
                     if hasattr(detection, 'spatialCoordinates') and self.current_target:
@@ -662,11 +610,10 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
                             }
                             if hasattr(detection, 'xmin') and hasattr(detection, 'xmax') and \
                                hasattr(detection, 'ymin') and hasattr(detection, 'ymax') and \
-                               coords.z > 0: # Need depth > 0
+                               coords.z > 0: 
 
                                 z_meters = coords.z / 1000.0
 
-                                # De-normalize bounding box to pixel coordinates
                                 pixel_xmin = int(detection.xmin * self.nn_source_width)
                                 pixel_ymin = int(detection.ymin * self.nn_source_height)
                                 pixel_xmax = int(detection.xmax * self.nn_source_width)
@@ -675,7 +622,6 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
                                 pixel_width = pixel_xmax - pixel_xmin
                                 pixel_height = pixel_ymax - pixel_ymin
 
-                                # Calculate physical size using pinhole camera model
                                 physical_width = (pixel_width * z_meters) / self.fx
                                 physical_height = (pixel_height * z_meters) / self.fy
 
@@ -688,14 +634,14 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
                             self.measurement_buffer.append(measurement)
                             added_count += 1
 
-                if detections_received > 0: # Only print if there were detections to process
+                if detections_received > 0: 
                     print(f"Processed {detections_received} detections, added {added_count} matching target '{self.current_target}'. Current buffer size: {len(self.measurement_buffer)}")
 
 
         if len(self.measurement_buffer) >= self.max_buffer_size and not self.coordinates_sent:
             print(f"Buffer full ({len(self.measurement_buffer)} >= {self.max_buffer_size}) with measurements for target: '{self.current_target}'. Processing...")
 
-            if self.measurement_buffer: # Check if buffer actually has items
+            if self.measurement_buffer: 
                 filtered_measurements = self.filter_measurements_iqr(self.measurement_buffer)
 
                 if filtered_measurements:
@@ -703,7 +649,6 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
                     mean_y = np.mean([m['position']['y'] for m in filtered_measurements])
                     mean_z = np.mean([m['position']['z'] for m in filtered_measurements])
                     
-                    # Calculate mean width and height if dimensions exist
                     mean_w = np.mean([m['dimensions']['width'] for m in filtered_measurements if 'dimensions' in m]) if any('dimensions' in m for m in filtered_measurements) else 0.0
                     mean_h = np.mean([m['dimensions']['height'] for m in filtered_measurements if 'dimensions' in m]) if any('dimensions' in m for m in filtered_measurements) else 0.0
 
@@ -720,9 +665,9 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
                             time.sleep(0.05)
                         print(f"Finished sending coordinates {send_count} times.")
 
-                        self.send_face_command("happy") # Face: Happy when coords sent
+                        self.send_face_command("happy")
                         time.sleep(1.5)
-                        self.send_face_command("neutral") # Back to neutral
+                        self.send_face_command("neutral") 
                         self.coordinates_sent = True 
                         self.measurement_buffer = [] 
                         print("Buffer cleared.")
@@ -730,14 +675,12 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
                         print(f"Error sending coordinates via ZMQ: {e}")
                 else:
                     print("No measurements remained after IQR filtering. Not sending coordinates.")
-                    # Maybe send a slightly sad/confused face?
-                    self.send_face_command("curious") # Or sad?
+                    self.send_face_command("curious") 
                     time.sleep(1.5)
                     self.send_face_command("neutral")
             else:
-                # This case is less likely now, but good practice to keep
                 print("Buffer is full but contains no measurements (unexpected). Not sending coordinates.")
-                self.send_face_command("curious") # Or sad?
+                self.send_face_command("curious")
                 time.sleep(1.5)
                 self.send_face_command("neutral")
 
