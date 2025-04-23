@@ -10,6 +10,17 @@ import sys
 import math
 
 
+def wait_for_windows(window_titles, timeout=20):
+    """Wait until all window_titles appear in wmctrl -l output."""
+    start = time.time()
+    while time.time() - start < timeout:
+        output = subprocess.check_output(['wmctrl', '-l']).decode()
+        if all(any(title in line for line in output.splitlines()) for title in window_titles):
+            return True
+        time.sleep(0.5)
+    return False
+
+
 class SpeechEnabledDemo(Demo):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -122,19 +133,14 @@ class SpeechEnabledDemo(Demo):
         super().setup(conf)
         self.send_face_command("neutral")
         
-        self._start_face_interface()
-        
         print("Starting speech detection process...")
         try:
             current_dir = os.path.dirname(os.path.abspath(__file__))
             project_root = os.path.dirname(os.path.dirname(current_dir))
             speech_script_path = os.path.join(project_root, "Speech", "detection", "pickAndPlaceVoiceDetection.py")
-            
             venv_path = os.environ.get('VIRTUAL_ENV', '')
             if not venv_path:
                 venv_path = "/home/finley/Documents/GitHub/Senses/venv"
-            
-            # Create a temporary shell script for speech detection
             temp_speech_script = "/tmp/pickAndPlaceVoiceListener.sh"
             with open(temp_speech_script, "w") as f:
                 f.write(f"""#!/bin/bash
@@ -144,34 +150,24 @@ cd {os.path.dirname(speech_script_path)}
 python3 {os.path.basename(speech_script_path)} || echo "Error occurred! Press Enter to close..." && read
 """)
             os.chmod(temp_speech_script, 0o755)
-            
             print(f"Created speech detection script: {temp_speech_script}")
-            
-            # Launch the script in a new terminal
             self.speech_process = subprocess.Popen(
                 f"lxterminal --geometry=80x24 --title='Pick and Place Speech' -e 'bash -c \"{temp_speech_script}; exec bash\"'",
                 shell=True,
                 preexec_fn=os.setsid
             )
-            
-            time.sleep(2)
-            os.system('wmctrl -r "Pick and Place Speech" -b add,shaded')
             print("Speech detection process started successfully in new terminal")
         except Exception as e:
             print(f"Error starting speech detection: {e}")
 
-        # Start robot control process
         print("Starting robot control process...")
         try:
             current_dir = os.path.dirname(os.path.abspath(__file__))
             project_root = os.path.dirname(os.path.dirname(current_dir))
             robot_script_path = os.path.join(project_root, "Gripper", "pickandplace", "finlyPickAndPlace.py")
-            
             venv_path = os.environ.get('VIRTUAL_ENV', '')
             if not venv_path:
-                venv_path = "/home/finley/Documents/GitHub/Senses/venv"  # Default path if not in virtual env
-            
-            # Create a temporary shell script for robot control
+                venv_path = "/home/finley/Documents/GitHub/Senses/venv"
             temp_robot_script = "/tmp/robotController.sh"
             with open(temp_robot_script, "w") as f:
                 f.write(f"""#!/bin/bash
@@ -181,23 +177,23 @@ cd {os.path.dirname(robot_script_path)}
 python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Enter to close..." && read
 """)
             os.chmod(temp_robot_script, 0o755)
-            
             print(f"Created robot control script: {temp_robot_script}")
-            
-            # Launch the script in a new terminal
             self.robot_process = subprocess.Popen(
                 f"lxterminal --geometry=80x24 --title='Robot Controller' -e 'bash -c \"{temp_robot_script}; exec bash\"'",
                 shell=True,
                 preexec_fn=os.setsid
             )
-
-            time.sleep(2)
-            os.system('wmctrl -r "Robot Controller" -b add,shaded')
-            os.system('wmctrl -a "Finley Face" -b add,above,sticky')
-            time.sleep(1)
             print("Robot control process started successfully in new terminal")
         except Exception as e:
             print(f"Error starting robot control: {e}")
+
+        # Wait for both windows to appear
+        print("Waiting for all terminals to appear before launching Face window...")
+        if wait_for_windows(["Pick and Place Speech", "Robot Controller"], timeout=20):
+            print("All terminals are up, launching Face window...")
+            self._start_face_interface()
+        else:
+            print("Timeout: Not all terminal windows appeared. Face will not launch.")
 
     def _start_face_interface(self):
         """Start face interface in new terminal"""
