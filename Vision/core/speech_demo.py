@@ -185,7 +185,7 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
             
             # Launch the script in a new terminal
             self.robot_process = subprocess.Popen(
-                f"lxterminal --geometry=80x24 -e 'bash -c \"{temp_robot_script}; exec bash\"'",
+                f"lxterminal --geometry=0x0 -e 'bash -c \"{temp_robot_script}; exec bash\"'",
                 shell=True,
                 preexec_fn=os.setsid
             )
