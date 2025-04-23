@@ -59,7 +59,7 @@ Instructions:
   - Words like "remoke", "revoke", "emote" should be matched to "remote"
   - Words like "appo", "appull" should be matched to "apple"
 - Even for words not in these examples, try to match to the closest valid object based on how they sound
-- In a nursing home setting, be especially forgiving of speech variations, accents, and imprecise pronunciations
+- Be especially forgiving of speech variations, accents, and imprecise pronunciations
 - If the user's request doesn't mention any valid object or doesn't appear to be a valid command, AND you tried following everything in the rules above, only then returns "invalid" as a last resort.
 - If the user speaks in other languages, try to understand it and follow the rules above
 - Return ONLY the object name or special command, with no additional text or explanation
