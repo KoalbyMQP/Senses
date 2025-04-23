@@ -196,7 +196,6 @@ class SpeechHandler:
         max_retries = 3
         retry_delay = 1
         self._cleanup_port(5558) # Clean up command port
-        self._cleanup_port(5563) # Clean up face port
 
         # Bind command socket
         for attempt in range(max_retries):
