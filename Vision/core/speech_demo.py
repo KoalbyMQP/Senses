@@ -190,6 +190,10 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
                 preexec_fn=os.setsid
             )
             
+            # Wait a moment for the terminal to appear, then bring face window to top
+            time.sleep(1)
+            os.system('wmctrl -r "Finley" -b add,above')
+            
             time.sleep(1)
             print("Robot control process started successfully in new terminal")
         except Exception as e:
