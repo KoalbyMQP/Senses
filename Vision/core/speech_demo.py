@@ -149,12 +149,13 @@ python3 {os.path.basename(speech_script_path)} || echo "Error occurred! Press En
             
             # Launch the script in a new terminal
             self.speech_process = subprocess.Popen(
-                f"lxterminal --geometry=80x24 -e 'bash -c \"{temp_speech_script}; exec bash\"'",
+                f"lxterminal --geometry=80x24 --title='Pick and Place Speech' -e 'bash -c \"{temp_speech_script}; exec bash\"'",
                 shell=True,
                 preexec_fn=os.setsid
             )
             
-            time.sleep(1)
+            time.sleep(2)
+            os.system('wmctrl -r "Pick and Place Speech" -b add,shaded')
             print("Speech detection process started successfully in new terminal")
         except Exception as e:
             print(f"Error starting speech detection: {e}")
