@@ -199,6 +199,7 @@ def run_gripper_swap_detection():
         print("10: Type 5 gripper")
         print("=========================================\n")
         
+        play_tts("Hi, I am Finley. I am preparing the gripper swap system right now. Please wait.")
         play_tts("Gripper swap system ready. Say 'swap gripper' followed by a number 1 through 10 or the name of the gripper.")
         detector.speech_handler.send_face_command("neutral") 
         
