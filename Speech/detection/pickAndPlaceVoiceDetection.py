@@ -190,7 +190,6 @@ Return only a single valid object name, "temperature", or "invalid"."""
                     self._process_valid_command(f"pick up {object_name}")
             else:
                 print("Command not recognized.")
-                play_tts("Please say pick up followed by an object name, or ask me to check temperature.")
                 self.speech_handler.send_face_command("curious") # Face: Sad if invalid command
                 time.sleep(1.5)
                 self.speech_handler.send_face_command("neutral")
