@@ -97,6 +97,7 @@ while True:
 # NEGATIVE X AND NEGATIVE Z FOR CURRENT URDF
 B = np.array([[final_points[0]], [-final_points[1]], [-final_points[2]], [1]])
 C = np.dot(camera_frame_transformation, B)
+print(f"Final target coordinates (robot base frame): X={C[0][0]:.5f}, Y={C[1][0]:.5f}, Z={C[2][0]:.5f}")
 
 leftArmTraj = [
     [[0,0,0], [20,20,20]],
