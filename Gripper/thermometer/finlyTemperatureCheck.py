@@ -55,7 +55,7 @@ robot.motors[7].target = (math.radians(0), 'P')
 robot.motors[8].target = (math.radians(0), 'P')
 robot.motors[9].target = (math.radians(0), 'P')
 robot.motors[10].target =(math.radians(0), 'P')
-ik_solution_2=np.array([0,0,0,0,0,0,0,0])
+ik_solution_2=np.array([0,0,0,0,0,0,0])
 
 # centering all angles to zero
 prevTime = time.time()
@@ -95,12 +95,12 @@ while True:
 
 # Apply camera frame transformation to final_points
 # NEGATIVE X AND NEGATIVE Z FOR CURRENT URDF
-B = np.array([[-final_points[0]], [final_points[1]], [-final_points[2]], [1]])
+B = np.array([[final_points[0]], [final_points[1]], [final_points[2]], [1]])
 C = np.dot(camera_frame_transformation, B)
 
 leftArmTraj = [
     [[0,0,0], [20,20,20]],
-    [[.50575,  -.006620, .28607],
+    [[.54116,  -.03671, .28589],
    [C[0],  C[1], C[2]] ],
     [[0,0,0], [0,0,0]],
     [[0,0,0], [0,0,0]]
