@@ -21,7 +21,7 @@ def find_file(filename, search_path="/home/finley"):
     return result
 
 # Find all instances of your URDF file
-found_paths = find_file("FullAssemFIN_Pick_And_Place.urdf")
+found_paths = find_file("FullAssemFIN_straight_2025_5.urdf")
 print("Found URDF files at:", found_paths)
 urdf_path = found_paths[0]
 
