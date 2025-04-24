@@ -310,8 +310,6 @@ def run_speech_detection():
         pygame.mixer.init()
         
         play_tts("Hi! I'm Finley, your personal assistant.")
-        print("Waiting 5 seconds before starting to listen...")
-        time.sleep(5)
         play_tts("I'm now listening. You can ask me to pick up objects like an apple, orange, bottle, cup, or remote OR ask me to check your temperature.")
         
         print("\n===== PICK AND PLACE VOICE DETECTION SYSTEM =====")
