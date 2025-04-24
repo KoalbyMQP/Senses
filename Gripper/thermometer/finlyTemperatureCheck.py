@@ -29,7 +29,8 @@ urdf_path = found_paths[0]
 # Creating URDF chain for left arm
 left_arm_chain = Chain.from_urdf_file(
     urdf_path,
-    base_elements=['shoulder1_left', 'shoulder1_left']
+    base_elements=['shoulder1_left', 'shoulder1_left'],
+    active_links_mask=[False,True,True,True,True, True, False]
 )
 # creating URDF chain for camera
 camera = Chain.from_urdf_file(
