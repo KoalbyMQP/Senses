@@ -56,6 +56,11 @@ class SpeechEnabledDemo(Demo):
         self.coord_socket = self.coord_context.socket(zmq.PUB)
         self.coord_socket.bind("tcp://*:5559")
 
+        # Set up ZMQ for control commands (pause/resume)
+        self.control_publisher = self.context.socket(zmq.PUB)
+        self.control_publisher.connect("tcp://localhost:5561")
+        print("Connected control publisher to tcp://localhost:5561")
+
         # Set up ZMQ for face commands
         self.face_publisher = None
         try:
@@ -267,7 +272,7 @@ python3 {os.path.basename(face_script)} || read -p \"Face script exited. Press E
                 print(f"Received command: {command}")
                 
                 if command.startswith("pick up"):
-                    send_speech_control_command("pause")
+                    send_speech_control_command("pause", self)
                     target_object = command.split("pick up ")[1]
                     self.current_target = target_object
                     print(f"New target received: {target_object}")
@@ -282,7 +287,7 @@ python3 {os.path.basename(face_script)} || read -p \"Face script exited. Press E
                     print("Created measurements file: test_tuple.txt")
                     break
                 elif command == "get temperature":
-                    send_speech_control_command("pause")
+                    send_speech_control_command("pause", self)
                     print("Temperature command received")
                     run_temperature_demo = True
                     # Face: Focused, ready for temperature check
@@ -298,7 +303,7 @@ python3 {os.path.basename(face_script)} || read -p \"Face script exited. Press E
         # If temperature command received, run the temperature demo instead of the standard pipeline
         if run_temperature_demo:
             self._run_temperature_demo()
-            send_speech_control_command("resume")
+            send_speech_control_command("resume", self)
             
             # After temperature demo completes, check for new commands
             print("Temperature demo completed. Listening for new commands...")
@@ -314,7 +319,7 @@ python3 {os.path.basename(face_script)} || read -p \"Face script exited. Press E
             except Exception as e:
                 print(f"Error in main pipeline: {e}")
             finally:
-                send_speech_control_command("resume")
+                send_speech_control_command("resume", self)
                 self._main_pipeline_started = False
     
     def _listen_for_next_command(self):
@@ -332,7 +337,7 @@ python3 {os.path.basename(face_script)} || read -p \"Face script exited. Press E
                     self.send_face_command("focused") # Face: Focused on new command
                     
                     if command.startswith("pick up"):
-                        send_speech_control_command("pause")
+                        send_speech_control_command("pause", self)
                         # Start the main pipeline with the new target
                         target_object = command.split("pick up ")[1]
                         self.current_target = target_object
@@ -351,14 +356,14 @@ python3 {os.path.basename(face_script)} || read -p \"Face script exited. Press E
                                 
                         self._main_pipeline_started = True
                         super().run()
-                        send_speech_control_command("resume")
+                        send_speech_control_command("resume", self)
                         return
                     
                     elif command == "get temperature":
-                        send_speech_control_command("pause")
+                        send_speech_control_command("pause", self)
                         # Run temperature demo again
                         self._run_temperature_demo()
-                        send_speech_control_command("resume")
+                        send_speech_control_command("resume", self)
                         # Reset timeout
                         start_time = time.time()
                         self.send_face_command("listening") # Face: Back to listening after temp demo
@@ -497,7 +502,7 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
             # In case we need to restart the pipeline
             if hasattr(self, '_temp_demo_running'):
                 self._temp_demo_running = False
-            send_speech_control_command("resume")
+            send_speech_control_command("resume", self)
             print("========== TEMPERATURE MEASUREMENT SEQUENCE COMPLETE ==========")
             self.send_face_command("neutral") # Ensure neutral at the very end
 
@@ -708,20 +713,24 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
 
         super().stop(*args, **kwargs)
 
-        # Clean up face publisher socket
-        if hasattr(self, 'face_publisher') and self.face_publisher:
-            try:
-                self.face_publisher.close()
-                print("speech_demo: Face publisher socket closed.")
-            except Exception as e:
-                print(f"speech_demo: Error closing face publisher socket: {e}")
-        
-def send_speech_control_command(command):
-    context = zmq.Context()
-    socket = context.socket(zmq.PUB)
-    socket.connect("tcp://localhost:5561")  
-    time.sleep(0.1)  
-    socket.send_string(command)
-    socket.close()
-    context.term()
+        # Clean up ZMQ sockets
+        if hasattr(self, 'socket') and self.socket: self.socket.close()
+        if hasattr(self, 'coord_socket') and self.coord_socket: self.coord_socket.close()
+        if hasattr(self, 'control_publisher') and self.control_publisher: self.control_publisher.close()
+        if hasattr(self, 'face_publisher') and self.face_publisher: self.face_publisher.close()
+        if hasattr(self, 'context') and self.context: self.context.term()
+        if hasattr(self, 'coord_context') and self.coord_context: self.coord_context.term()
+        print("speech_demo: ZMQ resources cleaned up.")
+
+def send_speech_control_command(command, demo_instance):
+    """Sends a control command using the demo's persistent socket."""
+    if demo_instance and hasattr(demo_instance, 'control_publisher') and demo_instance.control_publisher:
+        try:
+            print(f"Sending control command: {command}")
+            demo_instance.control_publisher.send_string(command)
+            # No need for sleep here, PUB is generally non-blocking unless HWM is hit
+        except Exception as e:
+            print(f"Error sending control command '{command}': {e}")
+    else:
+        print(f"Error: Could not send control command '{command}'. Demo instance or publisher not available.")
         

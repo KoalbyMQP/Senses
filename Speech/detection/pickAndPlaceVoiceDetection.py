@@ -94,18 +94,28 @@ Return only a single valid object name, "temperature", or "invalid"."""
             try:
                 cmd = self.control_socket.recv_string()
                 if cmd == "pause":
-                    print("SpeechDetector: Paused by control command.")
+                    print(f"SpeechDetector: Paused by control command. Setting self.paused = True")
                     self.paused = True
                 elif cmd == "resume":
-                    print("SpeechDetector: Resumed by control command.")
+                    print(f"SpeechDetector: Resumed by control command. Setting self.paused = False")
                     self.paused = False
+            except zmq.error.Again: 
+                pass 
             except Exception as e:
                 print(f"Control socket error: {e}")
 
     def parse_command(self, text):
-        """Direct parsing of command without API calls"""
+        """Direct parsing of command with basic phonetic/error matching."""
         normalized = text.lower()
-        valid_objects = ["apple", "orange", "bottle", "cup", "remote"]
+        
+        object_variations = {
+            "apple": ["apple", "appo", "appull"],
+            "orange": ["orange", "orang", "oringe"],
+            "bottle": ["bottle", "battle", "boddle"],
+            "cup": ["cup", "cop", "cub", "pup"],
+            "remote": ["remote", "remoke", "revoke", "emote"]
+        }
+        valid_objects = list(object_variations.keys())
         
         temperature_phrases = ["temperature", "body temperature", "check temperature", "get temperature"]
         for phrase in temperature_phrases:
@@ -113,21 +123,29 @@ Return only a single valid object name, "temperature", or "invalid"."""
                 return "temperature"
         
         pick_up_words = ["pick up", "grab", "take", "get", "fetch", "bring"]
-        
-        for action in pick_up_words:
-            if action in normalized:
-                for obj in valid_objects:
-                    if obj in normalized:
-                        return obj
-                        
-        for obj in valid_objects:
-            if obj in normalized and not any(word in normalized for word in ["don't", "do not", "isn't", "is not"]):
-                return obj
+        found_action = any(action in normalized for action in pick_up_words)
+        found_object = None
+
+        for canonical_obj, variations in object_variations.items():
+            for var in variations:
+                if var in normalized:
+                    found_object = canonical_obj
+                    break 
+            if found_object:
+                break 
+
+        if found_action and found_object:
+            return found_object
+
+        if found_object and not any(word in normalized for word in ["don't", "do not", "isn't", "is not", "not"]):
+            return found_object
                 
         return None
         
     def listen_and_process(self):
+        print(f"listen_and_process called. Current self.paused state: {self.paused}") 
         if self.paused:
+            print("SpeechDetector is paused. Skipping listen cycle.")
             time.sleep(0.1)
             return
         self.speech_handler.send_face_command("listening") # Face: Listening
@@ -349,13 +367,9 @@ def run_speech_detection():
         print("=========================================\n")
         
         while True:
-            if detector.current_state == State.IDLE:
-                detector.listen_and_process()
-                time.sleep(3)
-            else:
-                print("Returning to idle state...")
-                detector.current_state = State.IDLE
-                
+            detector.listen_and_process()
+            time.sleep(1) 
+
     except KeyboardInterrupt:
         print("\nExiting speech detection...")
         if detector.speech_handler:
