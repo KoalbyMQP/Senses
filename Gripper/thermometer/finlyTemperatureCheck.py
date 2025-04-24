@@ -230,4 +230,15 @@ except Exception as e:
 
 print("Temperature check movement complete.") 
 
+def send_speech_control_command(command):
+    context = zmq.Context()
+    socket = context.socket(zmq.PUB)
+    socket.connect("tcp://localhost:5561")
+    time.sleep(0.1)
+    socket.send_string(command)
+    socket.close()
+    context.term()
+
+send_speech_control_command("resume")
+
 

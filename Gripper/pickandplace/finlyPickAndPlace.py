@@ -170,3 +170,14 @@ while time.time() - startTime < 8:
         # robot.motors[27].target = (math.radians(lastAngle), 'P')
         # #robot.IMUBalance(0, 0)
         # robot.moveAllToTarget()
+
+def send_speech_control_command(command):
+    context = zmq.Context()
+    socket = context.socket(zmq.PUB)
+    socket.connect("tcp://localhost:5561")
+    time.sleep(0.1)
+    socket.send_string(command)
+    socket.close()
+    context.term()
+
+send_speech_control_command("resume")

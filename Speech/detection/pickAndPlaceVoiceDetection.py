@@ -9,6 +9,7 @@ import requests
 import speech_recognition as sr
 import sounddevice
 from Speech.config import initialize_api_keys
+import threading
 
 initialize_api_keys()
 
@@ -77,7 +78,30 @@ Input: "check my temperature" → Output: temperature
 Input: "pick up the banana" → Output: invalid
 
 Return only a single valid object name, "temperature", or "invalid"."""
+        self.paused = False
+        self._setup_control_socket()
     
+    def _setup_control_socket(self):
+        self.control_context = zmq.Context()
+        self.control_socket = self.control_context.socket(zmq.SUB)
+        self.control_socket.setsockopt_string(zmq.SUBSCRIBE, "")
+        self.control_socket.connect("tcp://localhost:5561")  
+
+        threading.Thread(target=self._control_listener, daemon=True).start()
+
+    def _control_listener(self):
+        while True:
+            try:
+                cmd = self.control_socket.recv_string()
+                if cmd == "pause":
+                    print("SpeechDetector: Paused by control command.")
+                    self.paused = True
+                elif cmd == "resume":
+                    print("SpeechDetector: Resumed by control command.")
+                    self.paused = False
+            except Exception as e:
+                print(f"Control socket error: {e}")
+
     def parse_command(self, text):
         """Direct parsing of command without API calls"""
         normalized = text.lower()
@@ -103,6 +127,9 @@ Return only a single valid object name, "temperature", or "invalid"."""
         return None
         
     def listen_and_process(self):
+        if self.paused:
+            time.sleep(0.1)
+            return
         self.speech_handler.send_face_command("listening") # Face: Listening
         audio, temp_audio = capture_audio(listen_timeout=1.0, phrase_time_limit=3.0, ambient_duration=0.2)
         if audio is None or temp_audio is None:

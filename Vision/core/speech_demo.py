@@ -267,6 +267,7 @@ python3 {os.path.basename(face_script)} || read -p \"Face script exited. Press E
                 print(f"Received command: {command}")
                 
                 if command.startswith("pick up"):
+                    send_speech_control_command("pause")
                     target_object = command.split("pick up ")[1]
                     self.current_target = target_object
                     print(f"New target received: {target_object}")
@@ -281,6 +282,7 @@ python3 {os.path.basename(face_script)} || read -p \"Face script exited. Press E
                     print("Created measurements file: test_tuple.txt")
                     break
                 elif command == "get temperature":
+                    send_speech_control_command("pause")
                     print("Temperature command received")
                     run_temperature_demo = True
                     # Face: Focused, ready for temperature check
@@ -296,6 +298,7 @@ python3 {os.path.basename(face_script)} || read -p \"Face script exited. Press E
         # If temperature command received, run the temperature demo instead of the standard pipeline
         if run_temperature_demo:
             self._run_temperature_demo()
+            send_speech_control_command("resume")
             
             # After temperature demo completes, check for new commands
             print("Temperature demo completed. Listening for new commands...")
@@ -311,6 +314,7 @@ python3 {os.path.basename(face_script)} || read -p \"Face script exited. Press E
             except Exception as e:
                 print(f"Error in main pipeline: {e}")
             finally:
+                send_speech_control_command("resume")
                 self._main_pipeline_started = False
     
     def _listen_for_next_command(self):
@@ -328,6 +332,7 @@ python3 {os.path.basename(face_script)} || read -p \"Face script exited. Press E
                     self.send_face_command("focused") # Face: Focused on new command
                     
                     if command.startswith("pick up"):
+                        send_speech_control_command("pause")
                         # Start the main pipeline with the new target
                         target_object = command.split("pick up ")[1]
                         self.current_target = target_object
@@ -346,11 +351,14 @@ python3 {os.path.basename(face_script)} || read -p \"Face script exited. Press E
                                 
                         self._main_pipeline_started = True
                         super().run()
+                        send_speech_control_command("resume")
                         return
                     
                     elif command == "get temperature":
+                        send_speech_control_command("pause")
                         # Run temperature demo again
                         self._run_temperature_demo()
+                        send_speech_control_command("resume")
                         # Reset timeout
                         start_time = time.time()
                         self.send_face_command("listening") # Face: Back to listening after temp demo
@@ -510,6 +518,7 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
             # In case we need to restart the pipeline
             if hasattr(self, '_temp_demo_running'):
                 self._temp_demo_running = False
+            send_speech_control_command("resume")
             print("========== TEMPERATURE MEASUREMENT SEQUENCE COMPLETE ==========")
             self.send_face_command("neutral") # Ensure neutral at the very end
 
@@ -727,4 +736,13 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
                 print("speech_demo: Face publisher socket closed.")
             except Exception as e:
                 print(f"speech_demo: Error closing face publisher socket: {e}")
+        
+def send_speech_control_command(command):
+    context = zmq.Context()
+    socket = context.socket(zmq.PUB)
+    socket.connect("tcp://localhost:5561")  
+    time.sleep(0.1)  
+    socket.send_string(command)
+    socket.close()
+    context.term()
         
