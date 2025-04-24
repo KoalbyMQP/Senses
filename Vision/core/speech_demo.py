@@ -477,27 +477,6 @@ python3 {temp_robot_path} --test --coords={coordinates_str} || echo "Error occur
                 except Exception as e:
                     print(f"METHOD 1 FAILED: {e}")
                     
-                # METHOD 2: Try running the script directly in a background thread
-                print("METHOD 2: Executing temperature check script directly in background thread...")
-                try:
-                    import threading
-                    
-                    def run_direct_script():
-                        try:
-                            cmd = [sys.executable, temp_robot_path, "--test", f"--coords={coordinates_str}"]
-                            print(f"Executing: {' '.join(cmd)}")
-                            subprocess.run(cmd, check=True)
-                            print("METHOD 2 SUCCEEDED: Direct execution completed")
-                        except Exception as e:
-                            print(f"METHOD 2 FAILED: {e}")
-                            
-                    thread = threading.Thread(target=run_direct_script)
-                    thread.daemon = True
-                    thread.start()
-                    print("Background execution thread started")
-                except Exception as e:
-                    print(f"METHOD 2 FAILED to start thread: {e}")
-                    
             except zmq.error.Again:
                 print("Timeout waiting for coordinates from temperature demo")
                 self.send_face_command("curious") # Face: Curious on timeout
