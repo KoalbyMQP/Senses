@@ -351,7 +351,7 @@ def run_speech_detection():
         while True:
             if detector.current_state == State.IDLE:
                 detector.listen_and_process()
-                time.sleep(0.1)
+                time.sleep(3)
             else:
                 print("Returning to idle state...")
                 detector.current_state = State.IDLE
