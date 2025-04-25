@@ -10,16 +10,6 @@ import sys
 import math
 
 
-def wait_for_windows(window_titles, timeout=20):
-    """Wait until all window_titles appear in wmctrl -l output."""
-    start = time.time()
-    output = subprocess.check_output(['wmctrl', '-l']).decode()
-    while time.time() - start < timeout:
-        if all(any(title in line for line in output.splitlines()) for title in window_titles):
-            return True
-        time.sleep(0.5)
-    return False
-
 
 class SpeechEnabledDemo(Demo):
     def __init__(self, *args, **kwargs):
@@ -194,11 +184,8 @@ python3 {os.path.basename(robot_script_path)} || echo "Error occurred! Press Ent
 
         # Wait for both windows to appear
         print("Waiting for all terminals to appear before launching Face window...")
-        if wait_for_windows(["Pick and Place Speech", "Robot Controller"], timeout=20):
-            print("All terminals are up, launching Face window...")
-            self._start_face_interface()
-        else:
-            print("Timeout: Not all terminal windows appeared. Face will not launch.")
+        self._start_face_interface()
+        time.sleep(2) 
 
     def _start_face_interface(self):
         """Start face interface in new terminal"""
