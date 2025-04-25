@@ -13,8 +13,8 @@ import math
 def wait_for_windows(window_titles, timeout=20):
     """Wait until all window_titles appear in wmctrl -l output."""
     start = time.time()
+    output = subprocess.check_output(['wmctrl', '-l']).decode()
     while time.time() - start < timeout:
-        output = subprocess.check_output(['wmctrl', '-l']).decode()
         if all(any(title in line for line in output.splitlines()) for title in window_titles):
             return True
         time.sleep(0.5)
@@ -235,8 +235,6 @@ python3 {os.path.basename(face_script)} || read -p \"Face script exited. Press E
                 preexec_fn=os.setsid
             )
             time.sleep(2)
-            os.system('wmctrl -r "Finley Face" -b add,above,sticky,fullscreen')
-            os.system('wmctrl -a "Finley Face"')
             print("Face interface process started successfully in new terminal.")
         
         except Exception as e:

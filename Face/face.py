@@ -500,8 +500,6 @@ class FinleyFace:
 
     def keep_on_top(self):
         """Ensure window stays on top using multiple methods"""
-        os.system('wmctrl -r "Finley Face" -b add,above,sticky')
-        os.system('wmctrl -a "Finley Face"')  
 
     def handle_events(self):
         """Handle user input events (quit, keys) and ZMQ commands."""
