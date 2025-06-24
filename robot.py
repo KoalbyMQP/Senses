@@ -45,6 +45,7 @@ class Depthai(Target):
 
     def _run(self):
         #Set the script path
+        print("Running shell script")
         script_path = os.path.join(os.path.dirname(__file__), "Vision", "voice_helper.sh")
         #run a subprocess
         #.sh scripts may not be executable, so but "bash" path to the script
