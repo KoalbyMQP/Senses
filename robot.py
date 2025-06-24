@@ -51,7 +51,7 @@ class Depthai(Target):
         #.sh scripts may not be executable, so but "bash" path to the script
         self.process = subprocess.run(
             ["bash", script_path], 
-            cwd="~/cyberonics/usr/local/cyberonics/projects/RtQVAWsRG2lTVrSkx9L0/Vision")
+            cwd="~/cyberonics/usr/local/cyberonics/projects/RtQVAWsRG2lTVrSkx9LO/Vision")
 
 
     async def _shutdown(self, beat):
