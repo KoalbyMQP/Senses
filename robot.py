@@ -55,8 +55,6 @@ class Depthai(Target):
         self.process = subprocess.Popen(
             ["bash", script_path],
             ##cwd=script_dir,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
         )
 
     async def _shutdown(self, beat):
