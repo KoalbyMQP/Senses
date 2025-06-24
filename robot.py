@@ -47,8 +47,8 @@ class Depthai(Target):
         #Run script
         print("Running shell script with Popen")
 
-        # Use expanduser to resolve '~' to '/home/finley'
-        script_dir = os.path.expanduser("~/cyberonics/usr/local/cyberonics/projects/RtQVAWsRG2LTVrSkx9LO/Vision")
+        
+        script_dir = "cyberonics/usr/local/cyberonics/projects/RtQVAWsRG2LTVrSkx9LO/Vision"
         script_path = os.path.join(script_dir, "voice_helper.sh")
 
         self.process = subprocess.Popen(
