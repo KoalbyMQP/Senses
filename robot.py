@@ -49,7 +49,9 @@ class Depthai(Target):
         script_path = os.path.join(os.path.dirname(__file__), "Vision", "voice_helper.sh")
         #run a subprocess
         #.sh scripts may not be executable, so but "bash" path to the script
-        self.process = subprocess.run(["bash", script_path], cwd="/home/finley/cyberonics/usr/local/cyberonics/projects/RtQVAWsRG2LTVrSkx9LO/Vision")
+        self.process = subprocess.run(
+            ["bash", script_path], 
+            cwd="~/cyberonics/usr/local/cyberonics/projects/RtQVAWsRG2lTVrSkx9L0/Vision")
 
 
     async def _shutdown(self, beat):
