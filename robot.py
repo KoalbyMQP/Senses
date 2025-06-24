@@ -48,12 +48,13 @@ class Depthai(Target):
         print("Running shell script with Popen")
 
         
-        script_dir = "Vision"
-        script_path = os.path.join(script_dir, "voice_helper.sh")
+        ##script_dir = "Vision"
+        ##script_path = os.path.join(script_dir, "voice_helper.sh")
+        script_path = os.path.join(os.path.dirname(__file__), "Vision", "voice_helper.sh")
 
         self.process = subprocess.Popen(
             ["bash", script_path],
-            cwd=script_dir,
+            ##cwd=script_dir,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
         )
