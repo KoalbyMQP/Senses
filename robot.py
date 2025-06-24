@@ -48,7 +48,7 @@ class Depthai(Target):
         print("Running shell script with Popen")
 
         
-        script_dir = "projects/RtQVAWsRG2LTVrSkx9LO/Vision"
+        script_dir = "Vision"
         script_path = os.path.join(script_dir, "voice_helper.sh")
 
         self.process = subprocess.Popen(
