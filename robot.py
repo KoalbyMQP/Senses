@@ -7,7 +7,9 @@ import asyncio
 from multiprocessing import Process
 from cyberonics_py import Robot, Device, Target
 from cyberonics_py.graphics import Button, GraphicCell
-from Vision.depthai_demo import main as depthai_demo
+##from Vision.depthai_demo import main as depthai_demo
+import subprocess
+import os
 
 
 # from .targets import Depthai
@@ -41,11 +43,13 @@ class Depthai(Target):
         super().__init__("Depthai", robot)
         self.process = None
 
-    def _run(self) -> Process:
-        self.process = Process(target=depthai_demo)
+    def _run(self):
+        #Set the script path
+        script_path = os.path.join(os.path.dirname(__file__), "Vision", "voice_helper.sh")
+        #run a subprocess
+        #.sh scripts may not be executable, so but "bash" path to the script
+        self.process = subprocess.run(["bash", script_path])
 
-        self.process.start()
-        return self.process
 
     async def _shutdown(self, beat):
         if self.process:
