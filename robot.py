@@ -44,15 +44,19 @@ class Depthai(Target):
         self.process = None
 
     def _run(self):
-        #Set the script path
-        print("Running shell script")
-        script_path = os.path.join(os.path.dirname(__file__), "Vision", "voice_helper.sh")
-        #run a subprocess
-        #.sh scripts may not be executable, so but "bash" path to the script
-        self.process = subprocess.run(
-            ["bash", script_path], 
-            cwd="~/cyberonics/usr/local/cyberonics/projects/RtQVAWsRG2lTVrSkx9LO/Vision")
+        #Run script
+        print("Running shell script with Popen")
 
+        # Use expanduser to resolve '~' to '/home/finley'
+        script_dir = os.path.expanduser("~/cyberonics/usr/local/cyberonics/projects/RtQVAWsRG2LTVrSkx9LO/Vision")
+        script_path = os.path.join(script_dir, "voice_helper.sh")
+
+        self.process = subprocess.Popen(
+            ["bash", script_path],
+            cwd=script_dir,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
 
     async def _shutdown(self, beat):
         if self.process:
