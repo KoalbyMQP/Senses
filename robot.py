@@ -63,6 +63,8 @@ class Depthai(Target):
         threading.Thread(target=self._read_output, args=(self.process.stdout, self.stdout_callback), daemon=True).start()
         threading.Thread(target=self._read_output, args=(self.process.stderr, self.stderr_callback), daemon=True).start()
 
+        return threading.current_thread()
+
     async def _shutdown(self, beat):
         if self.process:
             self.process.terminate()
