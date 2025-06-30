@@ -3,7 +3,7 @@
 ## Current target: voice_helper.sh
 
 from typing import Callable
-import asyncio
+import threading
 from multiprocessing import Process
 from cyberonics_py import Robot, Device, Target
 from cyberonics_py.graphics import Button, GraphicCell
@@ -54,8 +54,14 @@ class Depthai(Target):
 
         self.process = subprocess.Popen(
             ["bash", script_path],
-            ##cwd=script_dir,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text = True,
+            bufsize=1,
         )
+
+        threading.Thread(target=self._read_output, args=(self.process.stdout, self.stdout_callback), daemon=True).start()
+        threading.Thread(target=self._read_output, args=(self.process.stderr, self.stderr_callback), daemon=True).start()
 
     async def _shutdown(self, beat):
         if self.process:
