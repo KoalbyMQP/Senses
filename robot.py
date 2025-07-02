@@ -60,6 +60,7 @@ class Depthai(Target):
             stderr=subprocess.PIPE,
             text = True,
             bufsize=1,
+            preexec_fn=os.setsid
         )
 
         threading.Thread(target=self._read_output, args=(self.process.stdout, self.stdout_callback), daemon=True).start()
@@ -69,6 +70,11 @@ class Depthai(Target):
 
     async def _shutdown(self, beat):
         if self.process:
-            self.process.terminate()
-            self.process.join()
-            self.process = None
+            ##Terminate the process group
+            pgid = os.getpgid(self.process.pid)
+            os.killpg(pgid, signal.SIGTERM)
+            ##If process ignors sigterm, force the shutdown by killing the process
+            try:
+                self.process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                os.killpg(pgid, signal.SIGNALKILL)
