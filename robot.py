@@ -62,3 +62,24 @@ class Depthai(Target):
             self.process.terminate()
             self.process.join()
             self.process = None
+
+class rangeDemo(Target):
+    def __init__(self, robot: Robot):
+        super().__init__("Range Demo", robot)
+        self.process = None
+
+    def _run(self):
+        # Run script
+        print("Running range demo script with Popen")
+        
+        script_path = os.path.join(os.path.dirname(__file__), "Vision", "Thermometer", "safe_range.py")
+
+        self.process = subprocess.Popen(
+            ["python3", script_path],
+        )
+
+    async def _shutdown(self, beat):
+        if self.process:
+            self.process.terminate()
+            self.process.join()
+            self.process = None
