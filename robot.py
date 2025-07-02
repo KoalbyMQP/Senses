@@ -10,6 +10,7 @@ from cyberonics_py.graphics import Button, GraphicCell
 ##from Vision.depthai_demo import main as depthai_demo
 import subprocess
 import os
+import signal
 
 
 # from .targets import Depthai
@@ -52,6 +53,7 @@ class Depthai(Target):
         ##script_path = os.path.join(script_dir, "voice_helper.sh")
         script_path = os.path.join(os.path.dirname(__file__), "Vision", "voice_helper.sh")
 
+        ##Since sh is not an executable by default, must run it through bash
         self.process = subprocess.Popen(
             ["bash", script_path],
             stdout=subprocess.PIPE,
