@@ -109,15 +109,11 @@ def main_loop():
         cv2.destroyAllWindows()
 
 if __name__ == "__main__":
-    corner_model = YOLO("Vision/chess/models/corners.pt")
-    piece_model  = YOLO("Vision/chess/models/pieces.pt")
-    grid_model   = YOLO("Vision/chess/models/grid.pt")
+    corner_model = YOLO("Vision/models/corners.pt")
+    piece_model  = YOLO("Vision/models/pieces.pt")
+    grid_model   = YOLO("Vision/models/grid.pt")
 
-    # either a file path…
     test_path = "Vision/chess/test_images/complex2.jpg"
     img = cv2.imread(test_path)
-    print("FEN:", image_to_fen_pipeline(img, corner_model, piece_model, grid_model))
-
-    # …or a loaded CV2 image 
     print("FEN:", image_to_fen_pipeline(img, corner_model, piece_model, grid_model))
     #main_loop()
