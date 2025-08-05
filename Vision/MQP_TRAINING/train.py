@@ -1,7 +1,7 @@
 from ultralytics import YOLO
 
 
-def train_yolo(model, file_path, output_name, epochs=3, batch_size=5):
+def train_yolo(model, file_path, output_name, epochs=200, batch_size=32):
     model = YOLO(model)
     result = model.train(
         data = "Datasets/"+file_path+"/data.yaml",
@@ -21,4 +21,4 @@ def train_yolo(model, file_path, output_name, epochs=3, batch_size=5):
     return result, metrics
 
 # Example usage
-train_yolo("yolov5s.pt", "ox_real", "oximiter_digits", epochs=200, batch_size=32)
+train_yolo("yolov5s.pt", "oximeter_dataset", "oximeter_model_output", epochs=200, batch_size=32)
