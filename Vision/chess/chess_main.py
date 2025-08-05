@@ -13,6 +13,7 @@ from pieces import (
     extract_boxes_labels,
     get_sampled_points,
     get_mapped_pieces,
+    create_FEN_notation,
 )
 from grid import (
     correct_orientation,
@@ -21,11 +22,12 @@ from grid import (
     generate_fen,
 )
 
+
 def image_to_fen_pipeline(image, corner_model, piece_model, grid_model, confidence=None):
     # Corner detection
     corner_conf = confidence.get('corner_conf',0.1) if confidence else 0.1
     corner_iou = confidence.get('corner_iou',0.35) if confidence else 0.35
-    corners_results = corners.predict_corners(corner_model, image, confidence_threshold=corner_conf, iou_threshold=corner_iou)
+    corners_results = predict_corners(corner_model, image, confidence_threshold=corner_conf, iou_threshold=corner_iou)
     corners = get_corner_coordinates(corners_results)
 
     # Prospective transform
@@ -44,15 +46,13 @@ def image_to_fen_pipeline(image, corner_model, piece_model, grid_model, confiden
 
     piece_detec_results = detect_pieces(piece_model, image, confidence_threshold=piece_conf, iou_threshold=piece_iou)
     boxes, labels = extract_boxes_labels(piece_detec_results)
-    samples = get_sampled_points(boxes, labels)
+    samples = get_sampled_points(boxes, labels, piece_model.names)
 
     # Map pieces to grid
     mapped_pieces = get_mapped_pieces(samples, M)
 
     # Place and create FEN
-    board = [[""]*8 for _ in range(8)]
-    place_pieces_on_board(board, mapped_pieces, grid_map)
-    fen = generate_fen(board)
+    fen = create_FEN_notation(mapped_pieces)
 
     return fen
 
@@ -109,4 +109,15 @@ def main_loop():
         cv2.destroyAllWindows()
 
 if __name__ == "__main__":
-    main_loop()
+    corner_model = YOLO("Vision/chess/models/corners.pt")
+    piece_model  = YOLO("Vision/chess/models/pieces.pt")
+    grid_model   = YOLO("Vision/chess/models/grid.pt")
+
+    # either a file path…
+    test_path = "Vision/chess/test_images/complex2.jpg"
+    img = cv2.imread(test_path)
+    print("FEN:", image_to_fen_pipeline(img, corner_model, piece_model, grid_model))
+
+    # …or a loaded CV2 image 
+    print("FEN:", image_to_fen_pipeline(img, corner_model, piece_model, grid_model))
+    #main_loop()

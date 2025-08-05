@@ -146,4 +146,4 @@ def transform_image_corners(image, corners):
     M = cv2.getPerspectiveTransform(corners_temp, dst)
     warped = cv2.warpPerspective(image, M, (dimension, dimension))
 
-    return warped
+    return warped, M

@@ -3,6 +3,22 @@ import cv2
 import random
 from ultralytics import YOLO
 
+FEN_MAP = {
+    "white-king":   "K",
+    "white-queen":  "Q",
+    "white-rook":   "R",
+    "white-bishop": "B",
+    "white-knight": "N",
+    "white-pawn":   "P",
+    "black-king":   "k",
+    "black-queen":  "q",
+    "black-rook":   "r",
+    "black-bishop": "b",
+    "black-knight": "n",
+    "black-pawn":   "p",
+}
+
+
 grid_coords = {
     'A8': [(0, 0), (80, 80)], 'B8': [(80, 0), (160, 80)], 'C8': [(160, 0), (240, 80)], 'D8': [(240, 0), (320, 80)],
     'E8': [(320, 0), (400, 80)], 'F8': [(400, 0), (480, 80)], 'G8': [(480, 0), (560, 80)], 'H8': [(560, 0), (640, 80)],
@@ -22,7 +38,7 @@ grid_coords = {
     'E1': [(320, 560), (400, 640)], 'F1': [(400, 560), (480, 640)], 'G1': [(480, 560), (560, 640)], 'H1': [(560, 560), (640, 640)]
 }
 
-predefined_labels = ["white-bishop", "white-king", "white-knight", "white-pawn", "white-queen", "white-rook", "black-bishop", "black-king", "black-knight", "black-pawn", "black-queen", "black-rook"]
+#predefined_labels = ["white-bishop", "white-king", "white-knight", "white-pawn", "white-queen", "white-rook", "black-bishop", "black-king", "black-knight", "black-pawn", "black-queen", "black-rook"]
 
 def detect_pieces(model, image, confidence_threshold=0.5, iou_threshold=0.35):
     """_summary_
@@ -67,15 +83,17 @@ def sample_points_from_bbox(bbox, num_points=10, threshold=0.2):
     
     return sample_points
 
-def get_sampled_points(boxes, labels, num_points=10):
+def get_sampled_points(boxes, labels, names, num_points=10):
     sampled_points_labels = []
-    
-    for box, label in zip(boxes, labels):
+    for box, lbl in zip(boxes, labels):
+        # Get the model’s class name
+        class_name = names[int(lbl)]
+        # Map to FEN letter
+        fen_letter = FEN_MAP.get(class_name)
+
         bbox = xyhw_to_xyxy(box)
         points = sample_points_from_bbox(bbox, num_points)
-        points = [(float(x), float(y)) for x, y in points]
-        label = predefined_labels[int(label)]
-        sampled_points_labels.append([points, label]) 
+        sampled_points_labels.append((points, fen_letter))
 
     return sampled_points_labels
 
