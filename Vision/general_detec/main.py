@@ -66,9 +66,9 @@ def extract_boxes(results):
 
 #======================================================TESTING========================================================
 # Test usage, loads an image from a file path for testing purposes
-image = cv2.imread("Vision/chess/test_images/complex.jpg")
+image = cv2.imread("Vision/models/test_images/chess/complex.jpg")
 model_name = "pieces"
-results = detect_obj(model_name, image, confidence_threshold=0.5, iou_threshold=0.35, desired_objs=["white-king", "white-rook", "black-knight"])
+results = detect_obj(model_name, image, confidence_threshold=0.5, iou_threshold=0.35, desired_objs=["white-bishop", "white-king", "black-rook"])
 boxes = extract_boxes(results)
 print("Detected boxes:", boxes)
 
